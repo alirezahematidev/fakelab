@@ -3,13 +3,23 @@
   "version": "0.0.4",
   "type": "module",
   "license": "MIT",
+  "description": "A easy-config mock server for frontend developers.",
   "main": "lib/main.js",
+  "module": "lib/main.js",
   "types": "lib/main.d.ts",
   "engines": {
     "node": ">=18"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alirezahematidev/fakelab.git"
+  },
+  "homepage": "https://github.com/alirezahematidev/fakelab",
+  "bugs": {
+    "url": "https://github.com/alirezahematidev/fakelab/issues"
   },
   "scripts": {
     "build": "tsup",
@@ -20,7 +30,15 @@
     "lib": "./lib"
   },
   "files": [
+    "bin",
     "lib"
+  ],
+  "keywords": [
+    "typescript",
+    "mock-server",
+    "mock api",
+    "faker",
+    "fakelab"
   ],
   "devDependencies": {
     "@release-it/conventional-changelog": "^10.0.2",

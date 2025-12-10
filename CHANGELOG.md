@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.4](///compare/v0.0.2...v0.0.4) (2025-12-10)
+
+### Bug Fixes
+
+* manually bump version 5f41912
+
 ## [0.0.2](///compare/v0.0.1...v0.0.2) (2025-12-10)
 
 ### Features

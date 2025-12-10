@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsup",
-    "release": "release-it",
+    "release": "release-it --ci",
     "serve": "yarn build && node lib/cli.js serve"
   },
   "directories": {

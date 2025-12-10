@@ -12,9 +12,7 @@ github:
   release: true
 
 npm:
-  publish: true
-  access: public
-  provenance: true
+  publish: false
 
 plugins:
   "@release-it/conventional-changelog":

@@ -28,10 +28,10 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Release
+      - name: Build
         run: yarn build
 
-      - name: Publish
+      - name: Release
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_FAKELAB_TOKEN }}
         run: npm publish --access public

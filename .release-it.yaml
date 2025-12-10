@@ -1,0 +1,24 @@
+git:
+  commitMessage: "release: v${version}"
+  tagName: "v${version}"
+  requireCleanWorkingDir: true
+  push: true
+  tag: true
+
+hooks:
+  before:release: "yarn build"
+
+github:
+  release: true
+
+npm:
+  publish: true
+  access: public
+  provenance: true
+
+plugins:
+  "@release-it/conventional-changelog":
+    preset: "conventionalcommits"
+    infile: "CHANGELOG.md"
+    ignoreRecommendedBump: true
+    strictSemVer: true

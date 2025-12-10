@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.7](///compare/v0.0.6...v0.0.7) (2025-12-10)
+
+### Bug Fixes
+
+* update readme 99ffc82
+
 ## [0.0.6](///compare/v0.0.5...v0.0.6) (2025-12-10)
 
 ### Bug Fixes

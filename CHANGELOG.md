@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.5](///compare/v0.0.4...v0.0.5) (2025-12-10)
+
+### Bug Fixes
+
+* package json keywords 5961790
+
 ## [0.0.4](///compare/v0.0.2...v0.0.4) (2025-12-10)
 
 ### Bug Fixes

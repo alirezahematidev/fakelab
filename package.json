@@ -1,6 +1,6 @@
 {
   "name": "fakelab",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "type": "module",
   "license": "MIT",
   "description": "A easy-config mock server for frontend developers.",

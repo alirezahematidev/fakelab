@@ -37,7 +37,7 @@ Fakelab allows you to control generated mock data using JSDoc tags.
 You simply annotate your TypeScript interfaces with the @faker tag, and Fakelab uses the corresponding [faker](https://fakerjs.dev/)
 method when generating mock values.
 
-interfaces folder:
+`/interfaces/user.ts`:
 
 ```typescript
 export interface User {

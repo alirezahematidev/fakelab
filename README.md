@@ -28,33 +28,36 @@ import { defineConfig } from "fakelab";
 
 export default defineConfig({
   sourcePath: "./interfaces", // can set a directory or a single typescript file.
+  faker: { locale: "en" }, // optional
+  server: { pathPrefix: "api/v1", port: 8080 }, // optional
 });
 ```
+
+Fakelab allows you to control generated mock data using JSDoc tags.
+You simply annotate your TypeScript interfaces with the @faker tag, and Fakelab uses the corresponding [faker](https://fakerjs.dev/)
+method when generating mock values.
 
 interfaces folder:
 
 ```typescript
 export interface User {
-  name: string;
-  age: number;
-  admin: boolean;
-  address: string;
-  tags: string[];
-}
-export interface User {
-  gender: "male" | "female";
-}
-export interface Post {
+  /** @faker string.uuid */
   id: string;
-  title: string;
-  content: string;
-  published: boolean;
-}
 
-export interface Profile {
-  id: string;
-  bio: string;
-  user: User;
+  /** @faker person.fullName */
+  name: string;
+
+  /** @faker number.int */
+  age: number;
+
+  /** @faker datatype.boolean */
+  admin: boolean;
+
+  /** @faker location.streetAddress */
+  address: string;
+
+  /** @faker word.words */
+  tags: string[];
 }
 ```
 

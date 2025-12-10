@@ -57,6 +57,6 @@
     "zod": "^4.1.13"
   },
   "bin": {
-    "fakelab": "./bin/run.js"
+    "fakelab": "bin/run.js"
   }
 }

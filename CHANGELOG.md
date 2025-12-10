@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.2](///compare/v0.0.1...v0.0.2) (2025-12-10)
+
+### Features
+
+* add readme 5dc8dcd
+
 ## 0.0.1 (2025-12-10)
 
 ### Bug Fixes

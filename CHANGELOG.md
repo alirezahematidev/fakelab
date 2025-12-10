@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.0.1 (2025-12-10)
+
+### Bug Fixes
+
+* config 0259b2b
+* github workflow c84fa52
+* pkg ea3437f
+* release-it b58986a
+* reset version 47a36cb
+* workflow 2b97335
+
 ## [0.0.3](///compare/v0.0.2...v0.0.3) (2025-12-10)
 
 ## 0.0.2 (2025-12-10)

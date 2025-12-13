@@ -1,4 +1,3 @@
-import { defineConfig, type UserConfig } from "./config";
+import { defineConfig } from "./config";
 
-export type { UserConfig };
 export { defineConfig };

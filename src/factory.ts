@@ -53,7 +53,7 @@ function prepare(type: Type, generator: Generator, options: ForgeOptions) {
   return async (index: number) => {
     const generated = await factory(type, generator);
     if (options.uid && typeof generated === "object") {
-      return { [options.uid]: createId(options.s, index), ...generated };
+      return { [options.uid]: createId(options.strategy, index), ...generated };
     }
     return generated;
   };

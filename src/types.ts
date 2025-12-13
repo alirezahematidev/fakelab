@@ -35,7 +35,7 @@ type GeneratorForge = { data: unknown; json: string };
 export type ForgeOptions = {
   count?: string;
   uid?: string;
-  s?: string;
+  strategy?: string;
 };
 
 export interface IGenerated {

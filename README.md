@@ -1,4 +1,4 @@
-# Fakelab
+# ![logo](https://raw.githubusercontent.com/alirezahematidev/fakelab/refs/heads/main/src/public/icons/logo24.svg) Fakelab
 
 ⚡ A fast, easy-config mock API server for frontend developers.
 
@@ -27,7 +27,7 @@ create `fakelab.config.ts` file in the project root. and reference your app inte
 import { defineConfig } from "fakelab";
 
 export default defineConfig({
-  sourcePath: "./interfaces", // can set a directory or a single typescript file.
+  sourcePath: "./interfaces", // can set one/multiple directory(s) or typescript file(s).
   faker: { locale: "en" }, // optional
   server: { pathPrefix: "api/v1", port: 8080 }, // optional
 });
@@ -61,12 +61,34 @@ export interface User {
 }
 ```
 
-## Start the mock api server
+## Server Command
 
 Run:
 
 ```bash
+npx fakelab serve [options]
+```
+
+### Options
+
+| Option                  | Alias | Description                                           |
+| ----------------------- | ----- | ----------------------------------------------------- |
+| `--source`              | `-s`  | Path to the source typescript file(s) or directory(s) |
+| `--pathPrefix <prefix>` | `-x`  | Prefix for all generated API routes                   |
+| `--locale <locale>`     | `-l`  | Locale used for fake data generation                  |
+| `--port <number>`       | `-p`  | Port to run the server on                             |
+
+### Examples
+
+```bash
+# Basic usage
 npx fakelab serve
+
+# Custom source and port
+npx fakelab serve -s ./interfaces -p 4000
+
+# Custom API prefix and locale
+npx fakelab serve --pathPrefix /v1 --locale fr
 ```
 
 ## Related

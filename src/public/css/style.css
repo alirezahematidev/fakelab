@@ -41,11 +41,15 @@ pre {
 
 .sidebar .logo {
   height: 65px;
+  text-decoration: none;
   padding-inline: 16px;
   display: flex;
   align-items: center;
-  color: oklch(98.5% 0.002 247.839);
-  text-decoration: none;
+  gap: 6px;
+
+  > span {
+    color: oklch(98.5% 0.002 247.839);
+  }
 }
 
 .sidebar .sidebar_docs {

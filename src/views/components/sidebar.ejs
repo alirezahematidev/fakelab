@@ -6,9 +6,10 @@
       <span class="sidebar_content_title">Found interfaces</span>
     </div>
     <div class="sidebar_content_list">
-      <% entities.forEach((_,name) => { %>
+      <% entities.forEach((entity,name) => { %>
       <a class="sidebar_content_list_item <%= currentPath === `/${name}` ? 'active' : '' %>" href="/<%= name %>">
-        <span><%= name %></span>
+        <span class="item_name"><%= name %></span>
+        <span class="item_filepath"><%= entity.filepath %></span>
       </a>
       <% }) %>
     </div>

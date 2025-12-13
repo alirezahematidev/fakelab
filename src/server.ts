@@ -2,19 +2,20 @@ import express from "express";
 import cors from "cors";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { type UserConfig } from "./config";
 import ejsLayouts from "express-ejs-layouts";
 import http from "http";
 import "ejs";
 import { RouteRegistry } from "./registry";
 import figlet from "figlet";
 import { Logger } from "./logger";
+import type { ServerCLIOptions } from "./types";
+import type { Config } from "./config/conf";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function run(server: http.Server, config: UserConfig) {
-  const port = config.serverOptions.port;
+function run(server: http.Server, config: Config, options: ServerCLIOptions) {
+  const { port } = config.serverOpts(options.pathPrefix, options.port);
 
   server.listen(port, "localhost", async () => {
     Logger.info(`Server: http://localhost:${port}`);
@@ -43,7 +44,7 @@ function setupTemplateEngine(app: express.Express) {
   app.set("layout", "layouts/main");
 }
 
-async function startServer(config: UserConfig) {
+async function startServer(config: Config, options: ServerCLIOptions) {
   const app = express();
   const router = express.Router();
 
@@ -53,13 +54,13 @@ async function startServer(config: UserConfig) {
 
   setupTemplateEngine(app);
 
-  const registry = new RouteRegistry(router, config);
+  const registry = new RouteRegistry(router, config, options);
 
   await registry.register();
 
   app.use(router);
 
-  run(server, config);
+  run(server, config, options);
 }
 
 export { startServer };

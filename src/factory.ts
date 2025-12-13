@@ -1,9 +1,9 @@
 import { Type } from "ts-morph";
 import { v4 as uuidV4 } from "uuid";
 import { Generator } from "./generator";
-import type { EvaluatedFakerArgs, ForgeOptions, IGenerated } from "./types";
+import type { EvaluatedFakerArgs, FakerLocale, ForgeOptions, IGenerated, ServerCLIOptions } from "./types";
 import { ParserEngine } from "./parserEngine";
-import type { UserConfig } from "./config";
+import type { Config } from "./config/conf";
 
 async function factory(type: Type, generator: Generator, data: (EvaluatedFakerArgs | undefined)[] = [], index = 0): Promise<unknown> {
   if (type.isString()) return generator.string(data[index]);
@@ -59,10 +59,12 @@ function prepare(type: Type, generator: Generator, options: ForgeOptions) {
   };
 }
 
-export async function generate(config: UserConfig): Promise<IGenerated> {
-  const parser = new ParserEngine(config.files);
+export async function generate(config: Config, options: ServerCLIOptions): Promise<IGenerated> {
+  const files = await config.files(options.source);
 
-  const faker = await parser.loadFaker(config.fakerOptions);
+  const parser = new ParserEngine(files);
+
+  const faker = await parser.loadFaker(config.fakerOpts(options.locale as FakerLocale));
 
   const generator = new Generator(faker);
 

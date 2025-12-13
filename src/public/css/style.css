@@ -115,22 +115,46 @@ pre {
   padding: 12px 8px;
   border-radius: 4px;
   cursor: pointer;
-  transition: all 250ms ease-in-out;
-  color: oklch(98.463% 0.00181 249.248 / 0.726);
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
   text-decoration: none;
-  font-size: 14px;
-  &:hover {
-    color: oklch(98.5% 0.002 247.839);
+  &:hover > .item_name {
+    color: oklch(98.5% 0.002 247.85);
   }
-
-  > span {
-    user-select: none;
+  &:hover > .item_filepath {
+    color: oklch(98.463% 0.00181 249.248 / 0.8);
   }
 }
 
+.sidebar_content_list_item .item_name {
+  transition: all 250ms ease-in-out;
+  color: oklch(98.463% 0.00181 249.248 / 0.726);
+  user-select: none;
+  font-size: 14px;
+}
+
+.sidebar_content_list_item .item_filepath {
+  transition: all 250ms ease-in-out;
+  white-space: nowrap;
+  line-clamp: 1;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: oklch(98.463% 0.00181 249.248 / 0.6);
+  font-style: italic;
+}
+
 .sidebar_content_list_item.active {
-  color: oklch(98.5% 0.002 247.839);
   background-color: oklch(37.306% 0.03436 260.191 / 0.26);
+
+  > .item_name {
+    color: oklch(98.5% 0.002 247.85);
+  }
+
+  > .item_filepath {
+    color: oklch(98.463% 0.00181 249.248 / 0.8);
+  }
 }
 
 .sidebar_content_leading .sidebar_content_title {
@@ -180,7 +204,13 @@ pre {
 
 .header .interface_name {
   font-size: 16px;
-  color: oklch(98.463% 0.00181 249.248 / 0.61);
+  color: oklch(98.463% 0.00181 249.248 / 0.8);
+}
+
+.interface_name .interface_source_filepath {
+  font-size: 12px;
+  color: oklch(98.463% 0.00181 249.248 / 0.6);
+  font-style: italic;
 }
 
 .preview {

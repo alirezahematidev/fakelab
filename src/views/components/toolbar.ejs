@@ -1,0 +1,60 @@
+<div class="preview_toolbar loading">
+  <div class="toolbar_setting">
+    <div class="data_fetch_address">
+      <div class="address">
+        <span class="address_method">GET</span>
+        <span id="request_address_url" class="address_url"><%= address %><%= prefix %>/<%= name %><%= search %></span>
+      </div>
+      <img id="copy_btn" onclick="copyAddressUrl()" class="icon pointer_auto" src="/icons/copy.svg" width="16px" height="16px" />
+    </div>
+    <div id="overlay_trigger" class="toolbar_setting_option" onclick="openSettings()">
+      <img class="icon" src="/icons/settings.svg" width="18px" height="18px" />
+    </div>
+    <div id="setting_overlay" data-visible="false" class="toolbar_setting_overlay">
+      <span class="setting_title">Generator settings</span>
+      <form class="setting_form" onsubmit="submitForm(event)">
+        <div class="form_input">
+          <label for="count">Count</label>
+          <input id="count" autocomplete="off" name="count" type="text" />
+          <span>Set count field to generate array of data items.</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div class="form_input inline">
+            <label for="unique_id">Generate unique id</label>
+            <div class="switch" onclick="onChangeGenerateUniqueId()">
+              <input type="checkbox" id="unique_id" name="unique_id" />
+              <span class="slider"></span>
+            </div>
+          </div>
+          <div id="unique_id_key_field" class="form_input" data-visible="false">
+            <input id="unique_id_key" autocomplete="off" name="unique_id_key" type="text" value="_id" placeholder="unique id key" />
+          </div>
+          <div id="unique_strategy_container" class="unique_strategy" data-visible="false">
+            <span class="unique_id_hint">By default unique id is auto incremented integer.</span>
+            <div class="form_input inline">
+              <label for="unique_id_strategy">Generate as uuid</label>
+              <div class="switch" onclick="onHandleUniqueIdStrategy()">
+                <input type="checkbox" id="unique_id_strategy" name="unique_id_strategy" />
+                <span class="slider"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form_buttons">
+          <button class="form_reset_btn" type="button" onclick="resetForm(event)">Reset</button>
+          <button class="form_apply_btn" type="submit">Apply</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toolbar_actions">
+    <div class="toolbar_action_item" onclick="copyJsonCode()">
+      <img class="icon" src="/icons/copy.svg" width="18px" height="18px" />
+    </div>
+    <div class="divider"></div>
+    <a class="toolbar_action_item" data-source-name="<%= name %>" onclick="downloadJsonCode(this)">
+      <img class="icon" src="/icons/download.svg" width="18px" height="18px" />
+    </a>
+  </div>
+</div>

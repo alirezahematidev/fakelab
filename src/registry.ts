@@ -3,10 +3,11 @@ import fs from "fs-extra";
 import path from "node:path";
 import qs from "qs";
 import z from "zod";
-import type { UserConfig } from "./config";
 import { fileURLToPath } from "node:url";
 import { generate } from "./factory";
 import { Logger } from "./logger";
+import type { ServerCLIOptions } from "./types";
+import type { Config } from "./config/conf";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,15 +17,16 @@ const pkg = fs.readJSONSync(path.join(__dirname, "../package.json"));
 class RouteRegistry {
   private prefix: string;
 
-  constructor(private readonly router: express.Router, private readonly config: UserConfig) {
-    this.prefix = this.config.serverOptions.pathPrefix;
+  constructor(private readonly router: express.Router, private readonly config: Config, private readonly opts: ServerCLIOptions) {
+    const { pathPrefix } = this.config.serverOpts(this.opts.pathPrefix);
+    this.prefix = pathPrefix;
   }
 
   private get querySchema() {
     return z.object({
       count: z.string().optional(),
       uid: z.string().optional(),
-      s: z.string().optional(),
+      strategy: z.string().optional(),
     });
   }
 
@@ -39,7 +41,7 @@ class RouteRegistry {
   }
 
   async register() {
-    const { entities, forge } = await generate(this.config);
+    const { entities, forge } = await generate(this.config, this.opts);
 
     this.router.get("/", (req, res) => {
       const currentPath = req.path;
@@ -57,12 +59,13 @@ class RouteRegistry {
 
       const search = qs.stringify(queries, { addQueryPrefix: true });
 
-      const type = entities.get(name.toLowerCase());
+      const entity = entities.get(name.toLowerCase());
 
-      if (type) {
-        const { json } = await forge(type, queries);
+      if (entity) {
+        const { json } = await forge(entity.type, queries);
+        const filepath = entity.filepath;
 
-        res.render("preview", { name, currentPath, address, search, json, entities, version: pkg.version, prefix: this.prefix });
+        res.render("preview", { name, filepath, currentPath, address, search, json, entities, version: pkg.version, prefix: this.prefix });
       } else res.redirect("/");
     });
 
@@ -72,10 +75,10 @@ class RouteRegistry {
 
         const queries = await this.handleQueries(req);
 
-        const type = entities.get(name.toLowerCase());
+        const entity = entities.get(name.toLowerCase());
 
-        if (type) {
-          const { data } = await forge(type, queries);
+        if (entity) {
+          const { data } = await forge(entity.type, queries);
 
           res.status(200).json(data);
         } else {

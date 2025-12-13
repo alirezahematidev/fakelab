@@ -1,19 +1,14 @@
 import type { FakerLocale } from "./types";
 
-class Constants {
-  static PREFIX = "api";
-  static PORT = 5200;
-  private static DEFAULT_LOCALE = "en" as const;
+export const FAKELABE_DEFAULT_PREFIX = "api";
+export const FAKELAB_DEFAULT_PORT = 5200;
 
-  static locale(): FakerLocale {
-    const locale = Intl.DateTimeFormat().resolvedOptions().locale;
+export function defaultFakerLocale() {
+  const locale = Intl.DateTimeFormat().resolvedOptions().locale;
 
-    if (!locale) return this.DEFAULT_LOCALE;
+  if (!locale) return "en";
 
-    const [lang] = locale.split("-");
+  const [lang] = locale.split("-");
 
-    return lang.toLowerCase() as FakerLocale;
-  }
+  return lang.toLowerCase() as FakerLocale;
 }
-
-export { Constants };

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.8](///compare/v0.0.7...v0.0.8) (2025-12-13)
+
+### Bug Fixes
+
+* multiple source paths, cli options, copy/download source buttons e0b1c52
+* update gitignore 48ae210
+
 ## [0.0.7](///compare/v0.0.6...v0.0.7) (2025-12-10)
 
 ### Bug Fixes

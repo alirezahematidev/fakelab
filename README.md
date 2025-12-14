@@ -21,13 +21,13 @@ yarn add -D fakelab
 
 ## Usage/Examples
 
-create `fakelab.config.ts` file in the project root. and reference your app interfaces files.
+create `fakelab.config.ts` file in the project root. and reference your typescript files.
 
 ```typescript
 import { defineConfig } from "fakelab";
 
 export default defineConfig({
-  sourcePath: "./interfaces", // can set one/multiple directory(s) or typescript file(s).
+  sourcePath: "./types", // can set one/multiple directory(s) or typescript file(s).
   faker: { locale: "en" }, // optional
   server: { pathPrefix: "api/v1", port: 8080 }, // optional
 });
@@ -37,9 +37,29 @@ Fakelab allows you to control generated mock data using JSDoc tags.
 You simply annotate your TypeScript interfaces with the @faker tag, and Fakelab uses the corresponding [faker](https://fakerjs.dev/)
 method when generating mock values.
 
-`/interfaces/user.ts`:
+`/other/post.ts`:
 
 ```typescript
+export type Post = {
+  id: string;
+  title: string;
+};
+```
+
+`/other/profile.ts`:
+
+```typescript
+export type Profile = {
+  id: string;
+};
+```
+
+`/types/user.ts`:
+
+```typescript
+export { type Profile } from "../other/profile";
+import { type Post } from "../other/post";
+
 export interface User {
   /** @faker string.uuid */
   id: string;
@@ -57,10 +77,11 @@ export interface User {
   /** @faker location.streetAddress */
   address: string;
 
-  /** @faker word.words */
-  tags: string[];
+  posts: Post[];
 }
 ```
+
+**NOTE:** Fakelab only supports `interfaces`, `types`, `named export declarations`.
 
 ## Server Command
 
@@ -86,7 +107,7 @@ npx fakelab serve [options]
 npx fakelab serve
 
 # Custom source and port
-npx fakelab serve -s ./interfaces -p 4000
+npx fakelab serve -s ./types -p 4000
 
 # Custom API prefix and locale
 npx fakelab serve --pathPrefix /v1 --locale fr

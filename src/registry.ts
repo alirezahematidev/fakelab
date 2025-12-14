@@ -15,10 +15,12 @@ const __dirname = path.dirname(__filename);
 const pkg = fs.readJSONSync(path.join(__dirname, "../package.json"));
 
 class RouteRegistry {
+  private port: number;
   private prefix: string;
 
   constructor(private readonly router: express.Router, private readonly config: Config, private readonly opts: ServerCLIOptions) {
-    const { pathPrefix } = this.config.serverOpts(this.opts.pathPrefix);
+    const { pathPrefix, port } = this.config.serverOpts(this.opts.pathPrefix, this.opts.port);
+    this.port = port;
     this.prefix = pathPrefix;
   }
 
@@ -40,7 +42,15 @@ class RouteRegistry {
     return {};
   }
 
+  private async ensureMetaFile() {
+    const dest = path.resolve(__dirname, ".fake");
+    await fs.ensureDir(dest);
+    await fs.writeJSON(path.resolve(dest, "__meta.json"), { prefix: this.prefix, port: this.port });
+  }
+
   async register() {
+    await this.ensureMetaFile();
+
     const { entities, forge } = await generate(this.config, this.opts);
 
     this.router.get("/", (req, res) => {

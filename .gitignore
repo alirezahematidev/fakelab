@@ -24,6 +24,7 @@ dist-ssr
 *.sw?
 lib
 
+src/.fake
 fakelab.config.ts
 fixtures
 temp

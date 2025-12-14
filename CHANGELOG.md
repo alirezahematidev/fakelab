@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.12](///compare/v0.0.11...v0.0.12) (2025-12-14)
+
+### Features
+
+* fakefetch 8171f51
+
 ## [0.0.11](///compare/v0.0.10...v0.0.11) (2025-12-14)
 
 ### Bug Fixes

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.11](///compare/v0.0.10...v0.0.11) (2025-12-14)
+
+### Bug Fixes
+
+* release config 4bfa262
+* stricted check for supported faker locales 9e6d057
+
 ## [0.0.10](///compare/v0.0.9...v0.0.10) (2025-12-14)
 
 ### Features

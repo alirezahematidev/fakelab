@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.13](///compare/v0.0.12...v0.0.13) (2025-12-14)
+
+### Bug Fixes
+
+* build error 856ac06
+
 ## [0.0.12](///compare/v0.0.11...v0.0.12) (2025-12-14)
 
 ### Features

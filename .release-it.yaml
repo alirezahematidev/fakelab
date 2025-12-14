@@ -10,6 +10,7 @@ hooks:
 
 github:
   release: true
+  tokenRef: "FAKELAB_GH_TOKEN"
 
 npm:
   publish: false

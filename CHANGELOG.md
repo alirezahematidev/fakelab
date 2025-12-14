@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.10](///compare/v0.0.9...v0.0.10) (2025-12-14)
+
+### Features
+
+* support type aliases and export named declarations f2d87df
+
 ## [0.0.9](///compare/v0.0.8...v0.0.9) (2025-12-13)
 
 ### Bug Fixes

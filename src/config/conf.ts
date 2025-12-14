@@ -2,8 +2,8 @@ import glob from "fast-glob";
 import path from "node:path";
 import { access, constants, stat } from "node:fs/promises";
 import { Logger } from "../logger";
-import type { ConfigOptions, FakerEngineOptions, FakerLocale, ServerOptions } from "../types";
-import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX } from "../constants";
+import type { ConfigOptions, FakerEngineOptions, ServerOptions } from "../types";
+import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, type FakerLocale } from "../constants";
 
 export class Config {
   constructor(private readonly opts: ConfigOptions) {
@@ -33,9 +33,12 @@ export class Config {
   }
 
   public fakerOpts(locale?: FakerLocale): Required<FakerEngineOptions> {
-    return {
-      locale: locale || this.opts.faker?.locale || defaultFakerLocale(),
-    };
+    const _locale = (locale || this.opts.faker?.locale)?.toLowerCase();
+
+    if (_locale && FAKER_LOCALES.includes(_locale as FakerLocale)) {
+      return { locale: _locale as FakerLocale };
+    }
+    return { locale: defaultFakerLocale() };
   }
 
   private async tryStat(p: string) {

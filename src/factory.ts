@@ -1,9 +1,10 @@
 import { Type } from "ts-morph";
 import { v4 as uuidV4 } from "uuid";
 import { Generator } from "./generator";
-import type { EvaluatedFakerArgs, FakerLocale, ForgeOptions, IGenerated, ServerCLIOptions } from "./types";
+import type { EvaluatedFakerArgs, ForgeOptions, IGenerated, ServerCLIOptions } from "./types";
 import { ParserEngine } from "./parserEngine";
 import type { Config } from "./config/conf";
+import type { FakerLocale } from "./constants";
 
 async function factory(type: Type, generator: Generator, data: (EvaluatedFakerArgs | undefined)[] = [], index = 0): Promise<unknown> {
   if (type.isString()) return generator.string(data[index]);

@@ -50,8 +50,8 @@ class ParserEngine {
     return new Map(mapping);
   }
 
-  public async loadFaker(fakerOptions: UserConfig["fakerOptions"], locale?: string): Promise<import("@faker-js/faker").Faker> {
-    const { faker } = await import(`@faker-js/faker/locale/${locale || fakerOptions.locale}`);
+  public async loadFaker(fakerOptions: UserConfig["fakerOptions"]): Promise<import("@faker-js/faker").Faker> {
+    const { faker } = await import(`@faker-js/faker/locale/${fakerOptions.locale}`);
 
     return faker;
   }

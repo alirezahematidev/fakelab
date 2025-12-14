@@ -1,15 +1,28 @@
-import { InterfaceDeclaration, Project, type Type } from "ts-morph";
-import type { UserConfig } from "./config";
 import path from "node:path";
+import { type InterfaceDeclaration, type TypeAliasDeclaration, Project, type Type } from "ts-morph";
+import type { UserConfig } from "./config";
+
+type ParserTypeDeclaration = InterfaceDeclaration | TypeAliasDeclaration;
 
 class ParserEngine {
-  private __targets: InterfaceDeclaration[];
+  private __targets: ParserTypeDeclaration[];
 
   constructor(readonly files: string[]) {
     const project = new Project({ tsConfigFilePath: "tsconfig.json" });
     const sources = project.addSourceFilesAtPaths(files);
 
-    this.__targets = sources.flatMap((source) => source.getInterfaces());
+    this.__targets = sources.flatMap((source) => {
+      // interfaces
+      const interfaces = source.getInterfaces();
+
+      // types
+      const typeAliases = source.getTypeAliases();
+
+      // export declarations
+      const exportDeclarations = source.getExportDeclarations().flatMap((dec) => dec.getNamedExports().flatMap((n) => n.getLocalTargetDeclarations()));
+
+      return [...interfaces, ...typeAliases, ...(exportDeclarations as ParserTypeDeclaration[])];
+    });
   }
 
   async run(factory: () => Promise<unknown>) {

@@ -47,7 +47,8 @@ export interface User {
   /** @faker person.fullName */
   name: string;
 
-  /** @faker number.int */
+  // Use it as a function to pass the arguments.
+  /** @faker number.int({ max: 10 }) */
   age: number;
 
   /** @faker datatype.boolean */

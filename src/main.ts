@@ -1,4 +1,4 @@
 import { defineConfig } from "./config";
-import { fakefetch } from "./fetch";
+import { createFetch } from "./fetch";
 
-export { defineConfig, fakefetch };
+export { defineConfig, createFetch };

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.14](///compare/v0.0.13...v0.0.14) (2025-12-14)
+
+### Bug Fixes
+
+* revert fetch 1f52a6f
+
 ## [0.0.13](///compare/v0.0.12...v0.0.13) (2025-12-14)
 
 ### Bug Fixes

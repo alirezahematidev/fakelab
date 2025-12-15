@@ -1,11 +1,43 @@
 import glob from "fast-glob";
 import path from "node:path";
+import fs from "fs-extra";
 import { access, constants, stat } from "node:fs/promises";
 import { Logger } from "../logger";
 import type { ConfigOptions, FakerEngineOptions, ServerOptions } from "../types";
 import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, type FakerLocale } from "../constants";
 
 export class Config {
+  private runtimeSource = `global.fakelab = {};
+global.fakelab.SERVER_BASE_URL = "http://localhost:PORT/PREFIX/";
+global.fakelab.get = async function (name) {
+  const response = await fetch(global.fakelab.SERVER_BASE_URL + name);
+  if (!response.ok) throw new Error("[fakelab] Failed to get data.");
+
+  const result = await response.json();
+
+  return result;
+};`;
+
+  private runtimeDecl = `export {};
+
+declare global {
+  const fakelab: {
+    readonly SERVER_BASE_URL: string;
+    get<T extends keyof FakelabRuntime>(name: T): Promise<FakelabRuntime>;
+  };
+
+  interface FakelabRuntime {}
+  interface Window {
+    readonly fakelab: typeof fakelab;
+  }
+
+  namespace NodeJS {
+    interface Global {
+      fakelab: typeof fakelab;
+    }
+  }
+}`;
+
   constructor(private readonly opts: ConfigOptions) {
     this.files = this.files.bind(this);
     this.serverOpts = this.serverOpts.bind(this);
@@ -39,6 +71,13 @@ export class Config {
       return { locale: _locale as FakerLocale };
     }
     return { locale: defaultFakerLocale() };
+  }
+
+  async generateInFileRuntimeConfig(dir: string, port: number, prefix: string) {
+    const sourcePath = path.resolve(dir, "runtime.js");
+    const declarationPath = path.resolve(dir, "runtime.d.ts");
+
+    await Promise.all([fs.writeFile(sourcePath, this.runtimeSource.replace("PORT", port.toString()).replace("PREFIX", prefix)), fs.writeFile(declarationPath, this.runtimeDecl)]);
   }
 
   private async tryStat(p: string) {

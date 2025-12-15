@@ -7,6 +7,17 @@
   "main": "lib/main.js",
   "module": "lib/main.js",
   "types": "lib/main.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/main.d.ts",
+      "default": "./lib/main.js"
+    },
+    "./runtime": {
+      "types": "./lib/runtime.d.ts",
+      "node": "./lib/runtime.js",
+      "default": "./lib/runtime.js"
+    }
+  },
   "engines": {
     "node": ">=18"
   },

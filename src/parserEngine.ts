@@ -1,6 +1,11 @@
 import path from "node:path";
+import fs from "fs-extra";
 import { type InterfaceDeclaration, type TypeAliasDeclaration, Project, type Type } from "ts-morph";
 import type { UserConfig } from "./config";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 type ParserTypeDeclaration = InterfaceDeclaration | TypeAliasDeclaration;
 
@@ -22,6 +27,8 @@ class ParserEngine {
 
       return [...interfaces, ...typeAliases, ...(exportDeclarations as ParserTypeDeclaration[])];
     });
+
+    this.generateInFileEntitiyMap(this.__targets);
   }
 
   async run(factory: () => Promise<unknown>) {
@@ -30,6 +37,22 @@ class ParserEngine {
 
   private normalizePath(p: string) {
     return p.split(path.sep).join(path.posix.sep);
+  }
+
+  private generateInFileEntitiyMap(targets: ParserTypeDeclaration[]) {
+    const declarations = [
+      ...new Set(
+        targets.map((target) => {
+          const name = target.getName();
+          const filepath = target.getSourceFile().getFilePath();
+
+          return `${name}: import("${filepath}").${name}`;
+        })
+      ),
+    ];
+
+    const raw = `declare global {\ninterface FakeRuntime {${declarations.join("\n")}\n}\n}`;
+    fs.appendFile(path.resolve(__dirname, "runtime.d.ts"), raw);
   }
 
   public entities() {

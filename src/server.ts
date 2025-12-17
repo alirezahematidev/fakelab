@@ -15,11 +15,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 function run(server: http.Server, config: Config, options: ServerCLIOptions) {
-  const { port, pathPrefix } = config.serverOpts(options.pathPrefix, options.port);
+  const { port } = config.serverOpts(options.pathPrefix, options.port);
 
   server.listen(port, "localhost", async () => {
-    await config.generateInFileRuntimeConfig(__dirname, port, pathPrefix);
-
     Logger.info(`Server: http://localhost:${port}`);
     console.log(await figlet.text("FAKELAB"));
   });
@@ -55,6 +53,8 @@ async function startServer(config: Config, options: ServerCLIOptions) {
   setupApplication(app);
 
   setupTemplateEngine(app);
+
+  await config.generateInFileRuntimeConfig(__dirname, options);
 
   const registry = new RouteRegistry(router, config, options);
 

@@ -6,7 +6,7 @@
 
 - 🚀 Instant mock server
 - 🗂️ Mock from Typescript files
-- 📦 Lightweight ~ 653 kB
+- 📦 Lightweight ~ 665 kB
 - 🧪 Perfect for local development, prototyping, and frontend testing
 
 ## Installation

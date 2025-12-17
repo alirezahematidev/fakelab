@@ -2,10 +2,8 @@ import express from "express";
 import fs from "fs-extra";
 import path from "node:path";
 import qs from "qs";
-import z from "zod";
 import { fileURLToPath } from "node:url";
 import { generate } from "./factory";
-import { Logger } from "./logger";
 import type { ServerCLIOptions } from "./types";
 import type { Config } from "./config/conf";
 
@@ -22,20 +20,10 @@ class RouteRegistry {
     this.prefix = pathPrefix;
   }
 
-  private get querySchema() {
-    return z.object({
-      count: z.string().optional(),
-      uid: z.string().optional(),
-      strategy: z.string().optional(),
-    });
-  }
-
   private async handleQueries(request: express.Request) {
-    const { success, data, error } = await this.querySchema.safeParseAsync(request.query);
+    const count = request.query.count;
 
-    if (success) return data;
-
-    Logger.warn(error.message);
+    if (count) return { count: count.toString() };
 
     return {};
   }

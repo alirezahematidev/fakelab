@@ -1,5 +1,4 @@
 import { Type } from "ts-morph";
-import { v4 as uuidV4 } from "uuid";
 import { Generator } from "./generator";
 import type { EvaluatedFakerArgs, ForgeOptions, IGenerated, ServerCLIOptions } from "./types";
 import { ParserEngine } from "./parserEngine";
@@ -38,26 +37,12 @@ async function factory(type: Type, generator: Generator, data: (EvaluatedFakerAr
   return null;
 }
 
-function resolveBatch<T>({ each }: { each: (index: number) => Promise<T> }) {
+function resolveBatch<T>({ each }: { each: () => Promise<T> }) {
   const resolve = async (length: number) => {
-    return await Promise.all(Array.from({ length }, (_, index) => each(index)));
+    return await Promise.all(Array.from({ length }, each));
   };
 
   return { resolve };
-}
-
-function createId(strategy: string | undefined, index: number) {
-  return strategy === "uuid" ? uuidV4() : index + 1;
-}
-
-function prepare(type: Type, generator: Generator, options: ForgeOptions) {
-  return async (index: number) => {
-    const generated = await factory(type, generator);
-    if (options.uid && typeof generated === "object") {
-      return { [options.uid]: createId(options.strategy, index), ...generated };
-    }
-    return generated;
-  };
 }
 
 export async function generate(config: Config, options: ServerCLIOptions): Promise<IGenerated> {
@@ -72,7 +57,7 @@ export async function generate(config: Config, options: ServerCLIOptions): Promi
   const entities = parser.entities();
 
   async function forge(type: Type, options: ForgeOptions) {
-    const resolver = resolveBatch({ each: prepare(type, generator, options) });
+    const resolver = resolveBatch({ each: () => factory(type, generator) });
 
     const data = await (options.count ? resolver.resolve(parseInt(options.count)) : factory(type, generator));
 

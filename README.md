@@ -83,6 +83,50 @@ export interface User {
 
 **NOTE:** Fakelab only supports `interfaces`, `types`, `named export declarations`.
 
+## Fakelab Runtime
+
+`fakelab/runtime` enables a **global Fakelab object** at runtime, allowing your frontend or Node environment to communicate with the running Fakelab mock server.
+
+## Enabling the runtime (important)
+
+To enable the global `fakelab` object, you **must import the runtime once** in your application.
+
+## `fakelab.URL`
+
+The base URL of the running Fakelab server.
+
+```ts
+fakelab.URL;
+// e.g. "http://localhost:50000/api"
+```
+
+## `fakelab.fetch`
+
+Fetch mock data from the Fakelab server by **typescript interface/type name**.
+
+### Signature
+
+```ts
+fakelab.fetch(name: string, count?: number): Promise<T[]>
+```
+
+### Parameters
+
+| Name    | Type     | Description                            |
+| ------- | -------- | -------------------------------------- |
+| `name`  | `string` | Interface/Type name                    |
+| `count` | `number` | Number of items to generate (optional) |
+
+### Basic example
+
+```ts
+import "fakelab/runtime";
+
+const users = await fakelab.fetch("User", 10);
+
+console.log(users);
+```
+
 ## Server Command
 
 Run:

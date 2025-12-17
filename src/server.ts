@@ -54,6 +54,8 @@ async function startServer(config: Config, options: ServerCLIOptions) {
 
   setupTemplateEngine(app);
 
+  await config.generateInFileRuntimeConfig(__dirname, options);
+
   const registry = new RouteRegistry(router, config, options);
 
   await registry.register();

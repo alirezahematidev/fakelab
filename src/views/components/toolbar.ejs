@@ -18,28 +18,6 @@
           <input id="count" autocomplete="off" name="count" type="text" />
           <span>Set count field to generate array of data items.</span>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 8px">
-          <div class="form_input inline">
-            <label for="unique_id">Generate unique id</label>
-            <div class="switch" onclick="onChangeGenerateUniqueId()">
-              <input type="checkbox" id="unique_id" name="unique_id" />
-              <span class="slider"></span>
-            </div>
-          </div>
-          <div id="unique_id_key_field" class="form_input" data-visible="false">
-            <input id="unique_id_key" autocomplete="off" name="unique_id_key" type="text" value="_id" placeholder="unique id key" />
-          </div>
-          <div id="unique_strategy_container" class="unique_strategy" data-visible="false">
-            <span class="unique_id_hint">By default unique id is auto incremented integer.</span>
-            <div class="form_input inline">
-              <label for="unique_id_strategy">Generate as uuid</label>
-              <div class="switch" onclick="onHandleUniqueIdStrategy()">
-                <input type="checkbox" id="unique_id_strategy" name="unique_id_strategy" />
-                <span class="slider"></span>
-              </div>
-            </div>
-          </div>
-        </div>
         <div class="form_buttons">
           <button class="form_reset_btn" type="button" onclick="resetForm(event)">Reset</button>
           <button class="form_apply_btn" type="submit">Apply</button>

@@ -1,9 +1,11 @@
 import glob from "fast-glob";
 import path from "node:path";
+import fs from "fs-extra";
 import { access, constants, stat } from "node:fs/promises";
 import { Logger } from "../logger";
-import type { ConfigOptions, FakerEngineOptions, ServerOptions } from "../types";
+import type { ConfigOptions, FakerEngineOptions, ServerCLIOptions, ServerOptions } from "../types";
 import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, type FakerLocale } from "../constants";
+import { RuntimeTemplate } from "./templ";
 
 export class Config {
   constructor(private readonly opts: ConfigOptions) {
@@ -39,6 +41,15 @@ export class Config {
       return { locale: _locale as FakerLocale };
     }
     return { locale: defaultFakerLocale() };
+  }
+
+  async generateInFileRuntimeConfig(dir: string, options: ServerCLIOptions) {
+    const { port, pathPrefix } = this.serverOpts(options.pathPrefix, options.port);
+
+    const sourcePath = path.resolve(dir, "runtime.js");
+    const declarationPath = path.resolve(dir, "runtime.d.ts");
+
+    await Promise.all([fs.writeFile(sourcePath, RuntimeTemplate.source(port, pathPrefix)), fs.writeFile(declarationPath, RuntimeTemplate.decl())]);
   }
 
   private async tryStat(p: string) {

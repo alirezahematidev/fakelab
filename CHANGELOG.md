@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.0.15](///compare/v0.0.14...v0.0.15) (2025-12-17)
+
+### Features
+
+* runtime fetch 58522dd
+
+### Bug Fixes
+
+* add package json to files 3ce808f
+* runtime fetch. remove uid and strategy options f5aef82
+
 ## [0.0.14](///compare/v0.0.13...v0.0.14) (2025-12-14)
 
 ### Bug Fixes

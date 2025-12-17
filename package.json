@@ -43,7 +43,8 @@
   },
   "files": [
     "bin",
-    "lib"
+    "lib",
+    "package.json"
   ],
   "keywords": [
     "typescript",

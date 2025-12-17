@@ -2,6 +2,7 @@ import glob from "fast-glob";
 import path from "node:path";
 import fs from "fs-extra";
 import { access, constants, stat } from "node:fs/promises";
+import isGlob from "is-glob";
 import { Logger } from "../logger";
 import type { ConfigOptions, FakerEngineOptions, ServerCLIOptions, ServerOptions } from "../types";
 import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, type FakerLocale } from "../constants";
@@ -20,7 +21,7 @@ export class Config {
     const result = Array.from(new Set((await Promise.all(sourcePaths.map((src) => this.resolveTSFiles(src)))).flat()));
 
     if (result.length === 0) {
-      Logger.error("No Typescript files found in:\n%s", sourcePaths.join("\n"));
+      Logger.error("No Typescript files found in:\n", sourcePaths.join("\n"));
       process.exit(1);
     }
 
@@ -73,10 +74,22 @@ export class Config {
 
   private resolveSourcePath(sourcePath: string | string[]) {
     const sourcePathToArray = Array.isArray(sourcePath) ? sourcePath : [sourcePath];
-    return sourcePathToArray.map((sp) => path.resolve(sp));
+    return sourcePathToArray.map((sp) => {
+      if (isGlob(sp, { strict: true })) return sp;
+      return path.resolve(sp);
+    });
   }
 
   private async resolveTSFiles(sourcePath: string): Promise<string[]> {
+    // is glob pattern
+    if (isGlob(sourcePath, { strict: true })) {
+      Logger.info("Source (dynamic):", sourcePath);
+      return glob(sourcePath, {
+        absolute: true,
+        ignore: ["**/*.d.ts"],
+      });
+    }
+
     const absPath = path.resolve(sourcePath);
 
     const filePath = absPath.endsWith(".ts") ? absPath : absPath + ".ts";

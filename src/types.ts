@@ -20,10 +20,16 @@ export type FakerEngineOptions = {
   locale?: FakerLocale;
 };
 
+export type DatabaseOptions = {
+  enabled?: boolean;
+  dest?: string;
+};
+
 export type ConfigOptions = {
   sourcePath: string | string[];
   server?: ServerOptions;
   faker?: FakerEngineOptions;
+  database?: DatabaseOptions;
 };
 
 export type UserConfig = {

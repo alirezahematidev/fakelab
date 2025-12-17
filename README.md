@@ -27,7 +27,7 @@ create `fakelab.config.ts` file in the project root. and reference your typescri
 import { defineConfig } from "fakelab";
 
 export default defineConfig({
-  sourcePath: "./types", // can set one/multiple directory(s) or typescript file(s).
+  sourcePath: ["./types", "./fixtures/**/*.ts"], // supports glob pattern
   faker: { locale: "en" }, // optional
   server: { pathPrefix: "api/v1", port: 8080 }, // optional
 });

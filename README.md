@@ -85,7 +85,7 @@ export interface User {
 
 ## Fakelab Runtime
 
-`fakelab/runtime` enables a **global Fakelab object** at runtime, allowing your frontend or Node environment to communicate with the running Fakelab mock server.
+`fakelab/runtime` enables a **global fakelab object** at runtime, allowing your frontend or Node environment to communicate with the running Fakelab mock server.
 
 ## Enabling the runtime (important)
 
@@ -107,7 +107,7 @@ Fetch mock data from the Fakelab server by **typescript interface/type name**.
 ### Signature
 
 ```ts
-fakelab.fetch(name: string, count?: number): Promise<T[]>
+fakelab.fetch(name: string, count?: number): Promise<T>
 ```
 
 ### Parameters
@@ -126,6 +126,8 @@ const users = await fakelab.fetch("User", 10);
 
 console.log(users);
 ```
+
+**NOTE:** Set count to a negative number to get an empty array.
 
 ## Server Command
 

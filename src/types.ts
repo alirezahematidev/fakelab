@@ -1,5 +1,6 @@
 import type { Type } from "ts-morph";
 import type { FakerLocale } from "./constants";
+import type { Low } from "lowdb";
 
 export type EvaluatedFakerArgs = { path: string; args: any } | undefined;
 export type LazyFaker = typeof import("@faker-js/faker").faker;
@@ -38,7 +39,7 @@ export type ForgeOptions = {
 };
 
 export interface IGenerated {
-  readonly entities: Map<string, { type: Type; filepath: string }>;
+  readonly entities: Map<string, { type: Type; filepath: string; __db: Low<unknown[]> }>;
   forge: (type: Type, options: ForgeOptions) => Promise<GeneratorForge>;
 }
 

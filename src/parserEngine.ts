@@ -1,8 +1,10 @@
 import path from "node:path";
 import fs from "fs-extra";
+import { JSONFilePreset } from "lowdb/node";
 import { type InterfaceDeclaration, type TypeAliasDeclaration, Project, type Type } from "ts-morph";
 import type { UserConfig } from "./config";
 import { fileURLToPath } from "node:url";
+import type { Low } from "lowdb";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,19 +57,23 @@ class ParserEngine {
     fs.appendFile(path.resolve(__dirname, "runtime.d.ts"), raw);
   }
 
-  public entities() {
-    const mapping = this.__targets.map((face) => {
-      const name = face.getName().toLowerCase();
-      const type = face.getType();
-      const cwd = this.normalizePath(process.cwd());
-      const directoryPath = this.normalizePath(face.getSourceFile().getDirectoryPath());
+  public async entities() {
+    const mapping = (await Promise.all(
+      this.__targets.map(async (face) => {
+        const name = face.getName().toLowerCase();
+        const type = face.getType();
+        const cwd = this.normalizePath(process.cwd());
+        const directoryPath = this.normalizePath(face.getSourceFile().getDirectoryPath());
 
-      const directory = directoryPath.replace(cwd, "");
-      const baseName = face.getSourceFile().getBaseName();
-      const filepath = `${directory}/${baseName}`;
+        const directory = directoryPath.replace(cwd, "");
+        const baseName = face.getSourceFile().getBaseName();
+        const filepath = `${directory}/${baseName}`;
 
-      return [name, { type, filepath }];
-    }) as Array<[string, { type: Type; filepath: string }]>;
+        const __db = await JSONFilePreset<unknown[]>(path.resolve(__dirname, `db/${name}.json`), []);
+
+        return [name, { type, filepath, __db }];
+      })
+    )) as Array<[string, { type: Type; filepath: string; __db: Low<unknown[]> }]>;
 
     return new Map(mapping);
   }

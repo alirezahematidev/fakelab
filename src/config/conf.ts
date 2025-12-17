@@ -46,9 +46,11 @@ export class Config {
   async generateInFileRuntimeConfig(dir: string, options: ServerCLIOptions) {
     const { port, pathPrefix } = this.serverOpts(options.pathPrefix, options.port);
 
+    const db = path.resolve(dir, "db");
     const sourcePath = path.resolve(dir, "runtime.js");
     const declarationPath = path.resolve(dir, "runtime.d.ts");
 
+    await fs.ensureDir(db);
     await Promise.all([fs.writeFile(sourcePath, RuntimeTemplate.source(port, pathPrefix)), fs.writeFile(declarationPath, RuntimeTemplate.decl())]);
   }
 

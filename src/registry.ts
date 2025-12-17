@@ -76,6 +76,45 @@ class RouteRegistry {
         res.status(500).send(error);
       }
     });
+
+    this.router.get(`/${this.prefix}/__db/:name`, async (req, res) => {
+      try {
+        const name = req.params.name;
+
+        const entity = entities.get(name.toLowerCase());
+
+        if (entity) {
+          await entity.__db.read();
+          res.status(200).json(entity.__db.data);
+        } else {
+          res.status(400).json({ message: "The requested db is not found" });
+        }
+      } catch (error) {
+        res.status(500).send(error);
+      }
+    });
+
+    this.router.post(`/${this.prefix}/__db/:name`, async (req, res) => {
+      try {
+        const name = req.params.name;
+
+        const queries = await this.handleQueries(req);
+
+        const entity = entities.get(name.toLowerCase());
+
+        if (entity) {
+          const { data } = await forge(entity.type, queries);
+
+          await entity.__db.update((items) => items.push(data));
+
+          res.status(200);
+        } else {
+          res.status(400).json({ message: "The mutated db is not found" });
+        }
+      } catch (error) {
+        res.status(500).send(error);
+      }
+    });
   }
 }
 

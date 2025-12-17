@@ -50,11 +50,11 @@ export async function generate(config: Config, options: ServerCLIOptions): Promi
 
   const parser = new ParserEngine(files);
 
+  const entities = await parser.entities();
+
   const faker = await parser.loadFaker(config.fakerOpts(options.locale as FakerLocale));
 
   const generator = new Generator(faker);
-
-  const entities = parser.entities();
 
   async function forge(type: Type, options: ForgeOptions) {
     const resolver = resolveBatch({ each: () => factory(type, generator) });

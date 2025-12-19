@@ -5,6 +5,7 @@ import { type InterfaceDeclaration, type TypeAliasDeclaration, Project, type Typ
 import type { UserConfig } from "./config";
 import { fileURLToPath } from "node:url";
 import type { Low } from "lowdb";
+import type { Config } from "./config/conf";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,7 +15,7 @@ type ParserTypeDeclaration = InterfaceDeclaration | TypeAliasDeclaration;
 class ParserEngine {
   private __targets: ParserTypeDeclaration[];
 
-  constructor(readonly files: string[]) {
+  constructor(readonly files: string[], private readonly config: Config) {
     const project = new Project({ tsConfigFilePath: "tsconfig.json" });
     const sources = project.addSourceFilesAtPaths(files);
     this.__targets = sources.flatMap((source) => {
@@ -53,8 +54,15 @@ class ParserEngine {
       ),
     ];
 
-    const raw = `declare global {\ninterface FakeRuntime {${declarations.join("\n")}\n}\n}`;
-    fs.appendFile(path.resolve(__dirname, "runtime.d.ts"), raw);
+    const { expose } = this.config.browserOpts();
+
+    let raw = `\ninterface Runtime$ {\n${declarations.join("\n")}\n}`;
+
+    if (expose.mode === "global") {
+      raw = `\ndeclare global {${raw}\n}`;
+    }
+
+    fs.appendFile(path.resolve(__dirname, this.config.RUNTIME_DECL_FILENAME), raw);
   }
 
   public async entities() {
@@ -69,11 +77,13 @@ class ParserEngine {
         const baseName = face.getSourceFile().getBaseName();
         const filepath = `${directory}/${baseName}`;
 
-        const __db = await JSONFilePreset<unknown[]>(path.resolve(__dirname, `db/${name}.json`), []);
+        const dbPath = this.config.getDatabaseDirectoryPath();
 
-        return [name, { type, filepath, __db }];
+        const table = await JSONFilePreset<unknown[]>(path.resolve(dbPath, `${name}.json`), []);
+
+        return [name, { type, filepath, table }];
       })
-    )) as Array<[string, { type: Type; filepath: string; __db: Low<unknown[]> }]>;
+    )) as Array<[string, { type: Type; filepath: string; table: Low<unknown[]> }]>;
 
     return new Map(mapping);
   }

@@ -4,15 +4,18 @@ import fs from "fs-extra";
 import { access, constants, stat } from "node:fs/promises";
 import isGlob from "is-glob";
 import { Logger } from "../logger";
-import type { ConfigOptions, FakerEngineOptions, ServerCLIOptions, ServerOptions } from "../types";
-import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, type FakerLocale } from "../constants";
-import { RuntimeTemplate } from "./templ";
+import type { BrowserOptions, ConfigOptions, FakerEngineOptions, ServerCLIOptions, ServerOptions } from "../types";
+import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, RUNTIME_DEFAULT_MODE, RUNTIME_DEFAULT_NAME, type FakerLocale } from "../constants";
+import { BrowserTemplate } from "./browser";
 
 export class Config {
+  readonly RUNTIME_SOURCE_FILENAME = "runtime.js";
+  readonly RUNTIME_DECL_FILENAME = "runtime.d.ts";
   constructor(private readonly opts: ConfigOptions) {
     this.files = this.files.bind(this);
     this.serverOpts = this.serverOpts.bind(this);
     this.fakerOpts = this.fakerOpts.bind(this);
+    this.browserOpts = this.browserOpts.bind(this);
   }
 
   public async files(_sourcePath?: string) {
@@ -35,6 +38,15 @@ export class Config {
     };
   }
 
+  public browserOpts(name?: string, mode?: "module" | "global"): Required<BrowserOptions> {
+    return {
+      expose: {
+        mode: mode || this.opts.browser?.expose?.mode || RUNTIME_DEFAULT_MODE,
+        name: name || this.opts.browser?.expose?.name || RUNTIME_DEFAULT_NAME,
+      },
+    };
+  }
+
   public fakerOpts(locale?: FakerLocale): Required<FakerEngineOptions> {
     const _locale = (locale || this.opts.faker?.locale)?.toLowerCase();
 
@@ -44,15 +56,55 @@ export class Config {
     return { locale: defaultFakerLocale() };
   }
 
-  async generateInFileRuntimeConfig(dir: string, options: ServerCLIOptions) {
+  async generateInFileRuntimeConfig(dirname: string, options: ServerCLIOptions) {
     const { port, pathPrefix } = this.serverOpts(options.pathPrefix, options.port);
 
-    const db = path.resolve(dir, "db");
-    const sourcePath = path.resolve(dir, "runtime.js");
-    const declarationPath = path.resolve(dir, "runtime.d.ts");
+    await this.tryPrepareDatabase();
 
-    await fs.ensureDir(db);
-    await Promise.all([fs.writeFile(sourcePath, RuntimeTemplate.source(port, pathPrefix)), fs.writeFile(declarationPath, RuntimeTemplate.decl())]);
+    const sourcePath = path.resolve(dirname, this.RUNTIME_SOURCE_FILENAME);
+    const declarationPath = path.resolve(dirname, this.RUNTIME_DECL_FILENAME);
+
+    const browser = BrowserTemplate.init(port, pathPrefix, this.opts.browser);
+
+    const source = await browser.prepareSource();
+
+    await Promise.all([fs.writeFile(sourcePath, source), fs.writeFile(declarationPath, browser.declaration())]);
+  }
+
+  getDatabaseDirectoryPath() {
+    const name = this.opts.database?.dest || "db";
+    return path.resolve(process.cwd(), name);
+  }
+
+  private async tryPrepareDatabase() {
+    // default is true
+    const isEnabled = this.opts.database?.enabled ?? true;
+
+    if (isEnabled) {
+      try {
+        const name = this.opts.database?.dest || "db";
+        await fs.ensureDir(this.getDatabaseDirectoryPath());
+
+        await this.modifyGitignoreFile(name);
+      } catch (error) {
+        Logger.error(`Could not create database.\nstack: ${error}`);
+      }
+    } else if (!this.opts.database || !isEnabled) {
+      await fs.rm(this.getDatabaseDirectoryPath(), { force: true, recursive: true });
+    }
+  }
+
+  private async modifyGitignoreFile(name: string) {
+    try {
+      const filepath = path.resolve(process.cwd(), ".gitignore");
+      const content = await fs.readFile(filepath, { encoding: "utf8" });
+
+      if (content.split("\n").some((line) => line.trim() === name.trim())) return;
+
+      await fs.appendFile(filepath, `\n${name}`);
+    } catch (error) {
+      Logger.warn(`Could not modify .gitignore file.\nstack: ${error}`);
+    }
   }
 
   private async tryStat(p: string) {

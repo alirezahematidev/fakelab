@@ -77,24 +77,24 @@ class RouteRegistry {
       }
     });
 
-    this.router.get(`/${this.prefix}/__db/:name`, async (req, res) => {
+    this.router.get(`/${this.prefix}/database/:name`, async (req, res) => {
       try {
         const name = req.params.name;
 
         const entity = entities.get(name.toLowerCase());
 
         if (entity) {
-          await entity.__db.read();
-          res.status(200).json(entity.__db.data);
+          await entity.table.read();
+          res.status(200).json(entity.table.data);
         } else {
-          res.status(400).json({ message: "The requested db is not found" });
+          res.status(400).json({ message: "Database is not found" });
         }
       } catch (error) {
         res.status(500).send(error);
       }
     });
 
-    this.router.post(`/${this.prefix}/__db/:name`, async (req, res) => {
+    this.router.post(`/${this.prefix}/database/:name`, async (req, res) => {
       try {
         const name = req.params.name;
 
@@ -105,7 +105,7 @@ class RouteRegistry {
         if (entity) {
           const { data } = await forge(entity.type, queries);
 
-          await entity.__db.update((items) => items.push(data));
+          await entity.table.update((items) => items.push(data));
 
           res.status(200);
         } else {

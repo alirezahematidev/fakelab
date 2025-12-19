@@ -48,7 +48,7 @@ function resolveBatch<T>({ each }: { each: () => Promise<T> }) {
 export async function generate(config: Config, options: ServerCLIOptions): Promise<IGenerated> {
   const files = await config.files(options.source);
 
-  const parser = new ParserEngine(files);
+  const parser = new ParserEngine(files, config);
 
   const entities = await parser.entities();
 

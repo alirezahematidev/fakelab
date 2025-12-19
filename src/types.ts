@@ -25,11 +25,21 @@ export type DatabaseOptions = {
   dest?: string;
 };
 
+type BrowserExposeOptions = {
+  name: string;
+  mode: "module" | "global";
+};
+
+export type BrowserOptions = {
+  expose?: Partial<BrowserExposeOptions>;
+};
+
 export type ConfigOptions = {
   sourcePath: string | string[];
   server?: ServerOptions;
   faker?: FakerEngineOptions;
   database?: DatabaseOptions;
+  browser?: BrowserOptions;
 };
 
 export type UserConfig = {
@@ -45,7 +55,7 @@ export type ForgeOptions = {
 };
 
 export interface IGenerated {
-  readonly entities: Map<string, { type: Type; filepath: string; __db: Low<unknown[]> }>;
+  readonly entities: Map<string, { type: Type; filepath: string; table: Low<unknown[]> }>;
   forge: (type: Type, options: ForgeOptions) => Promise<GeneratorForge>;
 }
 

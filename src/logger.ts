@@ -1,44 +1,51 @@
+import winston from "winston";
 import pico from "picocolors";
 
-type LogLevel = "info" | "warn" | "error" | "success";
+function colorize(level: string) {
+  switch (level) {
+    case "info":
+      return pico.blueBright(level.toUpperCase());
+    case "error":
+      return pico.redBright(level.toUpperCase());
+    case "warn":
+      return pico.yellowBright(level.toUpperCase());
+    default:
+      return level.toUpperCase();
+  }
+}
+
+const fakeformat = winston.format.printf(({ level, message, timestamp }) => {
+  return `${pico.dim(`[${timestamp}]`)} ${colorize(level)} ${message}`;
+});
+
+const logger = winston.createLogger({
+  format: winston.format.combine(winston.format.timestamp(), winston.format.splat(), fakeformat),
+  transports: [new winston.transports.Console()],
+});
+
+const formatter = new Intl.ListFormat("en", {
+  style: "long",
+  type: "unit",
+});
 
 export class Logger {
-  private static prefix(level: LogLevel) {
-    const time = new Date().toLocaleTimeString();
-
-    const colors = {
-      info: pico.blue,
-      warn: pico.yellow,
-      error: pico.red,
-      success: pico.green,
-      debug: pico.magenta,
-    } as const;
-
-    return colors[level](`[${time}] FAKELAB_${level.toUpperCase()}`);
-  }
-
-  private static log(level: LogLevel, message: string, ...params: unknown[]) {
-    const color = pico.white;
-    const prefix = Logger.prefix(level);
-
-    const fn = level === "error" ? console.error : level === "warn" ? console.warn : console.log;
-
-    fn(prefix, color(message), ...params);
-  }
-
   static info(message: string, ...params: unknown[]) {
-    this.log("info", message, ...params);
+    return logger.info(message, ...params);
   }
-
   static warn(message: string, ...params: unknown[]) {
-    this.log("warn", message, ...params);
+    return logger.warn(message, ...params);
   }
 
   static error(message: string, ...params: unknown[]) {
-    this.log("error", message, ...params);
+    return logger.error(message, ...params);
   }
 
-  static success(message: string, ...params: unknown[]) {
-    this.log("success", message, ...params);
+  static list(items: string[]) {
+    return formatter.format(items);
+  }
+
+  static close() {
+    logger.removeAllListeners();
+    logger.close();
   }
 }

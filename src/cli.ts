@@ -1,16 +1,13 @@
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import fs from "fs-extra";
 import { Command } from "commander";
 import { startServer } from "./server";
 import { loadConfig } from "./load-config";
+import { DIRNAME } from "./file";
 
 const program = new Command();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const pkg = fs.readJSONSync(path.join(__dirname, "../package.json"));
+const pkg = fs.readJSONSync(path.join(DIRNAME, "../package.json"));
 
 program.name(pkg.name).description(pkg.description).version(pkg.version);
 

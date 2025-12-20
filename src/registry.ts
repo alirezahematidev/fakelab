@@ -2,15 +2,12 @@ import express from "express";
 import fs from "fs-extra";
 import path from "node:path";
 import qs from "qs";
-import { fileURLToPath } from "node:url";
 import { generate } from "./factory";
 import type { ServerCLIOptions } from "./types";
 import type { Config } from "./config/conf";
+import { DIRNAME } from "./file";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const pkg = fs.readJSONSync(path.join(__dirname, "../package.json"));
+const pkg = fs.readJSONSync(path.join(DIRNAME, "../package.json"));
 
 class RouteRegistry {
   private prefix: string;

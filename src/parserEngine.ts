@@ -3,12 +3,9 @@ import fs from "fs-extra";
 import { JSONFilePreset } from "lowdb/node";
 import { type InterfaceDeclaration, type TypeAliasDeclaration, Project, type Type } from "ts-morph";
 import type { UserConfig } from "./config";
-import { fileURLToPath } from "node:url";
 import type { Low } from "lowdb";
 import type { Config } from "./config/conf";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { CWD, DIRNAME } from "./file";
 
 type ParserTypeDeclaration = InterfaceDeclaration | TypeAliasDeclaration;
 
@@ -62,7 +59,7 @@ class ParserEngine {
       raw = `\ndeclare global {${raw}\n}`;
     }
 
-    fs.appendFile(path.resolve(__dirname, this.config.RUNTIME_DECL_FILENAME), raw);
+    fs.appendFile(path.resolve(DIRNAME, this.config.RUNTIME_DECL_FILENAME), raw);
   }
 
   public async entities() {
@@ -70,7 +67,7 @@ class ParserEngine {
       this.__targets.map(async (face) => {
         const name = face.getName().toLowerCase();
         const type = face.getType();
-        const cwd = this.normalizePath(process.cwd());
+        const cwd = this.normalizePath(CWD);
         const directoryPath = this.normalizePath(face.getSourceFile().getDirectoryPath());
 
         const directory = directoryPath.replace(cwd, "");

@@ -1,14 +1,21 @@
 import { transform, type TransformOptions } from "esbuild";
-import type { BrowserOptions } from "../types";
+import type { BrowserOptions, DatabaseOptions } from "../types";
 import { GLOBAL_DECL_TEMP, GLOBAL_SOURCE_TEMP, MODULE_DECL_TEMP, MODULE_SOURCE_TEMP } from "./templates";
 import { Logger } from "../logger";
 
 class GlobalBrowserTemplate {
   protected name: string;
+  protected databaseEnabled: "true" | "false";
   protected transformOptions: TransformOptions = { minify: true, platform: "browser", target: "es2022" };
 
-  constructor(protected readonly port: number, protected readonly prefix: string, protected readonly browserOptions?: BrowserOptions) {
+  constructor(
+    protected readonly port: number,
+    protected readonly prefix: string,
+    protected readonly browserOptions?: BrowserOptions,
+    protected readonly dbOptions?: DatabaseOptions
+  ) {
     this.name = this.browserOptions?.expose?.name || "fakelab";
+    this.databaseEnabled = this.dbOptions?.enabled ?? true ? "true" : "false";
   }
 
   protected replacer(input: string, vars: Record<Uppercase<string>, string | number>) {
@@ -22,7 +29,7 @@ class GlobalBrowserTemplate {
   }
 
   protected async prepareGlobalSource() {
-    const input = this.replacer(GLOBAL_SOURCE_TEMP, { NAME: this.name, PORT: this.port, PREFIX: this.prefix });
+    const input = this.replacer(GLOBAL_SOURCE_TEMP, { NAME: this.name, PORT: this.port, PREFIX: this.prefix, ENABLED_COND: this.databaseEnabled });
     try {
       const { code } = await transform(input, this.transformOptions);
 
@@ -39,12 +46,17 @@ class GlobalBrowserTemplate {
 }
 
 export class BrowserTemplate extends GlobalBrowserTemplate {
-  private constructor(protected readonly port: number, protected readonly prefix: string, protected readonly browserOptions?: BrowserOptions) {
-    super(port, prefix, browserOptions);
+  private constructor(
+    protected readonly port: number,
+    protected readonly prefix: string,
+    protected readonly browserOptions?: BrowserOptions,
+    protected readonly dbOptions?: DatabaseOptions
+  ) {
+    super(port, prefix, browserOptions, dbOptions);
   }
 
-  static init(port: number, prefix: string, browserOptions?: BrowserOptions) {
-    const instance = new BrowserTemplate(port, prefix, browserOptions);
+  static init(port: number, prefix: string, browserOptions?: BrowserOptions, dbOptions?: DatabaseOptions) {
+    const instance = new BrowserTemplate(port, prefix, browserOptions, dbOptions);
     return new Proxy(instance, {
       get(target, p: keyof BrowserTemplate) {
         if (p === "prepareSource") {
@@ -61,7 +73,7 @@ export class BrowserTemplate extends GlobalBrowserTemplate {
   }
 
   async prepareSource() {
-    const input = this.replacer(MODULE_SOURCE_TEMP, { NAME: this.name, PORT: this.port, PREFIX: this.prefix });
+    const input = this.replacer(MODULE_SOURCE_TEMP, { NAME: this.name, PORT: this.port, PREFIX: this.prefix, ENABLED_COND: this.databaseEnabled });
     try {
       const { code } = await transform(input, this.transformOptions);
 

@@ -24,7 +24,7 @@ export class Config {
     const result = Array.from(new Set((await Promise.all(sourcePaths.map((src) => this.resolveTSFiles(src)))).flat()));
 
     if (result.length === 0) {
-      Logger.error("No Typescript files found in:\n", sourcePaths.join("\n"));
+      Logger.error("No Typescript files found in: %s", Logger.list(sourcePaths.map((sp) => path.basename(sp))));
       process.exit(1);
     }
 
@@ -64,7 +64,7 @@ export class Config {
     const sourcePath = path.resolve(dirname, this.RUNTIME_SOURCE_FILENAME);
     const declarationPath = path.resolve(dirname, this.RUNTIME_DECL_FILENAME);
 
-    const browser = BrowserTemplate.init(port, pathPrefix, this.opts.browser);
+    const browser = BrowserTemplate.init(port, pathPrefix, this.opts.browser, this.opts.database);
 
     const source = await browser.prepareSource();
 
@@ -76,20 +76,21 @@ export class Config {
     return path.resolve(process.cwd(), name);
   }
 
-  private async tryPrepareDatabase() {
-    // default is true
-    const isEnabled = this.opts.database?.enabled ?? true;
+  databaseEnabled() {
+    return this.opts.database?.enabled ?? true;
+  }
 
-    if (isEnabled) {
+  private async tryPrepareDatabase() {
+    if (this.databaseEnabled()) {
       try {
         const name = this.opts.database?.dest || "db";
         await fs.ensureDir(this.getDatabaseDirectoryPath());
 
         await this.modifyGitignoreFile(name);
       } catch (error) {
-        Logger.error(`Could not create database.\nstack: ${error}`);
+        Logger.error(`Could not create database.`);
       }
-    } else if (!this.opts.database || !isEnabled) {
+    } else if (!this.opts.database || !this.databaseEnabled()) {
       await fs.rm(this.getDatabaseDirectoryPath(), { force: true, recursive: true });
     }
   }
@@ -103,7 +104,7 @@ export class Config {
 
       await fs.appendFile(filepath, `\n${name}`);
     } catch (error) {
-      Logger.warn(`Could not modify .gitignore file.\nstack: ${error}`);
+      Logger.error(`Could not modify .gitignore file.`);
     }
   }
 
@@ -135,7 +136,7 @@ export class Config {
   private async resolveTSFiles(sourcePath: string): Promise<string[]> {
     // is glob pattern
     if (isGlob(sourcePath, { strict: true })) {
-      Logger.info("Source (dynamic):", sourcePath);
+      Logger.info(`source: %s`, sourcePath);
       return glob(sourcePath, {
         absolute: true,
         ignore: ["**/*.d.ts"],
@@ -149,16 +150,17 @@ export class Config {
     const fileStat = await this.tryStat(filePath);
     if (fileStat?.isFile()) {
       if (!(await this.isReadable(filePath))) {
-        throw new Error(`Cannot read file: ${filePath}`);
+        Logger.error("Cannot read file: %s", filePath);
+        process.exit(1);
       }
-      Logger.info("Source:", filePath);
+      Logger.info(`source: %s`, filePath);
       return [filePath];
     }
 
     const dirStat = await this.tryStat(absPath);
 
     if (dirStat?.isDirectory()) {
-      Logger.info("Source:", absPath);
+      Logger.info(`source: %s`, absPath);
 
       return glob("**/*.ts", {
         cwd: absPath,
@@ -167,7 +169,7 @@ export class Config {
       });
     }
 
-    Logger.error(`Invalid source path: ${sourcePath}`);
-    process.exit(1);
+    Logger.warn(`invalid source: [REDACTED]/%s`, path.basename(filePath));
+    return [];
   }
 }

@@ -55,7 +55,7 @@ export type ForgeOptions = {
 };
 
 export interface IGenerated {
-  readonly entities: Map<string, { type: Type; filepath: string; table: Low<unknown[]> }>;
+  readonly entities: Map<string, { type: Type; filepath: string; tablepath: string; table: Low<unknown[]> }>;
   forge: (type: Type, options: ForgeOptions) => Promise<GeneratorForge>;
 }
 

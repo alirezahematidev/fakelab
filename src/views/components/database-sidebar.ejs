@@ -3,21 +3,21 @@
   <div class="sidebar_content">
     <% if (enabled) { %>
     <div class="database_section">
-      <a href="/database" class="database_btn">
-        <img src="/icons/database.svg" width="18px" height="18px" />
-        <span>Database</span>
+      <a href="/" class="database_btn">
+        <img src="/icons/arrow-left.svg" width="18px" height="18px" />
+        <span>Dashboard</span>
       </a>
     </div>
     <% } %>
     <div class="sidebar_content_leading">
       <div class="sidebar_content_indicator_icon"></div>
-      <span class="sidebar_content_title">Found interfaces</span>
+      <span class="sidebar_content_title">Registered entities</span>
     </div>
     <div class="sidebar_content_list">
       <% entities.forEach((entity,name) => { %>
-      <a class="sidebar_content_list_item <%= currentPath === `/${name}` ? 'active' : '' %>" href="/entities/<%= name %>">
+      <a class="sidebar_content_list_item <%= currentPath === `/${name}` ? 'active' : '' %>" href="/database/<%= name %>">
         <span class="item_name"><%= name %></span>
-        <span class="item_filepath"><%= entity.filepath %></span>
+        <span class="item_filepath"><%= entity.tablepath %></span>
       </a>
       <% }) %>
     </div>

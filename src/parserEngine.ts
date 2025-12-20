@@ -62,25 +62,35 @@ class ParserEngine {
     fs.appendFile(path.resolve(DIRNAME, this.config.RUNTIME_DECL_FILENAME), raw);
   }
 
+  private address(directoryPath: string, basename: string) {
+    const cwd = this.normalizePath(CWD);
+
+    const directory = directoryPath.replace(cwd, "");
+
+    return `${directory}/${basename}`;
+  }
+
   public async entities() {
     const mapping = (await Promise.all(
       this.__targets.map(async (face) => {
         const name = face.getName().toLowerCase();
         const type = face.getType();
-        const cwd = this.normalizePath(CWD);
         const directoryPath = this.normalizePath(face.getSourceFile().getDirectoryPath());
+        const basename = face.getSourceFile().getBaseName();
 
-        const directory = directoryPath.replace(cwd, "");
-        const baseName = face.getSourceFile().getBaseName();
-        const filepath = `${directory}/${baseName}`;
+        const filepath = this.address(directoryPath, basename);
 
         const dbPath = this.config.getDatabaseDirectoryPath();
 
-        const table = await JSONFilePreset<unknown[]>(path.resolve(dbPath, `${name}.json`), []);
+        const tablePath = path.resolve(dbPath, `${name}.json`);
 
-        return [name, { type, filepath, table }];
+        const redactedTablePath = this.address(this.normalizePath(dbPath), path.basename(tablePath));
+
+        const table = await JSONFilePreset<unknown[]>(tablePath, []);
+
+        return [name, { type, filepath, table, tablepath: redactedTablePath }];
       })
-    )) as Array<[string, { type: Type; filepath: string; table: Low<unknown[]> }]>;
+    )) as Array<[string, { type: Type; filepath: string; tablepath: string; table: Low<unknown[]> }]>;
 
     return new Map(mapping);
   }

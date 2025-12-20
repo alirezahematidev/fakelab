@@ -40,7 +40,7 @@ export { NAME, database };`;
 
 export const MODULE_DECL_TEMP = `declare function fetch<T extends keyof Runtime$, CT extends number | undefined = undefined>(name: T, count?: CT): Promise<Result$<Runtime$[T], CT>>;
 declare function get<T extends keyof Runtime$>(name: T): Promise<Runtime$[T]>;
-declare function post(name: keyof Runtime$): Promise<void>;
+declare function post<T extends keyof Runtime$>(name: T): Promise<void>;
 declare function enabled(): boolean;
 declare function url(): string;
 declare const NAME: {
@@ -89,7 +89,12 @@ global.NAME.database.post = async function (name) {
   const response = await fetch(global.NAME.url() + "database/" + name, { method: "POST" });
 
   if (!response.ok) throw new Error("[fakelab] Failed to post data to database.");
-};`;
+};
+
+const NAME = Object.freeze(fl);
+const database = Object.freeze(db);
+
+export { NAME, database };`;
 
 export const GLOBAL_DECL_TEMP = `export {};
 

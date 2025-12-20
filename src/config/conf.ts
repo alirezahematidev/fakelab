@@ -2,16 +2,20 @@ import glob from "fast-glob";
 import path from "node:path";
 import fs from "fs-extra";
 import { access, constants, stat } from "node:fs/promises";
+import isGlob from "is-glob";
 import { Logger } from "../logger";
-import type { ConfigOptions, FakerEngineOptions, ServerCLIOptions, ServerOptions } from "../types";
-import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, type FakerLocale } from "../constants";
-import { RuntimeTemplate } from "./templ";
+import type { BrowserOptions, ConfigOptions, FakerEngineOptions, ServerCLIOptions, ServerOptions } from "../types";
+import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, RUNTIME_DEFAULT_MODE, RUNTIME_DEFAULT_NAME, type FakerLocale } from "../constants";
+import { BrowserTemplate } from "./browser";
 
 export class Config {
+  readonly RUNTIME_SOURCE_FILENAME = "runtime.js";
+  readonly RUNTIME_DECL_FILENAME = "runtime.d.ts";
   constructor(private readonly opts: ConfigOptions) {
     this.files = this.files.bind(this);
     this.serverOpts = this.serverOpts.bind(this);
     this.fakerOpts = this.fakerOpts.bind(this);
+    this.browserOpts = this.browserOpts.bind(this);
   }
 
   public async files(_sourcePath?: string) {
@@ -20,7 +24,7 @@ export class Config {
     const result = Array.from(new Set((await Promise.all(sourcePaths.map((src) => this.resolveTSFiles(src)))).flat()));
 
     if (result.length === 0) {
-      Logger.error("No Typescript files found in:\n%s", sourcePaths.join("\n"));
+      Logger.error("No Typescript files found in: %s", Logger.list(sourcePaths.map((sp) => path.basename(sp))));
       process.exit(1);
     }
 
@@ -34,6 +38,15 @@ export class Config {
     };
   }
 
+  public browserOpts(name?: string, mode?: "module" | "global"): Required<BrowserOptions> {
+    return {
+      expose: {
+        mode: mode || this.opts.browser?.expose?.mode || RUNTIME_DEFAULT_MODE,
+        name: name || this.opts.browser?.expose?.name || RUNTIME_DEFAULT_NAME,
+      },
+    };
+  }
+
   public fakerOpts(locale?: FakerLocale): Required<FakerEngineOptions> {
     const _locale = (locale || this.opts.faker?.locale)?.toLowerCase();
 
@@ -43,13 +56,56 @@ export class Config {
     return { locale: defaultFakerLocale() };
   }
 
-  async generateInFileRuntimeConfig(dir: string, options: ServerCLIOptions) {
+  async generateInFileRuntimeConfig(dirname: string, options: ServerCLIOptions) {
     const { port, pathPrefix } = this.serverOpts(options.pathPrefix, options.port);
 
-    const sourcePath = path.resolve(dir, "runtime.js");
-    const declarationPath = path.resolve(dir, "runtime.d.ts");
+    await this.tryPrepareDatabase();
 
-    await Promise.all([fs.writeFile(sourcePath, RuntimeTemplate.source(port, pathPrefix)), fs.writeFile(declarationPath, RuntimeTemplate.decl())]);
+    const sourcePath = path.resolve(dirname, this.RUNTIME_SOURCE_FILENAME);
+    const declarationPath = path.resolve(dirname, this.RUNTIME_DECL_FILENAME);
+
+    const browser = BrowserTemplate.init(port, pathPrefix, this.opts.browser, this.opts.database);
+
+    const source = await browser.prepareSource();
+
+    await Promise.all([fs.writeFile(sourcePath, source), fs.writeFile(declarationPath, browser.declaration())]);
+  }
+
+  getDatabaseDirectoryPath() {
+    const name = this.opts.database?.dest || "db";
+    return path.resolve(process.cwd(), name);
+  }
+
+  databaseEnabled() {
+    return this.opts.database?.enabled ?? false;
+  }
+
+  private async tryPrepareDatabase() {
+    if (this.databaseEnabled()) {
+      try {
+        const name = this.opts.database?.dest || "db";
+        await fs.ensureDir(this.getDatabaseDirectoryPath());
+
+        await this.modifyGitignoreFile(name);
+      } catch (error) {
+        Logger.error(`Could not create database.`);
+      }
+    } else if (!this.opts.database || !this.databaseEnabled()) {
+      await fs.rm(this.getDatabaseDirectoryPath(), { force: true, recursive: true });
+    }
+  }
+
+  private async modifyGitignoreFile(name: string) {
+    try {
+      const filepath = path.resolve(process.cwd(), ".gitignore");
+      const content = await fs.readFile(filepath, { encoding: "utf8" });
+
+      if (content.split("\n").some((line) => line.trim() === name.trim())) return;
+
+      await fs.appendFile(filepath, `\n${name}`);
+    } catch (error) {
+      Logger.error(`Could not modify .gitignore file.`);
+    }
   }
 
   private async tryStat(p: string) {
@@ -71,10 +127,22 @@ export class Config {
 
   private resolveSourcePath(sourcePath: string | string[]) {
     const sourcePathToArray = Array.isArray(sourcePath) ? sourcePath : [sourcePath];
-    return sourcePathToArray.map((sp) => path.resolve(sp));
+    return sourcePathToArray.map((sp) => {
+      if (isGlob(sp, { strict: true })) return sp;
+      return path.resolve(sp);
+    });
   }
 
   private async resolveTSFiles(sourcePath: string): Promise<string[]> {
+    // is glob pattern
+    if (isGlob(sourcePath, { strict: true })) {
+      Logger.info(`source: %s`, sourcePath);
+      return glob(sourcePath, {
+        absolute: true,
+        ignore: ["**/*.d.ts"],
+      });
+    }
+
     const absPath = path.resolve(sourcePath);
 
     const filePath = absPath.endsWith(".ts") ? absPath : absPath + ".ts";
@@ -82,16 +150,17 @@ export class Config {
     const fileStat = await this.tryStat(filePath);
     if (fileStat?.isFile()) {
       if (!(await this.isReadable(filePath))) {
-        throw new Error(`Cannot read file: ${filePath}`);
+        Logger.error("Cannot read file: %s", filePath);
+        process.exit(1);
       }
-      Logger.info("Source:", filePath);
+      Logger.info(`source: %s`, filePath);
       return [filePath];
     }
 
     const dirStat = await this.tryStat(absPath);
 
     if (dirStat?.isDirectory()) {
-      Logger.info("Source:", absPath);
+      Logger.info(`source: %s`, absPath);
 
       return glob("**/*.ts", {
         cwd: absPath,
@@ -100,7 +169,7 @@ export class Config {
       });
     }
 
-    Logger.error(`Invalid source path: ${sourcePath}`);
-    process.exit(1);
+    Logger.warn(`invalid source: [REDACTED]/%s`, path.basename(filePath));
+    return [];
   }
 }

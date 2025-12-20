@@ -48,13 +48,13 @@ function resolveBatch<T>({ each }: { each: () => Promise<T> }) {
 export async function generate(config: Config, options: ServerCLIOptions): Promise<IGenerated> {
   const files = await config.files(options.source);
 
-  const parser = new ParserEngine(files);
+  const parser = new ParserEngine(files, config);
 
-  const faker = await parser.loadFaker(config.fakerOpts(options.locale as FakerLocale));
+  const entities = await parser.entities();
+
+  const faker = await parser.initFakerLibrary(config.fakerOpts(options.locale as FakerLocale));
 
   const generator = new Generator(faker);
-
-  const entities = parser.entities();
 
   async function forge(type: Type, options: ForgeOptions) {
     const resolver = resolveBatch({ each: () => factory(type, generator) });

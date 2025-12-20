@@ -1,18 +1,18 @@
 import path from "node:path";
 import fs from "fs-extra";
+import { JSONFilePreset } from "lowdb/node";
 import { type InterfaceDeclaration, type TypeAliasDeclaration, Project, type Type } from "ts-morph";
 import type { UserConfig } from "./config";
-import { fileURLToPath } from "node:url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import type { Config } from "./config/conf";
+import { CWD, DIRNAME } from "./file";
+import type { Entity } from "./types";
 
 type ParserTypeDeclaration = InterfaceDeclaration | TypeAliasDeclaration;
 
 class ParserEngine {
   private __targets: ParserTypeDeclaration[];
 
-  constructor(readonly files: string[]) {
+  constructor(readonly files: string[], private readonly config: Config) {
     const project = new Project({ tsConfigFilePath: "tsconfig.json" });
     const sources = project.addSourceFilesAtPaths(files);
     this.__targets = sources.flatMap((source) => {
@@ -51,28 +51,51 @@ class ParserEngine {
       ),
     ];
 
-    const raw = `declare global {\ninterface FakeRuntime {${declarations.join("\n")}\n}\n}`;
-    fs.appendFile(path.resolve(__dirname, "runtime.d.ts"), raw);
+    const { expose } = this.config.browserOpts();
+
+    let raw = `\ninterface Runtime$ {\n${declarations.join("\n")}\n}`;
+
+    if (expose.mode === "global") {
+      raw = `\ndeclare global {${raw}\n}`;
+    }
+
+    fs.appendFile(path.resolve(DIRNAME, this.config.RUNTIME_DECL_FILENAME), raw);
   }
 
-  public entities() {
-    const mapping = this.__targets.map((face) => {
-      const name = face.getName().toLowerCase();
-      const type = face.getType();
-      const cwd = this.normalizePath(process.cwd());
-      const directoryPath = this.normalizePath(face.getSourceFile().getDirectoryPath());
+  private address(directoryPath: string, basename: string) {
+    const cwd = this.normalizePath(CWD);
 
-      const directory = directoryPath.replace(cwd, "");
-      const baseName = face.getSourceFile().getBaseName();
-      const filepath = `${directory}/${baseName}`;
+    const directory = directoryPath.replace(cwd, "");
 
-      return [name, { type, filepath }];
-    }) as Array<[string, { type: Type; filepath: string }]>;
+    return `${directory}/${basename}`;
+  }
+
+  public async entities() {
+    const mapping = (await Promise.all(
+      this.__targets.map(async (face) => {
+        const name = face.getName().toLowerCase();
+        const type = face.getType();
+        const directoryPath = this.normalizePath(face.getSourceFile().getDirectoryPath());
+        const basename = face.getSourceFile().getBaseName();
+
+        const filepath = this.address(directoryPath, basename);
+
+        const dbPath = this.config.getDatabaseDirectoryPath();
+
+        const tablePath = path.resolve(dbPath, `${name}.json`);
+
+        const redactedTablePath = this.address(this.normalizePath(dbPath), path.basename(tablePath));
+
+        const table = await JSONFilePreset<unknown[]>(tablePath, []);
+
+        return [name, { type, filepath, table, tablepath: redactedTablePath }];
+      })
+    )) as Array<[string, Entity]>;
 
     return new Map(mapping);
   }
 
-  public async loadFaker(fakerOptions: UserConfig["fakerOptions"]): Promise<import("@faker-js/faker").Faker> {
+  public async initFakerLibrary(fakerOptions: UserConfig["fakerOptions"]): Promise<import("@faker-js/faker").Faker> {
     const { faker } = await import(`@faker-js/faker/locale/${fakerOptions.locale}`);
 
     return faker;

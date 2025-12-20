@@ -27,7 +27,7 @@ create `fakelab.config.ts` file in the project root. and reference your typescri
 import { defineConfig } from "fakelab";
 
 export default defineConfig({
-  sourcePath: "./types", // can set one/multiple directory(s) or typescript file(s).
+  sourcePath: ["./types", "./fixtures/**/*.ts"], // supports glob pattern
   faker: { locale: "en" }, // optional
   server: { pathPrefix: "api/v1", port: 8080 }, // optional
 });
@@ -86,10 +86,6 @@ export interface User {
 ## Fakelab Runtime
 
 `fakelab/runtime` enables a **global fakelab object** at runtime, allowing your frontend or Node environment to communicate with the running Fakelab mock server.
-
-## Enabling the runtime (important)
-
-To enable the global `fakelab` object, you **must import the runtime once** in your application.
 
 ## `fakelab.URL`
 

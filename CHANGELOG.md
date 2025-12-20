@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.17](///compare/v0.0.16...v0.0.17) (2025-12-20)
+
+### Features
+
+* add record view 2add02f
+* browser d7e5d6b
+* database implemented ef9230b
+* logger, browser expose 983ff05
+* sourcePath supports glob pattern 7c0b8da
+* virtual database 4f48976
+
+### Bug Fixes
+
+* remove unused files bf784bf
+
 ## [0.0.16](///compare/v0.0.15...v0.0.16) (2025-12-17)
 
 ## [0.0.15](///compare/v0.0.14...v0.0.15) (2025-12-17)

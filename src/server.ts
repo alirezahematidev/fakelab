@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import ejsLayouts from "express-ejs-layouts";
 import http from "http";
 import "ejs";
@@ -10,16 +9,21 @@ import figlet from "figlet";
 import { Logger } from "./logger";
 import type { ServerCLIOptions } from "./types";
 import type { Config } from "./config/conf";
+import { DIRNAME } from "./file";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+function listenCallback(config: Config, port: number) {
+  if (config.databaseEnabled()) Logger.info(`database: ${config.getDatabaseDirectoryPath()}`);
+  Logger.info(`server: http://localhost:${port}`);
+  console.log(figlet.textSync("FAKELAB"));
+}
 
 function run(server: http.Server, config: Config, options: ServerCLIOptions) {
   const { port } = config.serverOpts(options.pathPrefix, options.port);
 
-  server.listen(port, "localhost", async () => {
-    Logger.info(`Server: http://localhost:${port}`);
-    console.log(await figlet.text("FAKELAB"));
+  server.listen(port, "localhost", () => listenCallback(config, port));
+
+  server.on("close", () => {
+    Logger.close();
   });
 }
 
@@ -32,12 +36,12 @@ function setupApplication(app: express.Express) {
   app.disable("x-powered-by");
   app.use(express.json());
   app.use(cors({ methods: "GET" }));
-  app.use(express.static(__dirname + "/public"));
+  app.use(express.static(DIRNAME + "/public"));
   app.use(xPoweredMiddleware);
 }
 
 function setupTemplateEngine(app: express.Express) {
-  app.set("views", path.join(__dirname, "views"));
+  app.set("views", path.join(DIRNAME, "views"));
   app.set("view engine", "ejs");
 
   app.use(ejsLayouts);
@@ -54,7 +58,7 @@ async function startServer(config: Config, options: ServerCLIOptions) {
 
   setupTemplateEngine(app);
 
-  await config.generateInFileRuntimeConfig(__dirname, options);
+  await config.generateInFileRuntimeConfig(DIRNAME, options);
 
   const registry = new RouteRegistry(router, config, options);
 

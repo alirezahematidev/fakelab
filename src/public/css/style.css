@@ -342,15 +342,52 @@ pre {
   justify-content: center;
   border-radius: 4px;
   border: none;
+  gap: 6px;
+  min-width: fit-content;
+  white-space: nowrap;
   outline: none;
   background: oklch(27.8% 0.033 256.848);
   box-shadow: 0px 0px 2px hsl(220, 43%, 10%);
-  color: #fff;
   height: 32px;
-  padding-inline: 8px;
-  color: oklch(98.463% 0.00181 249.248 / 0.801);
+  padding-inline: 12px;
+  color: #fff;
   font-size: 12px;
   cursor: pointer;
+  transition: background 250ms ease-in-out;
+  &:hover {
+    background: hsl(216, 31%, 19%);
+  }
+}
+
+.toolbar_setting .toolbar_clear_action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  gap: 6px;
+  border: none;
+  min-width: fit-content;
+  white-space: nowrap;
+  outline: none;
+  background: oklch(27.8% 0.033 256.848);
+  box-shadow: 0px 0px 2px hsl(220, 43%, 10%);
+  height: 32px;
+  padding-inline: 12px;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 250ms ease-in-out;
+  &:hover {
+    background: hsl(216, 31%, 19%);
+  }
+}
+
+.toolbar_clear_action.disabled {
+  cursor: default;
+  opacity: 0.5;
+  &:hover {
+    background: oklch(27.8% 0.033 256.848);
+  }
 }
 
 .toolbar_setting .toolbar_setting_overlay {

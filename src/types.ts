@@ -21,7 +21,7 @@ export type FakerEngineOptions = {
 };
 
 export type DatabaseOptions = {
-  enabled?: boolean;
+  enabled: boolean;
   dest?: string;
 };
 
@@ -54,8 +54,15 @@ export type ForgeOptions = {
   count?: string;
 };
 
+export type Entity = {
+  type: Type;
+  filepath: string;
+  tablepath: string;
+  table: Low<unknown[]>;
+};
+
 export interface IGenerated {
-  readonly entities: Map<string, { type: Type; filepath: string; tablepath: string; table: Low<unknown[]> }>;
+  readonly entities: Map<string, Entity>;
   forge: (type: Type, options: ForgeOptions) => Promise<GeneratorForge>;
 }
 

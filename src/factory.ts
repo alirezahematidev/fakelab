@@ -52,7 +52,7 @@ export async function generate(config: Config, options: ServerCLIOptions): Promi
 
   const entities = await parser.entities();
 
-  const faker = await parser.loadFaker(config.fakerOpts(options.locale as FakerLocale));
+  const faker = await parser.initFakerLibrary(config.fakerOpts(options.locale as FakerLocale));
 
   const generator = new Generator(faker);
 

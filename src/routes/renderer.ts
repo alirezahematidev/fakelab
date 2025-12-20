@@ -19,17 +19,14 @@ class RouteRenderer {
   }
 
   index() {
-    return (req: express.Request, res: express.Response) => {
-      const currentPath = req.path;
-
-      res.render("index", { currentPath, entities: this.builder.entities, version: this.pkg.version, enabled: this.config.databaseEnabled() });
+    return (_: express.Request, res: express.Response) => {
+      res.render("index", { name: null, entities: this.builder.entities, version: this.pkg.version, enabled: this.config.databaseEnabled() });
     };
   }
 
   preview(prefix: string) {
     return async (req: express.Request, res: express.Response) => {
       const address = `${req.protocol}://${req.host}/`;
-      const currentPath = req.path;
 
       const name = req.params.name;
 
@@ -46,7 +43,6 @@ class RouteRenderer {
         res.render("preview", {
           name,
           filepath,
-          currentPath,
           address,
           search,
           json,
@@ -60,46 +56,47 @@ class RouteRenderer {
   }
 
   database() {
-    return (req: express.Request, res: express.Response) => {
-      const currentPath = req.path;
+    return (_: express.Request, res: express.Response) => {
+      const enabled = this.config.databaseEnabled();
 
-      res.render("database", { currentPath, entities: this.builder.entities, version: this.pkg.version, enabled: this.config.databaseEnabled() });
+      if (!enabled) res.redirect("/");
+      else res.render("database", { name: null, entities: this.builder.entities, version: this.pkg.version });
     };
   }
 
   table(prefix: string) {
     return async (req: express.Request, res: express.Response) => {
       const address = `${req.protocol}://${req.host}/`;
-      const currentPath = req.path;
 
       const name = req.params.name;
 
       const entity = this.builder.entities.get(name.toLowerCase());
 
-      if (entity) {
-        await entity.table.read();
+      const enabled = this.config.databaseEnabled();
 
-        const json = JSON.stringify(entity.table.data, null, 2);
+      if (!enabled) res.redirect("/");
+      else {
+        if (entity) {
+          await entity.table.read();
 
-        const filepath = entity.filepath;
+          const hasData = entity.table.data.length > 0;
 
-        const add = () => {
-          entity.table.write();
-        };
+          const json = JSON.stringify(entity.table.data, null, 2);
 
-        res.render("table", {
-          name,
-          filepath,
-          currentPath,
-          address,
-          prefix,
-          json,
-          add,
-          entities: this.builder.entities,
-          version: this.pkg.version,
-          enabled: this.config.databaseEnabled(),
-        });
-      } else res.redirect("/database");
+          const filepath = entity.filepath;
+
+          res.render("table", {
+            name,
+            filepath,
+            address,
+            prefix,
+            json,
+            hasData,
+            entities: this.builder.entities,
+            version: this.pkg.version,
+          });
+        } else res.redirect("/database");
+      }
     };
   }
 }

@@ -3,9 +3,9 @@ import fs from "fs-extra";
 import { JSONFilePreset } from "lowdb/node";
 import { type InterfaceDeclaration, type TypeAliasDeclaration, Project, type Type } from "ts-morph";
 import type { UserConfig } from "./config";
-import type { Low } from "lowdb";
 import type { Config } from "./config/conf";
 import { CWD, DIRNAME } from "./file";
+import type { Entity } from "./types";
 
 type ParserTypeDeclaration = InterfaceDeclaration | TypeAliasDeclaration;
 
@@ -90,12 +90,12 @@ class ParserEngine {
 
         return [name, { type, filepath, table, tablepath: redactedTablePath }];
       })
-    )) as Array<[string, { type: Type; filepath: string; tablepath: string; table: Low<unknown[]> }]>;
+    )) as Array<[string, Entity]>;
 
     return new Map(mapping);
   }
 
-  public async loadFaker(fakerOptions: UserConfig["fakerOptions"]): Promise<import("@faker-js/faker").Faker> {
+  public async initFakerLibrary(fakerOptions: UserConfig["fakerOptions"]): Promise<import("@faker-js/faker").Faker> {
     const { faker } = await import(`@faker-js/faker/locale/${fakerOptions.locale}`);
 
     return faker;

@@ -87,10 +87,6 @@ export interface User {
 
 `fakelab/runtime` enables a **global fakelab object** at runtime, allowing your frontend or Node environment to communicate with the running Fakelab mock server.
 
-## Enabling the runtime (important)
-
-To enable the global `fakelab` object, you **must import the runtime once** in your application.
-
 ## `fakelab.URL`
 
 The base URL of the running Fakelab server.

@@ -77,7 +77,7 @@ export class Config {
   }
 
   databaseEnabled() {
-    return this.opts.database?.enabled ?? true;
+    return this.opts.database?.enabled ?? false;
   }
 
   private async tryPrepareDatabase() {

@@ -1,22 +1,20 @@
 <aside class="sidebar">
   <a class="logo" href="/"><img src="/icons/logo.svg" width="20px" height="20px" /><span>Fakelab</span></a>
   <div class="sidebar_content">
-    <% if (enabled) { %>
     <div class="database_section">
       <a href="/" class="database_btn">
         <img src="/icons/arrow-left.svg" width="18px" height="18px" />
         <span>Dashboard</span>
       </a>
     </div>
-    <% } %>
     <div class="sidebar_content_leading">
       <div class="sidebar_content_indicator_icon"></div>
       <span class="sidebar_content_title">Registered entities</span>
     </div>
     <div class="sidebar_content_list">
-      <% entities.forEach((entity,name) => { %>
-      <a class="sidebar_content_list_item <%= currentPath === `/${name}` ? 'active' : '' %>" href="/database/<%= name %>">
-        <span class="item_name"><%= name %></span>
+      <% entities.forEach((entity,entityName) => { %>
+      <a class="sidebar_content_list_item <%= entityName === name ? 'active' : '' %>" href="/database/<%= entityName %>">
+        <span class="item_name"><%= entityName %></span>
         <span class="item_filepath"><%= entity.tablepath %></span>
       </a>
       <% }) %>

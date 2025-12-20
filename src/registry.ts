@@ -39,10 +39,11 @@ class RouteRegistry {
 
     this.router.get(`/${this.prefix}/database/:name`, handler.getTable());
 
-    this.router.post(`/${this.prefix}/database/:name`, handler.mutateTable());
+    this.router.post(`/${this.prefix}/database/:name`, handler.updateTable());
 
     // private
-    this.router.post(`/__database/:name`, handler.addRecord());
+    this.router.post(`/__update/:name`, handler.updateTable(true));
+    this.router.post(`/__delete/:name`, handler.clearTable());
   }
 }
 

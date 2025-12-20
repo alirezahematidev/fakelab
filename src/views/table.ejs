@@ -1,8 +1,8 @@
-<%- include("components/database-sidebar", {currentPath, entities, version, enabled }) %> <% title = name %>
+<%- include("components/database/sidebar", { entities, name, version }) %> <% title = name %>
 <main class="main">
   <header class="header">
     <span class="interface_name"><%= name %></span>
   </header>
-  <div class="preview"><%- include("components/database-toolbar", { address, prefix, name, add }) %><%- include("components/code", { lang: "json", code: json }) %></div>
+  <div class="preview"><%- include("components/database/toolbar", { address, prefix, name, hasData }) %><%- include("components/code", { lang: "json", code: json }) %></div>
 </main>
-<!-- <script src="/js/fakelab.min.js"></script> -->
+<script src="/js/fakelab.min.js"></script>

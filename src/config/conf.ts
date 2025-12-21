@@ -4,18 +4,30 @@ import fs from "fs-extra";
 import { access, constants, stat } from "node:fs/promises";
 import isGlob from "is-glob";
 import { Logger } from "../logger";
-import type { BrowserOptions, ConfigOptions, FakerEngineOptions, ServerCLIOptions, ServerOptions } from "../types";
+import type { BrowserOptions, ConfigOptions, FakerEngineOptions, NetworkOptions, ServerCLIOptions, ServerOptions } from "../types";
 import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, RUNTIME_DEFAULT_MODE, RUNTIME_DEFAULT_NAME, type FakerLocale } from "../constants";
 import { BrowserTemplate } from "./browser";
 
 export class Config {
   readonly RUNTIME_SOURCE_FILENAME = "runtime.js";
   readonly RUNTIME_DECL_FILENAME = "runtime.d.ts";
+
+  readonly FAKELAB_PERSIST_DIR = ".fakelab";
+
+  NETWORK_DEFAULT_OPTIONS: Readonly<NetworkOptions>;
+
   constructor(private readonly opts: ConfigOptions) {
     this.files = this.files.bind(this);
     this.serverOpts = this.serverOpts.bind(this);
     this.fakerOpts = this.fakerOpts.bind(this);
     this.browserOpts = this.browserOpts.bind(this);
+
+    this.NETWORK_DEFAULT_OPTIONS = Object.freeze({
+      delay: this.opts.network?.delay || 0,
+      errorRate: this.opts.network?.errorRate || 0,
+      timeoutRate: this.opts.network?.timeoutRate || 0,
+      offline: this.opts.network?.offline ?? false,
+    });
   }
 
   public async files(_sourcePath?: string) {
@@ -47,11 +59,23 @@ export class Config {
     };
   }
 
-  public fakerOpts(locale?: FakerLocale): Required<FakerEngineOptions> {
-    const _locale = (locale || this.opts.faker?.locale)?.toLowerCase();
+  public networkOpts(): NetworkOptions {
+    const preset = this.opts.network?.preset;
+    const presets = this.opts.network?.presets ?? {};
 
-    if (_locale && FAKER_LOCALES.includes(_locale as FakerLocale)) {
-      return { locale: _locale as FakerLocale };
+    if (!preset || !presets[preset]) return this.NETWORK_DEFAULT_OPTIONS;
+
+    return {
+      ...presets[preset],
+      ...(this.opts.network ?? {}),
+    };
+  }
+
+  public fakerOpts(locale?: FakerLocale): Required<FakerEngineOptions> {
+    const lang = (locale || this.opts.faker?.locale)?.toLowerCase();
+
+    if (lang && FAKER_LOCALES.includes(lang as FakerLocale)) {
+      return { locale: lang as FakerLocale };
     }
     return { locale: defaultFakerLocale() };
   }
@@ -59,7 +83,7 @@ export class Config {
   async generateInFileRuntimeConfig(dirname: string, options: ServerCLIOptions) {
     const { port, pathPrefix } = this.serverOpts(options.pathPrefix, options.port);
 
-    await this.tryPrepareDatabase();
+    await this.initializeDatabase();
 
     const sourcePath = path.resolve(dirname, this.RUNTIME_SOURCE_FILENAME);
     const declarationPath = path.resolve(dirname, this.RUNTIME_DECL_FILENAME);
@@ -80,7 +104,7 @@ export class Config {
     return this.opts.database?.enabled ?? false;
   }
 
-  private async tryPrepareDatabase() {
+  private async initializeDatabase() {
     if (this.databaseEnabled()) {
       try {
         const name = this.opts.database?.dest || "db";

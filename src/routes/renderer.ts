@@ -1,6 +1,6 @@
 import express from "express";
 import qs from "qs";
-import type { IGenerated } from "../types";
+import type { Builder } from "../types";
 import type { Config } from "../config/conf";
 
 interface PackageJson {
@@ -8,7 +8,7 @@ interface PackageJson {
 }
 
 class RouteRenderer {
-  constructor(private readonly builder: IGenerated, private readonly config: Config, private readonly pkg: PackageJson) {}
+  constructor(private readonly builder: Builder, private readonly config: Config, private readonly pkg: PackageJson) {}
 
   private async handleQueries(request: express.Request) {
     const count = request.query.count;
@@ -37,7 +37,7 @@ class RouteRenderer {
       const entity = this.builder.entities.get(name.toLowerCase());
 
       if (entity) {
-        const { json } = await this.builder.forge(entity.type, queries);
+        const { json } = await this.builder.build(entity.type, queries);
         const filepath = entity.filepath;
 
         res.render("preview", {

@@ -1,7 +1,7 @@
 import path from "node:path";
 import fs from "fs-extra";
 import { JSONFilePreset } from "lowdb/node";
-import { type InterfaceDeclaration, type TypeAliasDeclaration, Project, type Type } from "ts-morph";
+import { type InterfaceDeclaration, type TypeAliasDeclaration, Project } from "ts-morph";
 import type { UserConfig } from "./config";
 import type { Config } from "./config/conf";
 import { CWD, DIRNAME } from "./file";

@@ -33,7 +33,7 @@
     "url": "https://github.com/alirezahematidev/fakelab/issues"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsc && tsup",
     "release": "release-it --ci",
     "dev": "node --import=tsx src/cli.ts serve",
     "serve": "yarn build && node lib/cli.js serve"

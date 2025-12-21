@@ -34,12 +34,26 @@ export type BrowserOptions = {
   expose?: Partial<BrowserExposeOptions>;
 };
 
+type NetworkBehaviourOptions = {
+  delay?: number | [number, number];
+  errorRate?: number;
+  timeoutRate?: number;
+  offline?: boolean;
+};
+
+export type NetworkOptions = NetworkBehaviourOptions & {
+  preset?: string;
+  presets?: Record<string, NetworkBehaviourOptions>;
+};
+
 export type ConfigOptions = {
   sourcePath: string | string[];
   server?: ServerOptions;
   faker?: FakerEngineOptions;
   database?: DatabaseOptions;
   browser?: BrowserOptions;
+  network?: NetworkOptions;
+  transform?: Record<string, (data: any) => any | Promise<any>>;
 };
 
 export type UserConfig = {
@@ -48,7 +62,7 @@ export type UserConfig = {
   fakerOptions: Required<FakerEngineOptions>;
 };
 
-type GeneratorForge = { data: unknown; json: string };
+type BuilderResult = { data: unknown; json: string };
 
 export type ForgeOptions = {
   count?: string;
@@ -61,9 +75,9 @@ export type Entity = {
   table: Low<unknown[]>;
 };
 
-export interface IGenerated {
+export interface Builder {
   readonly entities: Map<string, Entity>;
-  forge: (type: Type, options: ForgeOptions) => Promise<GeneratorForge>;
+  build: (type: Type, options: ForgeOptions) => Promise<BuilderResult>;
 }
 
 export type ServerCLIOptions = {

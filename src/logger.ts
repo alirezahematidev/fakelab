@@ -40,6 +40,12 @@ export class Logger {
     return logger.error(message, ...params);
   }
 
+  static debug(message: string, ...params: unknown[]) {
+    if (typeof process === "undefined" || !process.env.DEBUG) return;
+
+    return logger.info(message, ...params);
+  }
+
   static list(items: string[]) {
     return formatter.format(items);
   }

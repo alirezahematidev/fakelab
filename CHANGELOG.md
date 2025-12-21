@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.18](///compare/v0.0.17...v0.0.18) (2025-12-21)
+
+### Features
+
+* network simulator d057db6
+
 ## [0.0.17](///compare/v0.0.16...v0.0.17) (2025-12-20)
 
 ### Features

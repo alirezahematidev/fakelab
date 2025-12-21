@@ -20,7 +20,7 @@ class RouteRenderer {
 
   index() {
     return (_: express.Request, res: express.Response) => {
-      res.render("index", { name: null, entities: this.builder.entities, version: this.pkg.version, enabled: this.config.databaseEnabled() });
+      res.render("index", { name: null, entities: this.builder.entities, version: this.pkg.version, enabled: this.config.database.enabled() });
     };
   }
 
@@ -49,7 +49,7 @@ class RouteRenderer {
           prefix,
           entities: this.builder.entities,
           version: this.pkg.version,
-          enabled: this.config.databaseEnabled(),
+          enabled: this.config.database.enabled(),
         });
       } else res.redirect("/");
     };
@@ -57,7 +57,7 @@ class RouteRenderer {
 
   database() {
     return (_: express.Request, res: express.Response) => {
-      const enabled = this.config.databaseEnabled();
+      const enabled = this.config.database.enabled();
 
       if (!enabled) res.redirect("/");
       else res.render("database", { name: null, entities: this.builder.entities, version: this.pkg.version });
@@ -72,7 +72,7 @@ class RouteRenderer {
 
       const entity = this.builder.entities.get(name.toLowerCase());
 
-      const enabled = this.config.databaseEnabled();
+      const enabled = this.config.database.enabled();
 
       if (!enabled) res.redirect("/");
       else {

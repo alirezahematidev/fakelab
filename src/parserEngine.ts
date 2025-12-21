@@ -14,15 +14,12 @@ class ParserEngine {
 
   constructor(readonly files: string[], private readonly config: Config) {
     const project = new Project({ tsConfigFilePath: "tsconfig.json" });
+
     const sources = project.addSourceFilesAtPaths(files);
+
     this.__targets = sources.flatMap((source) => {
-      // interfaces
       const interfaces = source.getInterfaces();
-
-      // types
       const typeAliases = source.getTypeAliases();
-
-      // export declarations
       const exportDeclarations = source.getExportDeclarations().flatMap((dec) => dec.getNamedExports().flatMap((n) => n.getLocalTargetDeclarations()));
 
       return [...interfaces, ...typeAliases, ...(exportDeclarations as ParserTypeDeclaration[])];
@@ -80,7 +77,7 @@ class ParserEngine {
 
         const filepath = this.address(directoryPath, basename);
 
-        const dbPath = this.config.getDatabaseDirectoryPath();
+        const dbPath = this.config.database.directoryPath();
 
         const tablePath = path.resolve(dbPath, `${name}.json`);
 

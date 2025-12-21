@@ -95,27 +95,28 @@ export class Config {
     await Promise.all([fs.writeFile(sourcePath, source), fs.writeFile(declarationPath, browser.declaration())]);
   }
 
-  getDatabaseDirectoryPath() {
-    const name = this.opts.database?.dest || "db";
-    return path.resolve(process.cwd(), name);
-  }
-
-  databaseEnabled() {
-    return this.opts.database?.enabled ?? false;
+  get database() {
+    return {
+      enabled: () => this.opts.database?.enabled ?? false,
+      directoryPath: () => {
+        const name = this.opts.database?.dest || "db";
+        return path.resolve(process.cwd(), name);
+      },
+    };
   }
 
   private async initializeDatabase() {
-    if (this.databaseEnabled()) {
+    if (this.database.enabled()) {
       try {
         const name = this.opts.database?.dest || "db";
-        await fs.ensureDir(this.getDatabaseDirectoryPath());
+        await fs.ensureDir(this.database.directoryPath());
 
         await this.modifyGitignoreFile(name);
       } catch (error) {
         Logger.error(`Could not create database.`);
       }
-    } else if (!this.opts.database || !this.databaseEnabled()) {
-      await fs.rm(this.getDatabaseDirectoryPath(), { force: true, recursive: true });
+    } else if (!this.opts.database || !this.database.enabled()) {
+      await fs.rm(this.database.directoryPath(), { force: true, recursive: true });
     }
   }
 

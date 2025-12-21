@@ -88,13 +88,13 @@ class Generator {
     for (const part of parts) {
       fn = fn[part];
       if (!fn) {
-        Logger.error("Invalid faker module path:", data.path);
+        Logger.error("Invalid faker module path: (%s)", data.path);
         process.exit(1);
       }
     }
 
     if (typeof fn !== "function") {
-      Logger.error("Unresolvable faker function.", data.path);
+      Logger.error("Unresolvable faker function. (%s)", data.path);
       process.exit(1);
     }
 

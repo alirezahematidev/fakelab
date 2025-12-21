@@ -1,8 +1,7 @@
 import path from "node:path";
 import fs from "fs-extra";
 import { Command } from "commander";
-import { startServer } from "./server";
-import { loadConfig } from "./load-config";
+import { Server } from "./server";
 import { DIRNAME } from "./file";
 
 const program = new Command();
@@ -19,8 +18,7 @@ program
   .option("-p, --port <number>", "server port number", parseInt)
   .option("-l, --locale <char>", "faker custom locale")
   .action(async (options) => {
-    const config = await loadConfig();
-    startServer(config, options);
+    Server.init(options).start();
   });
 
 program.parse();

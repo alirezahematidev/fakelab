@@ -30,8 +30,11 @@ export default defineConfig({
   sourcePath: ["./types", "./fixtures/**/*.ts"], // supports glob pattern
   faker: { locale: "en" }, // optional
   server: { pathPrefix: "api/v1", port: 8080 }, // optional
+  browser: { expose: { mode: "module" } }, // optional
 });
 ```
+
+## Faker Annotations
 
 Fakelab allows you to control generated mock data using JSDoc tags.
 You simply annotate your TypeScript interfaces with the @faker tag, and Fakelab uses the corresponding [faker](https://fakerjs.dev/)
@@ -85,14 +88,14 @@ export interface User {
 
 ## Fakelab Runtime
 
-`fakelab/runtime` enables a **global fakelab object** at runtime, allowing your frontend or Node environment to communicate with the running Fakelab mock server.
+`fakelab/runtime` enables `fakelab` module at runtime, allowing your frontend or Node environment to communicate with the running Fakelab mock server.
 
-## `fakelab.URL`
+## `fakelab.url()`
 
 The base URL of the running Fakelab server.
 
 ```ts
-fakelab.URL;
+fakelab.url();
 // e.g. "http://localhost:50000/api"
 ```
 
@@ -116,6 +119,15 @@ fakelab.fetch(name: string, count?: number): Promise<T>
 ### Basic example
 
 ```ts
+import { fakelab } from "fakelab/runtime";
+
+const users = await fakelab.fetch("User", 10);
+
+console.log(users);
+
+// or
+
+// can be enabled as a global object
 import "fakelab/runtime";
 
 const users = await fakelab.fetch("User", 10);
@@ -124,6 +136,67 @@ console.log(users);
 ```
 
 **NOTE:** Set count to a negative number to get an empty array.
+
+## Database Mode
+
+Fakelab can persist generated mock data to a local database.
+
+Under the hood, Fakelab uses the lightweight [lowdb](https://github.com/typicode/lowdb)
+library for persistence, ensuring fast reads, simple JSON storage, and zero external dependencies.
+
+### Database Options
+
+```ts
+export type DatabaseOptions = {
+  enabled: boolean;
+  dest?: string;
+};
+```
+
+### Basic example
+
+```ts
+export default defineConfig({
+  database: { enabled: true, dest: "db" },
+});
+```
+
+## Network Simulation
+
+Fakelab can simulate real-world network conditions such as latency, random failures, timeouts, and offline mode.
+This is useful for testing loading states, retry logic, and poor network UX without changing frontend code.
+
+### Network Options
+
+```ts
+type NetworkBehaviourOptions = {
+  delay?: number | [number, number];
+  errorRate?: number;
+  timeoutRate?: number;
+  offline?: boolean;
+};
+
+export type NetworkOptions = NetworkBehaviourOptions & {
+  preset?: string;
+  presets?: Record<string, NetworkBehaviourOptions>;
+};
+```
+
+### Basic example
+
+```ts
+export default defineConfig({
+  network: {
+    delay: [300, 1200],
+    errorRate: 0.1,
+    timeoutRate: 0.05,
+    presets: { wifi: { errorRate: 1 } },
+    preset: "wifi",
+  },
+});
+```
+
+**NOTE:** When both inline network options and a `preset` are defined, inline options always take precedence and override the preset values.
 
 ## Server Command
 

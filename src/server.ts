@@ -10,8 +10,13 @@ import { Logger } from "./logger";
 import type { ServerCLIOptions } from "./types";
 import type { Config } from "./config/conf";
 import { DIRNAME } from "./file";
+import { Network } from "./network";
 
 function listenCallback(config: Config, port: number) {
+  try {
+    process.loadEnvFile("./.env.local");
+  } catch (error) {}
+
   if (config.databaseEnabled()) Logger.info(`database: ${config.getDatabaseDirectoryPath()}`);
   Logger.info(`server: http://localhost:${port}`);
   console.log(figlet.textSync("FAKELAB"));
@@ -32,12 +37,13 @@ function xPoweredMiddleware(_: express.Request, res: express.Response, next: exp
   next();
 }
 
-function setupApplication(app: express.Express) {
+function setupApplication(app: express.Express, network: Network) {
   app.disable("x-powered-by");
   app.use(express.json());
   app.use(cors({ methods: "GET" }));
   app.use(express.static(DIRNAME + "/public"));
   app.use(xPoweredMiddleware);
+  app.use(network.middleware);
 }
 
 function setupTemplateEngine(app: express.Express) {
@@ -54,13 +60,15 @@ async function startServer(config: Config, options: ServerCLIOptions) {
 
   const server = http.createServer(app);
 
-  setupApplication(app);
+  const network = Network.initHandlers(config);
+
+  setupApplication(app, network);
 
   setupTemplateEngine(app);
 
   await config.generateInFileRuntimeConfig(DIRNAME, options);
 
-  const registry = new RouteRegistry(router, config, options);
+  const registry = new RouteRegistry(router, config, options, network);
 
   await registry.register();
 

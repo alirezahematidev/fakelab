@@ -1,6 +1,6 @@
 import { Type } from "ts-morph";
 import { Generator } from "./generator";
-import type { EvaluatedFakerArgs, ForgeOptions, IGenerated, ServerCLIOptions } from "./types";
+import type { EvaluatedFakerArgs, ForgeOptions, Builder, ServerCLIOptions } from "./types";
 import { ParserEngine } from "./parserEngine";
 import type { Config } from "./config/conf";
 import type { FakerLocale } from "./constants";
@@ -45,7 +45,7 @@ function resolveBatch<T>({ each }: { each: () => Promise<T> }) {
   return { resolve };
 }
 
-export async function generate(config: Config, options: ServerCLIOptions): Promise<IGenerated> {
+export async function prepareBuilder(config: Config, options: ServerCLIOptions): Promise<Builder> {
   const files = await config.files(options.source);
 
   const parser = new ParserEngine(files, config);
@@ -56,7 +56,7 @@ export async function generate(config: Config, options: ServerCLIOptions): Promi
 
   const generator = new Generator(faker);
 
-  async function forge(type: Type, options: ForgeOptions) {
+  async function build(type: Type, options: ForgeOptions) {
     const resolver = resolveBatch({ each: () => factory(type, generator) });
 
     const data = await (options.count ? resolver.resolve(parseInt(options.count)) : factory(type, generator));
@@ -66,5 +66,5 @@ export async function generate(config: Config, options: ServerCLIOptions): Promi
     return { data, json };
   }
 
-  return { entities, forge };
+  return { entities, build };
 }

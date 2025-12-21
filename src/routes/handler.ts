@@ -1,8 +1,9 @@
 import express from "express";
-import type { IGenerated } from "../types";
+import type { Builder } from "../types";
+import type { Network } from "../network";
 
 class RouteHandler {
-  constructor(private readonly builder: IGenerated) {}
+  constructor(private readonly builder: Builder, private readonly network: Network) {}
 
   private async handleQueries(request: express.Request) {
     const count = request.query.count;
@@ -12,9 +13,34 @@ class RouteHandler {
     return {};
   }
 
+  // returns true if need to block
+  private async applyNetworkHandlers(res: express.Response) {
+    if (this.network.offline()) {
+      const { status, message } = this.network.state("offline");
+      res.status(status).json({ message });
+      return true;
+    }
+
+    // sleep
+    await this.network.wait();
+
+    if (this.network.timeout()) {
+      return true;
+    }
+
+    if (this.network.error()) {
+      const { status, message } = this.network.state("error");
+      res.status(status).json({ message });
+      return true;
+    }
+    return false;
+  }
+
   entity() {
     return async (req: express.Request, res: express.Response) => {
       try {
+        if (await this.applyNetworkHandlers(res)) return;
+
         const name = req.params.name;
 
         const queries = await this.handleQueries(req);
@@ -22,7 +48,7 @@ class RouteHandler {
         const entity = this.builder.entities.get(name.toLowerCase());
 
         if (entity) {
-          const { data } = await this.builder.forge(entity.type, queries);
+          const { data } = await this.builder.build(entity.type, queries);
 
           res.status(200).json(data);
         } else {
@@ -37,6 +63,8 @@ class RouteHandler {
   getTable() {
     return async (req: express.Request, res: express.Response) => {
       try {
+        if (await this.applyNetworkHandlers(res)) return;
+
         const name = req.params.name;
 
         const entity = this.builder.entities.get(name.toLowerCase());
@@ -53,7 +81,33 @@ class RouteHandler {
     };
   }
 
-  updateTable(isPrivate = false) {
+  updateTable() {
+    return async (req: express.Request, res: express.Response) => {
+      try {
+        if (await this.applyNetworkHandlers(res)) return;
+
+        const name = req.params.name;
+
+        const queries = await this.handleQueries(req);
+
+        const entity = this.builder.entities.get(name.toLowerCase());
+
+        if (entity) {
+          const { data } = await this.builder.build(entity.type, queries);
+
+          await entity.table.update((items) => items.push(data));
+          res.status(200).json({ success: true });
+        } else {
+          res.status(400).json({ success: false, message: "The table is not exists" });
+        }
+      } catch (error) {
+        res.status(500).send(error);
+      }
+    };
+  }
+
+  // private
+  _update() {
     return async (req: express.Request, res: express.Response) => {
       try {
         const name = req.params.name;
@@ -63,23 +117,20 @@ class RouteHandler {
         const entity = this.builder.entities.get(name.toLowerCase());
 
         if (entity) {
-          const { data } = await this.builder.forge(entity.type, queries);
+          const { data } = await this.builder.build(entity.type, queries);
 
           await entity.table.update((items) => items.push(data));
-          if (isPrivate) res.status(301).redirect(`/database/${name.toLowerCase()}`);
-          else res.status(200).json({ success: true });
+          res.status(301).redirect(`/database/${name.toLowerCase()}`);
         } else {
-          if (isPrivate) res.status(400).redirect("/database");
-          else res.status(400).json({ success: false, message: "The table is not exists" });
+          res.status(400).redirect("/database");
         }
       } catch (error) {
-        if (isPrivate) res.status(500).redirect("/database");
-        else res.status(500).send(error);
+        res.status(500).redirect("/database");
       }
     };
   }
 
-  clearTable() {
+  _clear() {
     return async (req: express.Request, res: express.Response) => {
       try {
         const name = req.params.name;

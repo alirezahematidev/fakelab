@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.19](///compare/v0.0.18...v0.0.19) (2025-12-22)
+
+### Features
+
+* database seed 1e419fc
+
 ## [0.0.18](///compare/v0.0.17...v0.0.18) (2025-12-21)
 
 ### Features

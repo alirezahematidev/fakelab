@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.20](///compare/v0.0.19...v0.0.20) (2025-12-22)
+
+### Features
+
+* database seeding 2a11430
+
 ## [0.0.19](///compare/v0.0.18...v0.0.19) (2025-12-22)
 
 ### Features

@@ -4,7 +4,7 @@ fl.url = () => "http://localhost:PORT/PREFIX/";
 fl.fetch = async function (name, count) {
   const search = count ? "?count=" + count : "";
 
-  const response = await fetch(fl.url() + name + search);
+  const response = await fetch(fl.url() + name + search, { headers: {"Content-Type": "application/json" }});
 
   if (!response.ok) throw new Error("[fakelab] Failed to retreived mock data.");
 
@@ -17,7 +17,7 @@ db.enabled = () => ENABLED_COND;
 db.get = async function (name) {
   if (!db.enabled()) throw new Error("[fakelab] Database is not enabled.");
 
-  const response = await fetch(NAME.url() + "database/" + name);
+  const response = await fetch(NAME.url() + "database/" + name, { headers: {"Content-Type": "application/json" }});
 
   if (!response.ok) throw new Error("[fakelab] Failed to retreived data from database.");
 
@@ -28,10 +28,18 @@ db.get = async function (name) {
 db.post = async function (name) {
   if (!db.enabled()) throw new Error("[fakelab] Database is not enabled.");
 
-  const response = await fetch(NAME.url() + "database/" + name, { method: "POST" });
+  const response = await fetch(NAME.url() + "database/" + name, { method: "POST", headers: {"Content-Type": "application/json" } });
 
   if (!response.ok) throw new Error("[fakelab] Failed to post data to database.");
 };
+db.seed = async function (name, count) {
+  if (!db.enabled()) throw new Error("[fakelab] Database is not enabled.");
+
+  const response = await fetch(NAME.url() + "database/seed/" + name, { method: "POST", body: JSON.stringify({ count }), headers: {"Content-Type": "application/json" } });
+
+  if (!response.ok) throw new Error("[fakelab] Failed to seed data to database.");
+};
+
 
 const NAME = Object.freeze(fl);
 const database = Object.freeze(db);
@@ -41,6 +49,7 @@ export { NAME, database };`;
 export const MODULE_DECL_TEMP = `declare function fetch<T extends keyof Runtime$, CT extends number | undefined = undefined>(name: T, count?: CT): Promise<Result$<Runtime$[T], CT>>;
 declare function get<T extends keyof Runtime$>(name: T): Promise<Runtime$[T]>;
 declare function post<T extends keyof Runtime$>(name: T): Promise<void>;
+declare function seed<T extends keyof Runtime$>(name: T, count?: number): Promise<void>;
 declare function enabled(): boolean;
 declare function url(): string;
 declare const NAME: {
@@ -50,6 +59,7 @@ declare const NAME: {
 declare const database: {
   get: typeof get;
   post: typeof post;
+  seed: typeof seed;
   enabled: typeof enabled;
 };
 type Result$<T, CT> = CT extends number ? (CT extends 0 ? T : T[]) : T;
@@ -63,7 +73,7 @@ global.NAME.url = () => "http://localhost:PORT/PREFIX/";
 global.NAME.fetch = async function (name, count) {
   const search = count ? "?count=" + count : "";
 
-  const response = await fetch(global.NAME.url() + name + search);
+  const response = await fetch(global.NAME.url() + name + search, { headers: {"Content-Type": "application/json" } });
 
   if (!response.ok) throw new Error("[fakelab] Failed to retreived mock data.");
 
@@ -75,7 +85,7 @@ global.NAME.database.enabled = () => ENABLED_COND;
 global.NAME.database.get = async function (name) {
   if (!global.NAME.database.enabled()) throw new Error("[fakelab] Database is not enabled.");
 
-  const response = await fetch(global.NAME.url() + "database/" + name);
+  const response = await fetch(global.NAME.url() + "database/" + name, { headers: {"Content-Type": "application/json" } });
 
   if (!response.ok) throw new Error("[fakelab] Failed to retreived data from database.");
 
@@ -86,9 +96,16 @@ global.NAME.database.get = async function (name) {
 global.NAME.database.post = async function (name) {
   if (!global.NAME.database.enabled()) throw new Error("[fakelab] Database is not enabled.");
 
-  const response = await fetch(global.NAME.url() + "database/" + name, { method: "POST" });
+  const response = await fetch(global.NAME.url() + "database/" + name, { method: "POST", headers: {"Content-Type": "application/json" } });
 
   if (!response.ok) throw new Error("[fakelab] Failed to post data to database.");
+};
+global.NAME.database.seed = async function (name, count) {
+  if (!global.NAME.database.enabled()) throw new Error("[fakelab] Database is not enabled.");
+
+  const response = await fetch(global.NAME.url() + "database/seed/" + name, { method: "POST", body: JSON.stringify({ count }), headers: {"Content-Type": "application/json" } });
+
+  if (!response.ok) throw new Error("[fakelab] Failed to seed data to database.");
 };
 
 const NAME = Object.freeze(fl);
@@ -103,6 +120,7 @@ declare global {
     enabled(): boolean;
     get<T extends keyof Runtime$>(name: T): Promise<Runtime$[T]>;
     post(name: keyof Runtime$): Promise<void>;
+    seed(name: keyof Runtime$, count?: number): Promise<void>;
   };
   const NAME: {
     fetch<T extends keyof Runtime$, CT extends number | undefined = undefined>(name: T, count?: CT): Promise<Result$<Runtime$[T], CT>>;

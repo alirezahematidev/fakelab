@@ -95,12 +95,36 @@ class RouteHandler {
         if (entity) {
           const { data } = await this.builder.build(entity.type, queries);
 
-          await entity.table.update((items) => items.push(data));
+          await entity.table.update((items) => items.push(...(Array.isArray(data) ? data : [data])));
           res.status(200).json({ success: true });
         } else {
           res.status(400).json({ success: false, message: "The table is not exists" });
         }
       } catch (error) {
+        res.status(500).send(error);
+      }
+    };
+  }
+
+  seedTable() {
+    return async (req: express.Request, res: express.Response) => {
+      try {
+        const count = req.body.count || 1;
+
+        const name = req.params.name;
+
+        const entity = this.builder.entities.get(name.toLowerCase());
+
+        if (entity) {
+          const { data } = await this.builder.build(entity.type, { count });
+
+          await entity.table.update((items) => items.push(...(Array.isArray(data) ? data : [data])));
+          res.status(200).json({ success: true });
+        } else {
+          res.status(400).json({ success: false, message: "The table is not exists" });
+        }
+      } catch (error) {
+        console.log({ error });
         res.status(500).send(error);
       }
     };

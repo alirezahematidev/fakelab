@@ -42,6 +42,8 @@ class RouteRegistry {
 
     this.router.post(`/${this.prefix}/database/:name`, handler.updateTable());
 
+    this.router.post(`/${this.prefix}/database/seed/:name`, handler.seedTable());
+
     // private
     this.router.post(`/__update/:name`, handler._update());
     this.router.post(`/__delete/:name`, handler._clear());

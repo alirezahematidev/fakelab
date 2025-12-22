@@ -4,7 +4,7 @@ import fs from "fs-extra";
 import { access, constants, stat } from "node:fs/promises";
 import isGlob from "is-glob";
 import { Logger } from "../logger";
-import type { BrowserOptions, ConfigOptions, FakerEngineOptions, NetworkOptions, ServerCLIOptions, ServerOptions } from "../types";
+import type { BrowserOptions, ConfigOptions, DatabaseOptions, FakerEngineOptions, NetworkOptions, ServerCLIOptions, ServerOptions } from "../types";
 import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, RUNTIME_DEFAULT_MODE, RUNTIME_DEFAULT_NAME, type FakerLocale } from "../constants";
 import { BrowserTemplate } from "./browser";
 
@@ -59,6 +59,13 @@ export class Config {
     };
   }
 
+  public databaseOpts(): Required<DatabaseOptions> {
+    return {
+      enabled: this.opts.database?.enabled ?? false,
+      dest: this.opts?.database?.dest || "db",
+    };
+  }
+
   public networkOpts(): NetworkOptions {
     const preset = this.opts.network?.preset;
     const presets = this.opts.network?.presets ?? {};
@@ -83,8 +90,6 @@ export class Config {
   async generateInFileRuntimeConfig(dirname: string, options: ServerCLIOptions) {
     const { port, pathPrefix } = this.serverOpts(options.pathPrefix, options.port);
 
-    await this.initializeDatabase();
-
     const sourcePath = path.resolve(dirname, this.RUNTIME_SOURCE_FILENAME);
     const declarationPath = path.resolve(dirname, this.RUNTIME_DECL_FILENAME);
 
@@ -93,44 +98,6 @@ export class Config {
     const source = await browser.prepareSource();
 
     await Promise.all([fs.writeFile(sourcePath, source), fs.writeFile(declarationPath, browser.declaration())]);
-  }
-
-  get database() {
-    return {
-      enabled: () => this.opts.database?.enabled ?? false,
-      directoryPath: () => {
-        const name = this.opts.database?.dest || "db";
-        return path.resolve(process.cwd(), name);
-      },
-    };
-  }
-
-  private async initializeDatabase() {
-    if (this.database.enabled()) {
-      try {
-        const name = this.opts.database?.dest || "db";
-        await fs.ensureDir(this.database.directoryPath());
-
-        await this.modifyGitignoreFile(name);
-      } catch (error) {
-        Logger.error(`Could not create database.`);
-      }
-    } else if (!this.opts.database || !this.database.enabled()) {
-      await fs.rm(this.database.directoryPath(), { force: true, recursive: true });
-    }
-  }
-
-  private async modifyGitignoreFile(name: string) {
-    try {
-      const filepath = path.resolve(process.cwd(), ".gitignore");
-      const content = await fs.readFile(filepath, { encoding: "utf8" });
-
-      if (content.split("\n").some((line) => line.trim() === name.trim())) return;
-
-      await fs.appendFile(filepath, `\n${name}`);
-    } catch (error) {
-      Logger.error(`Could not modify .gitignore file.`);
-    }
   }
 
   private async tryStat(p: string) {

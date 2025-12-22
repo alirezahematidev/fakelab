@@ -4,6 +4,7 @@ import type { EvaluatedFakerArgs, ForgeOptions, Builder, ServerCLIOptions } from
 import { ParserEngine } from "./parserEngine";
 import type { Config } from "./config/conf";
 import type { FakerLocale } from "./constants";
+import type { Database } from "./database";
 
 async function factory(type: Type, generator: Generator, data: (EvaluatedFakerArgs | undefined)[] = [], index = 0): Promise<unknown> {
   if (type.isString()) return generator.string(data[index]);
@@ -45,10 +46,10 @@ function resolveBatch<T>({ each }: { each: () => Promise<T> }) {
   return { resolve };
 }
 
-export async function prepareBuilder(config: Config, options: ServerCLIOptions): Promise<Builder> {
+export async function prepareBuilder(config: Config, options: ServerCLIOptions, database: Database): Promise<Builder> {
   const files = await config.files(options.source);
 
-  const parser = new ParserEngine(files, config);
+  const parser = new ParserEngine(files, config, database);
 
   const entities = await parser.entities();
 

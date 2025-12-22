@@ -6,7 +6,7 @@
 
 - 🚀 Instant mock server
 - 🗂️ Mock from Typescript files
-- 📦 Lightweight ~ 665 kB
+- 📦 Lightweight
 - 🧪 Perfect for local development, prototyping, and frontend testing
 
 ## Installation
@@ -88,9 +88,9 @@ export interface User {
 
 ## Fakelab Runtime
 
-`fakelab/runtime` enables `fakelab` module at runtime, allowing your frontend or Node environment to communicate with the running Fakelab mock server.
+`fakelab/browser` enables `fakelab` module at runtime, allowing your frontend or Node environment to communicate with the running Fakelab mock server.
 
-## `fakelab.url()`
+## `fakelab.url`
 
 The base URL of the running Fakelab server.
 
@@ -119,7 +119,7 @@ fakelab.fetch(name: string, count?: number): Promise<T>
 ### Basic example
 
 ```ts
-import { fakelab } from "fakelab/runtime";
+import { fakelab } from "fakelab/browser";
 
 const users = await fakelab.fetch("User", 10);
 
@@ -128,7 +128,7 @@ console.log(users);
 // or
 
 // can be enabled as a global object
-import "fakelab/runtime";
+import "fakelab/browser";
 
 const users = await fakelab.fetch("User", 10);
 
@@ -159,6 +159,52 @@ export type DatabaseOptions = {
 export default defineConfig({
   database: { enabled: true, dest: "db" },
 });
+
+import { database } from "fakelab/browser";
+
+const users = await database.get("User");
+
+console.log(users);
+
+// or insert fresh data to database
+await database.post("User");
+```
+
+### Database Seeding
+
+Fakelab supports database seeding to initialize mock data.
+
+```ts
+type SeedOptions = {
+  count?: number;
+  strategy?: "reset" | "once" | "merge";
+};
+```
+
+### Options
+
+| Name       | Type                     | Description                                                                   |
+| ---------- | ------------------------ | ----------------------------------------------------------------------------- |
+| `count`    | `number`                 | Number of records to generate                                                 |
+| `strategy` | `reset`, `once`, `merge` | Defines how seeding interacts with existing database data. default is `reset` |
+
+- `reset`: Removes all existing data and recreates it from scratch.
+- `once`: Seeds data only if the database is empty.
+- `merge`: Inserts new records and updates existing ones. The total number of items per table is limited to `1000` records.
+
+### Basic example
+
+```ts
+export default defineConfig({
+  database: { enabled: true, dest: "db" },
+});
+
+import { database } from "fakelab/browser";
+
+await database.seed("User", { count: 10, strategy: "once" });
+
+// to flush the database
+await database.flush("User");
 ```
 
 ## Network Simulation
@@ -231,7 +277,3 @@ npx fakelab serve --pathPrefix /v1 --locale fr
 ## Related
 
 Fakelab is powered by [Fakerjs](https://fakerjs.dev/) library.
-
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)

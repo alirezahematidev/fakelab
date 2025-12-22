@@ -6,13 +6,14 @@ import type { UserConfig } from "./config";
 import type { Config } from "./config/conf";
 import { CWD, DIRNAME } from "./file";
 import type { Entity } from "./types";
+import type { Database } from "./database";
 
 type ParserTypeDeclaration = InterfaceDeclaration | TypeAliasDeclaration;
 
 class ParserEngine {
   private __targets: ParserTypeDeclaration[];
 
-  constructor(readonly files: string[], private readonly config: Config) {
+  constructor(readonly files: string[], private readonly config: Config, private readonly database: Database) {
     const project = new Project({ tsConfigFilePath: "tsconfig.json" });
 
     const sources = project.addSourceFilesAtPaths(files);
@@ -77,7 +78,7 @@ class ParserEngine {
 
         const filepath = this.address(directoryPath, basename);
 
-        const dbPath = this.config.database.directoryPath();
+        const dbPath = this.database.directoryPath();
 
         const tablePath = path.resolve(dbPath, `${name}.json`);
 

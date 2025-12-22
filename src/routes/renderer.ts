@@ -1,14 +1,14 @@
 import express from "express";
 import qs from "qs";
 import type { Builder } from "../types";
-import type { Config } from "../config/conf";
+import type { Database } from "../database";
 
 interface PackageJson {
   version: string;
 }
 
 class RouteRenderer {
-  constructor(private readonly builder: Builder, private readonly config: Config, private readonly pkg: PackageJson) {}
+  constructor(private readonly builder: Builder, private readonly database: Database, private readonly pkg: PackageJson) {}
 
   private async handleQueries(request: express.Request) {
     const count = request.query.count;
@@ -20,7 +20,7 @@ class RouteRenderer {
 
   index() {
     return (_: express.Request, res: express.Response) => {
-      res.render("index", { name: null, entities: this.builder.entities, version: this.pkg.version, enabled: this.config.database.enabled() });
+      res.render("index", { name: null, entities: this.builder.entities, version: this.pkg.version, enabled: this.database.enabled() });
     };
   }
 
@@ -49,15 +49,15 @@ class RouteRenderer {
           prefix,
           entities: this.builder.entities,
           version: this.pkg.version,
-          enabled: this.config.database.enabled(),
+          enabled: this.database.enabled(),
         });
       } else res.redirect("/");
     };
   }
 
-  database() {
+  db() {
     return (_: express.Request, res: express.Response) => {
-      const enabled = this.config.database.enabled();
+      const enabled = this.database.enabled();
 
       if (!enabled) res.redirect("/");
       else res.render("database", { name: null, entities: this.builder.entities, version: this.pkg.version });
@@ -72,7 +72,7 @@ class RouteRenderer {
 
       const entity = this.builder.entities.get(name.toLowerCase());
 
-      const enabled = this.config.database.enabled();
+      const enabled = this.database.enabled();
 
       if (!enabled) res.redirect("/");
       else {

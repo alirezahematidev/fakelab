@@ -1,9 +1,12 @@
 import express from "express";
 import type { Builder } from "../types";
 import type { Network } from "../network";
+import type { Database } from "../database";
 
 class RouteHandler {
-  constructor(private readonly builder: Builder, private readonly network: Network) {}
+  private readonly SEED_MERGE_THRESHOLD = 1000;
+
+  constructor(private readonly builder: Builder, private readonly network: Network, private readonly database: Database) {}
 
   private async handleQueries(request: express.Request) {
     const count = request.query.count;
@@ -63,6 +66,8 @@ class RouteHandler {
   getTable() {
     return async (req: express.Request, res: express.Response) => {
       try {
+        if (!this.database.enabled()) return res.status(403).json({ message: "database is not enabled or initialized." });
+
         if (await this.applyNetworkHandlers(res)) return;
 
         const name = req.params.name;
@@ -84,6 +89,8 @@ class RouteHandler {
   updateTable() {
     return async (req: express.Request, res: express.Response) => {
       try {
+        if (!this.database.enabled()) return res.status(403).json({ message: "database is not enabled or initialized." });
+
         if (await this.applyNetworkHandlers(res)) return;
 
         const name = req.params.name;
@@ -106,10 +113,13 @@ class RouteHandler {
     };
   }
 
-  seedTable() {
+  insert() {
     return async (req: express.Request, res: express.Response) => {
       try {
-        const count = req.body.count || 1;
+        if (!this.database.enabled()) return res.status(403).json({ message: "database is not enabled or initialized." });
+
+        const count = req.body?.count || 1;
+        const strategy = req.body?.strategy || "reset";
 
         const name = req.params.name;
 
@@ -118,7 +128,46 @@ class RouteHandler {
         if (entity) {
           const { data } = await this.builder.build(entity.type, { count });
 
-          await entity.table.update((items) => items.push(...(Array.isArray(data) ? data : [data])));
+          await entity.table.read();
+
+          if (strategy === "once" && entity.table.data.length > 0) {
+            return res.status(200).json({ message: `${name} entity was seeded once before.` });
+          }
+
+          await entity.table.update((items) => {
+            if (strategy !== "merge") {
+              items.length = 0;
+            }
+
+            const insertee = Array.isArray(data) ? data : [data];
+
+            if (items.length + insertee.length < this.SEED_MERGE_THRESHOLD) {
+              items.push(...insertee);
+            }
+          });
+
+          res.status(200).json({ success: true });
+        } else {
+          res.status(400).json({ success: false, message: "The table is not exists" });
+        }
+      } catch (error) {
+        res.status(500).send(error);
+      }
+    };
+  }
+
+  flush() {
+    return async (req: express.Request, res: express.Response) => {
+      try {
+        if (!this.database.enabled()) return res.status(403).json({ message: "database is not enabled or initialized." });
+
+        const name = req.params.name;
+
+        const entity = this.builder.entities.get(name.toLowerCase());
+
+        if (entity) {
+          await entity.table.update((items) => (items.length = 0));
+
           res.status(200).json({ success: true });
         } else {
           res.status(400).json({ success: false, message: "The table is not exists" });
@@ -134,6 +183,8 @@ class RouteHandler {
   _update() {
     return async (req: express.Request, res: express.Response) => {
       try {
+        if (!this.database.enabled()) return res.status(403).json({ message: "database is not enabled or initialized." });
+
         const name = req.params.name;
 
         const queries = await this.handleQueries(req);
@@ -157,6 +208,8 @@ class RouteHandler {
   _clear() {
     return async (req: express.Request, res: express.Response) => {
       try {
+        if (!this.database.enabled()) return res.status(403).json({ message: "database is not enabled or initialized." });
+
         const name = req.params.name;
 
         const entity = this.builder.entities.get(name.toLowerCase());

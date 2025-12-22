@@ -11,6 +11,7 @@ import { Network } from "./network";
 import { loadConfig } from "./load-config";
 import type { Config } from "./config/conf";
 import type { ServerCLIOptions } from "./types";
+import { Database } from "./database";
 
 export class Server {
   private constructor(private readonly options: ServerCLIOptions) {
@@ -37,19 +38,23 @@ export class Server {
 
     const network = Network.initHandlers(config);
 
+    const database = Database.register(config);
+
     this.setupApplication(app, network);
 
     this.setupTemplateEngine(app);
 
     await config.generateInFileRuntimeConfig(DIRNAME, this.options);
 
-    const registry = new RouteRegistry(router, config, this.options, network);
+    await database.initialize();
+
+    const registry = new RouteRegistry(router, config, network, database, this.options);
 
     await registry.register();
 
     app.use(router);
 
-    this.run(server, config, this.options);
+    this.run(server, config, database, this.options);
   }
 
   private setupApplication(app: express.Express, network: Network) {
@@ -69,18 +74,18 @@ export class Server {
     app.set("layout", "layouts/main");
   }
 
-  private listen(config: Config, port: number) {
-    if (config.database.enabled()) Logger.info(`database: %s`, config.database.directoryPath());
+  private listen(database: Database, port: number) {
+    if (database.enabled()) Logger.info(`database: %s`, database.directoryPath());
 
     Logger.info(`server: http://localhost:%d`, port);
 
     console.log(figlet.textSync("FAKELAB"));
   }
 
-  private run(server: http.Server, config: Config, options: ServerCLIOptions) {
+  private run(server: http.Server, config: Config, database: Database, options: ServerCLIOptions) {
     const { port } = config.serverOpts(options.pathPrefix, options.port);
 
-    server.listen(port, "localhost", () => this.listen(config, port));
+    server.listen(port, "localhost", () => this.listen(database, port));
 
     server.on("close", () => {
       Logger.close();

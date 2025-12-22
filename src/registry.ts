@@ -8,30 +8,37 @@ import { DIRNAME } from "./file";
 import { RouteRenderer } from "./routes/renderer";
 import { RouteHandler } from "./routes/handler";
 import type { Network } from "./network";
+import type { Database } from "./database";
 
 const packageJson = fs.readJSONSync(path.join(DIRNAME, "../package.json"));
 
 class RouteRegistry {
   private prefix: string;
 
-  constructor(private readonly router: express.Router, private readonly config: Config, private readonly opts: ServerCLIOptions, private readonly network: Network) {
+  constructor(
+    private readonly router: express.Router,
+    private readonly config: Config,
+    private readonly network: Network,
+    private readonly database: Database,
+    private readonly opts: ServerCLIOptions
+  ) {
     const { pathPrefix } = this.config.serverOpts(this.opts.pathPrefix, this.opts.port);
     this.prefix = pathPrefix;
   }
 
   async register() {
-    const builder = await prepareBuilder(this.config, this.opts);
+    const builder = await prepareBuilder(this.config, this.opts, this.database);
 
-    const renderer = new RouteRenderer(builder, this.config, packageJson);
+    const renderer = new RouteRenderer(builder, this.database, packageJson);
 
-    const handler = new RouteHandler(builder, this.network);
+    const handler = new RouteHandler(builder, this.network, this.database);
 
     // template renderers
     this.router.get("/", renderer.index());
 
     this.router.get("/entities/:name", renderer.preview(this.prefix));
 
-    this.router.get("/database", renderer.database());
+    this.router.get("/database", renderer.db());
 
     this.router.get("/database/:name", renderer.table(this.prefix));
 
@@ -42,7 +49,8 @@ class RouteRegistry {
 
     this.router.post(`/${this.prefix}/database/:name`, handler.updateTable());
 
-    this.router.post(`/${this.prefix}/database/seed/:name`, handler.seedTable());
+    this.router.post(`/${this.prefix}/database/insert/:name`, handler.insert());
+    this.router.post(`/${this.prefix}/database/flush/:name`, handler.flush());
 
     // private
     this.router.post(`/__update/:name`, handler._update());

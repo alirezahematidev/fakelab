@@ -15,12 +15,16 @@ fl.fetch = async function (name, count) {
 
 db.enabled = () => ENABLED_COND;
 
-db.get = async function (name) {
+db.get = async function (name, predicate) {
   const response = await fetch(NAME.url() + "database/" + name);
 
   if (!response.ok) throw new Error("[fakelab] Failed to retreived data from database.");
 
   const result = await response.json();
+
+  if(!Array.isArray(result)) throw new Error("[fakelab] Database table data must be an array.");
+
+  if (typeof predicate === 'function') return result.find(predicate) ?? null;
 
   return result;
 };
@@ -45,8 +49,9 @@ const database = Object.freeze(db);
 
 export { NAME, database };`;
 
-export const MODULE_DECL_TEMP = `declare function fetch<T extends keyof Runtime$, CT extends number | undefined = undefined>(name: T, count?: CT): Promise<Result$<Runtime$[T], CT>>;
+export const MODULE_DECL_TEMP = `declare function fetch<T extends keyof Runtime$, C extends number | undefined = undefined>(name: T, count?: C): Promise<Result$<Runtime$[T], C>>;
 declare function get<T extends keyof Runtime$>(name: T): Promise<Array<Runtime$[T]>>;
+declare function get<T extends keyof Runtime$>(name: T, predicate: (value: Runtime$[T]) => boolean): Promise<Runtime$[T] | null>;
 declare function post<T extends keyof Runtime$>(name: T): Promise<void>;
 declare function seed<T extends keyof Runtime$>(name: T, options?: SeedOptions): Promise<void>;
 declare function flush<T extends keyof Runtime$>(name: T): Promise<void>;
@@ -98,12 +103,16 @@ global.NAME.fetch = async function (name, count) {
   return result;
 };
 global.NAME.database.enabled = () => ENABLED_COND;
-global.NAME.database.get = async function (name) {
+global.NAME.database.get = async function (name, predicate) {
   const response = await fetch(global.NAME.url() + "database/" + name);
 
   if (!response.ok) throw new Error("[fakelab] Failed to retreived data from database.");
 
   const result = await response.json();
+
+  if(!Array.isArray(result)) throw new Error("[fakelab] Database table data must be an array.");
+
+  if (typeof predicate === 'function') return result.find(predicate) ?? null;
 
   return result;
 };
@@ -133,13 +142,14 @@ export const GLOBAL_DECL_TEMP = `export {};
 declare global {
   const database: {
     get<T extends keyof Runtime$>(name: T): Promise<Array<Runtime$[T]>>;
+    get<T extends keyof Runtime$>(name: T, predicate: (value: Runtime$[T]) => boolean): Promise<Runtime$[T] | null>;
     post(name: keyof Runtime$): Promise<void>;
     seed(name: keyof Runtime$, options?: SeedOptions): Promise<void>;
     flush(name: keyof Runtime$): Promise<void>;
     enabled(): boolean;
   };
   const NAME: {
-    fetch<T extends keyof Runtime$, CT extends number | undefined = undefined>(name: T, count?: CT): Promise<Result$<Runtime$[T], CT>>;
+    fetch<T extends keyof Runtime$, C extends number | undefined = undefined>(name: T, count?: C): Promise<Result$<Runtime$[T], C>>;
     url(): string;
     database: typeof database;
   };

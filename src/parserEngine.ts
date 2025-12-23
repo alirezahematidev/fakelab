@@ -65,7 +65,12 @@ class ParserEngine {
 
     const directory = directoryPath.replace(cwd, "");
 
-    return `${directory}/${basename}`;
+    let result = `${directory}/${basename}`;
+
+    if (result.startsWith("/.fakelab")) {
+      result = result.replace("/.fakelab", "");
+    }
+    return result;
   }
 
   public async entities() {
@@ -84,13 +89,15 @@ class ParserEngine {
 
         const redactedTablePath = this.address(this.normalizePath(dbPath), path.basename(tablePath));
 
+        const snapshot = directoryPath.includes("/.fakelab/snapshots");
+
         const table = await JSONFilePreset<unknown[]>(tablePath, []);
 
-        return [name, { type, filepath, table, tablepath: redactedTablePath }];
+        return [name, { type, filepath, snapshot, table, tablepath: redactedTablePath }];
       })
     )) as Array<[string, Entity]>;
 
-    return new Map(mapping);
+    return new Map(mapping.sort((a, b) => Number(a[1].snapshot) - Number(b[1].snapshot)));
   }
 
   public async initFakerLibrary(fakerOptions: UserConfig["fakerOptions"]): Promise<import("@faker-js/faker").Faker> {

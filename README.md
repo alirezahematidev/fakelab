@@ -7,6 +7,8 @@
 - 🚀 Instant mock server
 - 🗂️ Mock from Typescript files
 - 📦 Lightweight
+- 🗄️ Persistent database
+- 📸 Snapshot real APIs into mocks
 - 🧪 Perfect for local development, prototyping, and frontend testing
 
 ## Installation
@@ -149,7 +151,6 @@ library for persistence, ensuring fast reads, simple JSON storage, and zero exte
 ```ts
 export type DatabaseOptions = {
   enabled: boolean;
-  dest?: string;
 };
 ```
 
@@ -157,7 +158,7 @@ export type DatabaseOptions = {
 
 ```ts
 export default defineConfig({
-  database: { enabled: true, dest: "db" },
+  database: { enabled: true },
 });
 
 import { database } from "fakelab/browser";
@@ -196,7 +197,7 @@ type SeedOptions = {
 
 ```ts
 export default defineConfig({
-  database: { enabled: true, dest: "db" },
+  database: { enabled: true },
 });
 
 import { database } from "fakelab/browser";
@@ -205,6 +206,57 @@ await database.seed("User", { count: 10, strategy: "once" });
 
 // to flush the database
 await database.flush("User");
+```
+
+## Snapshot
+
+The snapshot command allows you to capture a real API response and turn it into a reusable mock source.
+
+This is useful when you want to:
+
+- Bootstrap mocks from an existing API
+
+- Freeze API responses for offline development
+
+- Generate realistic mock data without writing schemas manually
+
+### Snapshot Options
+
+```ts
+export type SnapshotOptions = {
+  enabled: boolean;
+};
+```
+
+### Usage
+
+```bash
+# Basic usage
+npx fakelab snapshot [url] [options]
+```
+
+### Options
+
+| Option            | Alias | Description                       |
+| ----------------- | ----- | --------------------------------- |
+| `--name <string>` | `-n`  | name for the captured type        |
+| `--update`        | `-u`  | flag to force update the snapshot |
+
+### Examples
+
+```bash
+# Basic usage
+npx fakelab snapshot https://jsonplaceholder.typicode.com/todos
+
+# consider a name for captured type
+npx fakelab snapshot https://jsonplaceholder.typicode.com/todos --name Todo
+
+# add --update flag to force update the existing snapshot
+npx fakelab snapshot https://jsonplaceholder.typicode.com/todos --name Todo --update
+
+
+# update all existing snapshots
+npx fakelab snapshot
 ```
 
 ## Network Simulation
@@ -246,7 +298,7 @@ export default defineConfig({
 
 ## Server Command
 
-Run:
+Usage:
 
 ```bash
 npx fakelab serve [options]

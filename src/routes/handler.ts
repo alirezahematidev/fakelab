@@ -78,7 +78,7 @@ class RouteHandler {
           await entity.table.read();
           res.status(200).json(entity.table.data);
         } else {
-          res.status(400).json({ message: "The table is not exists" });
+          res.status(400).json({ message: `${name} table is not exists` });
         }
       } catch (error) {
         res.status(500).send(error);
@@ -105,7 +105,7 @@ class RouteHandler {
           await entity.table.update((items) => items.push(...(Array.isArray(data) ? data : [data])));
           res.status(200).json({ success: true });
         } else {
-          res.status(400).json({ success: false, message: "The table is not exists" });
+          res.status(400).json({ success: false, message: `${name} table is not exists` });
         }
       } catch (error) {
         res.status(500).send(error);

@@ -16,6 +16,12 @@ export type ServerOptions = {
    * @default `api`
    */
   pathPrefix?: string;
+
+  /**
+   * Includes the snapshot typescript sources if exists.
+   * @default true
+   */
+  includeSnapshots?: boolean;
 };
 
 export type FakerEngineOptions = {
@@ -32,11 +38,6 @@ export type DatabaseOptions = {
    * When enabled, `POST` mutation will be stored.
    */
   enabled: boolean;
-  /**
-   * Destination directory for the local database files.
-   * @default `<ROOT>/db`
-   */
-  dest?: string;
 };
 
 type BrowserExposeOptions = {
@@ -95,6 +96,13 @@ export type NetworkOptions = NetworkBehaviourOptions & {
   presets?: Record<string, NetworkBehaviourOptions>;
 };
 
+export type SnapshotOptions = {
+  /**
+   * Enables snapshot data sources.
+   */
+  enabled: boolean;
+};
+
 export type ConfigOptions = {
   /**
    * Path or paths to the source files that define the typescript types.
@@ -121,6 +129,10 @@ export type ConfigOptions = {
    * Network simulation configuration.
    */
   network?: NetworkOptions;
+  /**
+   * Snapshot configuration.
+   */
+  snapshot?: SnapshotOptions;
 };
 
 export type UserConfig = {
@@ -139,6 +151,7 @@ export type Entity = {
   type: Type;
   filepath: string;
   tablepath: string;
+  snapshot: boolean;
   table: Low<unknown[]>;
 };
 

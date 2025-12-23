@@ -26,7 +26,7 @@ export class Database {
   }
 
   directoryPath() {
-    return path.resolve(CWD, this.options.dest);
+    return path.resolve(CWD, ".fakelab/db");
   }
 
   async initialize() {
@@ -34,7 +34,7 @@ export class Database {
       try {
         await fs.ensureDir(this.directoryPath());
 
-        await this.modifyGitignoreFile(this.options.dest);
+        await this.modifyGitignoreFile(".fakelab/*");
       } catch (error) {
         Logger.error(`Could not create database.`);
       }

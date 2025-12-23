@@ -4,9 +4,10 @@ import fs from "fs-extra";
 import { access, constants, stat } from "node:fs/promises";
 import isGlob from "is-glob";
 import { Logger } from "../logger";
-import type { BrowserOptions, ConfigOptions, DatabaseOptions, FakerEngineOptions, NetworkOptions, ServerCLIOptions, ServerOptions } from "../types";
+import type { BrowserOptions, ConfigOptions, DatabaseOptions, FakerEngineOptions, NetworkOptions, ServerCLIOptions, ServerOptions, SnapshotOptions } from "../types";
 import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, RUNTIME_DEFAULT_MODE, RUNTIME_DEFAULT_NAME, type FakerLocale } from "../constants";
 import { BrowserTemplate } from "./browser";
+import { CWD } from "../file";
 
 export class Config {
   readonly RUNTIME_SOURCE_FILENAME = "runtime.js";
@@ -33,20 +34,25 @@ export class Config {
   public async files(_sourcePath?: string) {
     const sourcePaths = this.resolveSourcePath(_sourcePath || this.opts.sourcePath);
 
-    const result = Array.from(new Set((await Promise.all(sourcePaths.map((src) => this.resolveTSFiles(src)))).flat()));
+    const resolvedFiles = Array.from(new Set((await Promise.all(sourcePaths.map((src) => this.resolveTSFiles(src)))).flat()));
 
-    if (result.length === 0) {
+    if (this.serverOpts().includeSnapshots) {
+      const snapshots = await this.getSnapshotSourceFiles();
+      resolvedFiles.push(...snapshots);
+    }
+
+    if (resolvedFiles.length === 0) {
       Logger.error("No Typescript files found in: %s", Logger.list(sourcePaths.map((sp) => path.basename(sp))));
       process.exit(1);
     }
-
-    return result;
+    return resolvedFiles;
   }
 
   public serverOpts(prefix?: string, port?: number): Required<ServerOptions> {
     return {
       pathPrefix: prefix || this.opts.server?.pathPrefix || FAKELABE_DEFAULT_PREFIX,
       port: port || this.opts.server?.port || FAKELAB_DEFAULT_PORT,
+      includeSnapshots: this.opts.server?.includeSnapshots ?? true,
     };
   }
 
@@ -62,7 +68,6 @@ export class Config {
   public databaseOpts(): Required<DatabaseOptions> {
     return {
       enabled: this.opts.database?.enabled ?? false,
-      dest: this.opts?.database?.dest || "db",
     };
   }
 
@@ -75,6 +80,12 @@ export class Config {
     return {
       ...presets[preset],
       ...(this.opts.network ?? {}),
+    };
+  }
+
+  public snapshotOpts(): Required<SnapshotOptions> {
+    return {
+      enabled: this.opts.snapshot?.enabled ?? false,
     };
   }
 
@@ -98,6 +109,16 @@ export class Config {
     const source = await browser.prepareSource();
 
     await Promise.all([fs.writeFile(sourcePath, source), fs.writeFile(declarationPath, browser.declaration())]);
+  }
+
+  private async getSnapshotSourceFiles() {
+    const snapshotFiles = await glob(".fakelab/snapshots/**/*.ts", { absolute: true, ignore: ["**/*.d.ts"], cwd: CWD });
+
+    if (snapshotFiles.length > 0) {
+      Logger.info("snapshot(s): %s", Logger.list(snapshotFiles.map((file) => path.parse(file).name)));
+    }
+
+    return snapshotFiles;
   }
 
   private async tryStat(p: string) {

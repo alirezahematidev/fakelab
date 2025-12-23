@@ -42,6 +42,7 @@ class RouteRenderer {
 
         res.render("preview", {
           name,
+          suffix: entity.snapshot ? "(snapshot)" : "",
           filepath,
           address,
           search,

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.21](///compare/v0.0.20...v0.0.21) (2025-12-23)
+
+### Features
+
+* add predicate option to database get function 1b9d82a
+* snapshot bbe37b0
+
 ## [0.0.20](///compare/v0.0.19...v0.0.20) (2025-12-22)
 
 ### Features

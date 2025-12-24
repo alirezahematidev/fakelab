@@ -15,7 +15,6 @@
 
 Check out the [React + TypeScript + Vite example](./examples/react-typescript-vite) to see Fakelab in action!
 
-
 ### Quick Demo
 
 1. Define your types with Faker annotations:
@@ -44,7 +43,7 @@ import { defineConfig } from "fakelab";
 
 export default defineConfig({
   sourcePath: ["./fixtures/**/*.ts"],
-  server: { port: 8080 },
+  server: { port: 50001 },
 });
 ```
 
@@ -93,11 +92,11 @@ create `fakelab.config.ts` file in the project root. and reference your typescri
 import { defineConfig } from "fakelab";
 
 export default defineConfig({
-  sourcePath: ["./fixtures"],
-  server: { port: 50001 },
-  network: { delay: [500, 1500] },
+  sourcePath: ["./types", "./fixtures/**/*.ts"], // supports glob pattern
+  faker: { locale: "en" }, // optional
+  server: { pathPrefix: "api/v1", port: 8080 }, // optional
+  browser: { expose: { mode: "module" } }, // optional
 });
-
 ```
 
 ## Faker Annotations

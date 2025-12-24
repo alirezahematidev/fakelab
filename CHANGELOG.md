@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.22](https://github.com/alirezahematidev/fakelab/compare/v0.0.21...v0.0.22) (2025-12-24)
+
+### Features
+
+* add examples ([f0f4383](https://github.com/alirezahematidev/fakelab/commit/f0f438391a876f3efbb0100bf5683e3eaee8ec9c))
+* CONTRIBUTING docs ([2295a8e](https://github.com/alirezahematidev/fakelab/commit/2295a8e98b62d894e023876948b258b9071f197b))
+
 ## [0.0.21](///compare/v0.0.20...v0.0.21) (2025-12-23)
 
 ### Features

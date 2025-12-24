@@ -11,6 +11,70 @@
 - 📸 Snapshot real APIs into mocks
 - 🧪 Perfect for local development, prototyping, and frontend testing
 
+## Demo
+
+Check out the [React + TypeScript + Vite example](./examples/react-typescript-vite) to see Fakelab in action!
+
+
+### Quick Demo
+
+1. Define your types with Faker annotations:
+
+```typescript
+// fixtures/user.ts
+export interface User {
+  /** @faker string.ulid */
+  id: string;
+  /** @faker person.fullName */
+  name: string;
+  /** @faker location.streetAddress */
+  address: string;
+  /** @faker phone.number */
+  phone: string;
+  /** @faker number.int({min:10,max:80}) */
+  age: number;
+}
+```
+
+2. Configure Fakelab:
+
+```typescript
+// fakelab.config.ts
+import { defineConfig } from "fakelab";
+
+export default defineConfig({
+  sourcePath: ["./fixtures/**/*.ts"],
+  server: { port: 8080 },
+});
+```
+
+3. Run the example:
+
+```bash
+npm run example
+# or
+yarn example
+# or
+pnpm run example
+```
+
+Or start the server manually:
+
+`./examples/react-typescript-vite`:
+
+```bash
+npx fakelab serve
+```
+
+4. Use in your frontend:
+
+```typescript
+import { fakelab } from "fakelab/browser";
+
+const users = await fakelab.fetch("User", 10);
+console.log(users); // Array of 10 mock users
+```
+
 ## Installation
 
 ```bash
@@ -29,11 +93,11 @@ create `fakelab.config.ts` file in the project root. and reference your typescri
 import { defineConfig } from "fakelab";
 
 export default defineConfig({
-  sourcePath: ["./types", "./fixtures/**/*.ts"], // supports glob pattern
-  faker: { locale: "en" }, // optional
-  server: { pathPrefix: "api/v1", port: 8080 }, // optional
-  browser: { expose: { mode: "module" } }, // optional
+  sourcePath: ["./fixtures"],
+  server: { port: 50001 },
+  network: { delay: [500, 1500] },
 });
+
 ```
 
 ## Faker Annotations

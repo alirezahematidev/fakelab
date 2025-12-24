@@ -7,7 +7,7 @@ export class Network {
   private readonly options: NetworkOptions;
 
   private constructor(private readonly config: Config) {
-    this.options = this.config.networkOpts();
+    this.options = this.config.options.network();
 
     this.timeout = this.timeout.bind(this);
     this.error = this.error.bind(this);

@@ -20,14 +20,14 @@ class RouteRegistry {
     private readonly config: Config,
     private readonly network: Network,
     private readonly database: Database,
-    private readonly opts: ServerCLIOptions
+    private readonly serverCLIOptions: ServerCLIOptions
   ) {
-    const { pathPrefix } = this.config.serverOpts(this.opts.pathPrefix, this.opts.port);
+    const { pathPrefix } = this.config.options.server(this.serverCLIOptions.pathPrefix, this.serverCLIOptions.port);
     this.prefix = pathPrefix;
   }
 
   async register() {
-    const builder = await prepareBuilder(this.config, this.opts, this.database);
+    const builder = await prepareBuilder(this.config, this.serverCLIOptions, this.database);
 
     const renderer = new RouteRenderer(builder, this.database, packageJson);
 

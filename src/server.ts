@@ -14,7 +14,7 @@ import type { ServerCLIOptions } from "./types";
 import { Database } from "./database";
 
 export class Server {
-  private constructor(private readonly options: ServerCLIOptions) {
+  private constructor(private readonly serverCLIOptions: ServerCLIOptions) {
     this.start = this.start.bind(this);
     this.xPoweredMiddleware = this.xPoweredMiddleware.bind(this);
     this.setupApplication = this.setupApplication.bind(this);
@@ -44,17 +44,17 @@ export class Server {
 
     this.setupTemplateEngine(app);
 
-    await config.generateInFileRuntimeConfig(DIRNAME, this.options);
+    await config.generateInFileRuntimeConfig(DIRNAME, this.serverCLIOptions);
 
     await database.initialize();
 
-    const registry = new RouteRegistry(router, config, network, database, this.options);
+    const registry = new RouteRegistry(router, config, network, database, this.serverCLIOptions);
 
     await registry.register();
 
     app.use(router);
 
-    this.run(server, config, database, this.options);
+    this.run(server, config, database, this.serverCLIOptions);
   }
 
   private setupApplication(app: express.Express, network: Network) {
@@ -75,21 +75,17 @@ export class Server {
   }
 
   private listen(database: Database, port: number) {
-    if (database.enabled()) Logger.info(`database: %s`, database.directoryPath());
+    if (database.enabled()) Logger.info(`database: %s`, database.DATABASE_DIR);
 
-    Logger.info(`server: http://localhost:%d`, port);
+    Logger.info(`server listening to http://localhost:%d`, port);
 
     console.log(figlet.textSync("FAKELAB"));
   }
 
   private run(server: http.Server, config: Config, database: Database, options: ServerCLIOptions) {
-    const { port } = config.serverOpts(options.pathPrefix, options.port);
+    const { port } = config.options.server(options.pathPrefix, options.port);
 
     server.listen(port, "localhost", () => this.listen(database, port));
-
-    server.on("close", () => {
-      Logger.close();
-    });
   }
 
   private xPoweredMiddleware(_: express.Request, res: express.Response, next: express.NextFunction) {

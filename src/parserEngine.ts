@@ -49,7 +49,7 @@ class ParserEngine {
       ),
     ];
 
-    const { expose } = this.config.browserOpts();
+    const { expose } = this.config.options.browser();
 
     let raw = `\ninterface Runtime$ {\n${declarations.join("\n")}\n}`;
 
@@ -83,11 +83,9 @@ class ParserEngine {
 
         const filepath = this.address(directoryPath, basename);
 
-        const dbPath = this.database.directoryPath();
+        const tablePath = path.resolve(this.database.DATABASE_DIR, `${name}.json`);
 
-        const tablePath = path.resolve(dbPath, `${name}.json`);
-
-        const redactedTablePath = this.address(this.normalizePath(dbPath), path.basename(tablePath));
+        const redactedTablePath = this.address(this.normalizePath(this.database.DATABASE_DIR), path.basename(tablePath));
 
         const snapshot = directoryPath.includes("/.fakelab/snapshots");
 

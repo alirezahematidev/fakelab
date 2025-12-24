@@ -15,6 +15,8 @@ fl.fetch = async function (name, count) {
 
 db.enabled = () => ENABLED_COND;
 
+db.type$ = function (name) {}
+
 db.get = async function (name, predicate) {
   const response = await fetch(NAME.url() + "database/" + name);
 
@@ -50,6 +52,7 @@ const database = Object.freeze(db);
 export { NAME, database };`;
 
 export const MODULE_DECL_TEMP = `declare function fetch<T extends keyof Runtime$, C extends number | undefined = undefined>(name: T, count?: C): Promise<Result$<Runtime$[T], C>>;
+declare function type$<T extends keyof Runtime$>(): Runtime$[T];
 declare function get<T extends keyof Runtime$>(name: T): Promise<Array<Runtime$[T]>>;
 declare function get<T extends keyof Runtime$>(name: T, predicate: (value: Runtime$[T]) => boolean): Promise<Runtime$[T] | null>;
 declare function post<T extends keyof Runtime$>(name: T): Promise<void>;
@@ -86,6 +89,9 @@ type SeedOptions = {
 type Result$<T, CT> = CT extends number ? (CT extends 0 ? T : T[]) : T;
 interface Runtime$ {}
 
+type Typeof<T extends keyof Runtime$> = ReturnType<typeof type$<T>>
+
+export type { Typeof }
 export { NAME, database };`;
 
 export const GLOBAL_SOURCE_TEMP = `global.NAME = {};

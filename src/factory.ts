@@ -53,7 +53,7 @@ export async function prepareBuilder(config: Config, options: ServerCLIOptions, 
 
   const entities = await parser.entities();
 
-  const faker = await parser.initFakerLibrary(config.fakerOpts(options.locale as FakerLocale));
+  const faker = await parser.initFakerLibrary(config.options.faker(options.locale as FakerLocale));
 
   const generator = new Generator(faker);
 

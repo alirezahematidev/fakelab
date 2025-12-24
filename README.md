@@ -42,7 +42,7 @@ export interface User {
 import { defineConfig } from "fakelab";
 
 export default defineConfig({
-  sourcePath: ["./fixtures/**/*.ts"],
+  sourcePath: ["./fixtures"],
   server: { port: 50001 },
 });
 ```
@@ -62,16 +62,11 @@ Or start the server manually:
 `./examples/react-typescript-vite`:
 
 ```bash
-npx fakelab serve
-```
-
-4. Use in your frontend:
-
-```typescript
-import { fakelab } from "fakelab/browser";
-
-const users = await fakelab.fetch("User", 10);
-console.log(users); // Array of 10 mock users
+npm run serve
+# or
+yarn serve
+# or
+pnpm run serve
 ```
 
 ## Installation

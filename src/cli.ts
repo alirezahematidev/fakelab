@@ -28,7 +28,7 @@ program
   .option("-n, --name <char>", "snapshot type name")
   .option("-u, --update", "force update the snapshot")
   .action(async (url, options) => {
-    Snapshot.capture(url, options);
+    Snapshot.init(url, options).capture();
   });
 
 program.parse();

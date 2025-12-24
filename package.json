@@ -34,9 +34,9 @@
   },
   "scripts": {
     "build": "tsc && tsup",
+    "prepack": "yarn build",
     "release": "release-it --ci",
-    "serve": "cross-env NODE_ENV=development yarn build && node lib/cli.js serve",
-    "snapshot": "yarn build && node lib/cli.js snapshot"
+    "example": "node --import=tsx scripts/example.ts"
   },
   "directories": {
     "lib": "./lib"
@@ -63,6 +63,8 @@
     "@types/is-glob": "^4.0.4",
     "@types/node": "^24.10.1",
     "cross-env": "^10.1.0",
+    "execa": "^9.6.1",
+    "inquirer": "^13.1.0",
     "release-it": "^19.0.6",
     "tsup": "^8.5.1",
     "tsx": "^4.21.0",
@@ -87,8 +89,7 @@
     "picocolors": "^1.1.1",
     "qs": "^6.14.0",
     "quicktype-core": "23.2.6",
-    "ts-morph": "^27.0.2",
-    "winston": "^3.19.0"
+    "ts-morph": "^27.0.2"
   },
   "bin": {
     "fakelab": "bin/run.js"

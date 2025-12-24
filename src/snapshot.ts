@@ -1,4 +1,3 @@
-import * as quicktype from "quicktype-core";
 import fs from "fs-extra";
 import { Logger } from "./logger";
 import path from "node:path";
@@ -17,13 +16,17 @@ type SnapshotCLIOptions = {
 };
 
 export class Snapshot {
-  private static readonly TARGET_LANGUAGE = "typescript";
-  private static readonly DEFAULT_TYPE_NAME = "Interface";
-  private static readonly SNAPSHOT_DIR = path.resolve(CWD, ".fakelab/snapshots");
+  private readonly TARGET_LANGUAGE = "typescript";
+  private readonly DEFAULT_TYPE_NAME = "Interface";
+  private readonly SNAPSHOT_DIR = path.resolve(CWD, ".fakelab/snapshots");
 
-  static async fetch(url: string, name?: string): Promise<string> {
-    const jsonInput = quicktype.jsonInputForTargetLanguage(this.TARGET_LANGUAGE);
+  private constructor(private readonly url: string | undefined, private readonly options?: SnapshotCLIOptions) {}
 
+  static init(url: string | undefined, options?: SnapshotCLIOptions) {
+    return new Snapshot(url, options);
+  }
+
+  async fetch(url: string, name?: string): Promise<string> {
     if (this.invalidUrl(url)) {
       Logger.error("snapshot url is invalid.");
       process.exit(1);
@@ -39,16 +42,20 @@ export class Snapshot {
     }
     const meta = await this.readSnapshotMeta();
 
+    const qt = await import("quicktype-core");
+
+    const jsonInput = qt.jsonInputForTargetLanguage(this.TARGET_LANGUAGE);
+
     await jsonInput.addSource({
       name: name || this.suffix((meta?.snapshot?.sources || []).length || 0),
       samples: [input],
     });
 
-    const inputData = new quicktype.InputData();
+    const inputData = new qt.InputData();
 
     inputData.addInput(jsonInput);
 
-    const { lines } = await quicktype.quicktype({
+    const { lines } = await qt.quicktype({
       inputData,
       lang: this.TARGET_LANGUAGE,
       rendererOptions: {
@@ -59,27 +66,21 @@ export class Snapshot {
     return lines.join("\n");
   }
 
-  static async capture(url: string | undefined, options?: SnapshotCLIOptions) {
+  async capture() {
     const config = await loadConfig();
 
-    const { enabled } = config.snapshotOpts();
+    if (!config.options.snapshot().enabled) return;
 
-    if (!enabled) return;
+    if (!this.url) return await this.refetch();
 
-    if (!url) return await this.refetch();
+    const content = await this.fetch(this.url, this.options?.name);
 
-    const content = await this.fetch(url, options?.name);
+    await this.save(this.url, content, this.options);
 
-    await this.save(url, content, options);
-
-    await this.modifyGitignoreFile("./fakelab/*");
+    await this.modifyGitignoreFile(".fakelab/*");
   }
 
-  static directoryPath() {
-    return this.SNAPSHOT_DIR;
-  }
-
-  private static async save(url: string, content: string, options?: SnapshotCLIOptions) {
+  private async save(url: string, content: string, options?: SnapshotCLIOptions) {
     try {
       await fs.ensureDir(this.SNAPSHOT_DIR);
       await fs.ensureFile(path.resolve(this.SNAPSHOT_DIR, "__meta.json"));
@@ -105,12 +106,12 @@ export class Snapshot {
     } catch (error) {}
   }
 
-  private static async write(url: string, content: string, name?: string) {
+  private async write(url: string, content: string, name?: string) {
     await fs.writeFile(path.resolve(this.SNAPSHOT_DIR, this.snapshotName(url)), content);
     await this.updateSnapshotMeta(url, name);
   }
 
-  private static async refetch() {
+  private async refetch() {
     const meta = await this.readSnapshotMeta();
     const sources = [...new Set(meta.snapshot.sources || [])];
 
@@ -133,7 +134,7 @@ export class Snapshot {
     );
   }
 
-  private static async readSnapshotMeta() {
+  private async readSnapshotMeta() {
     let meta: SnapshotMeta = { snapshot: { sources: [] } };
 
     try {
@@ -146,7 +147,7 @@ export class Snapshot {
     return meta;
   }
 
-  private static async updateSnapshotMeta(url: string, name?: string) {
+  private async updateSnapshotMeta(url: string, name?: string) {
     const meta = await this.readSnapshotMeta();
 
     const sources = meta.snapshot.sources || [];
@@ -163,15 +164,15 @@ export class Snapshot {
     await fs.writeJSON(path.resolve(this.SNAPSHOT_DIR, "__meta.json"), meta);
   }
 
-  private static snapshotName(url: string, ext = true) {
+  private snapshotName(url: string, ext = true) {
     return url.replace(/^https?:\/\//, "").replace(/[\/:?.&=#]/g, "_") + (ext ? ".ts" : "");
   }
 
-  private static suffix(suffix: string | number) {
+  private suffix(suffix: string | number) {
     return `${this.DEFAULT_TYPE_NAME}${suffix.toString().toUpperCase()}`;
   }
 
-  private static invalidUrl(url: string): boolean {
+  private invalidUrl(url: string): boolean {
     try {
       new URL(url);
       return false;
@@ -180,7 +181,7 @@ export class Snapshot {
     }
   }
 
-  private static invalidJSON(input: string): boolean {
+  private invalidJSON(input: string): boolean {
     try {
       JSON.parse(input);
       return false;
@@ -189,7 +190,7 @@ export class Snapshot {
     }
   }
 
-  private static async modifyGitignoreFile(name: string) {
+  private async modifyGitignoreFile(name: string) {
     try {
       const filepath = path.resolve(CWD, ".gitignore");
       const content = await fs.readFile(filepath, { encoding: "utf8" });

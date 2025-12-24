@@ -17,26 +17,90 @@ export class Config {
 
   NETWORK_DEFAULT_OPTIONS: Readonly<NetworkOptions>;
 
-  constructor(private readonly opts: ConfigOptions) {
+  constructor(private readonly configOptions: ConfigOptions) {
     this.files = this.files.bind(this);
-    this.serverOpts = this.serverOpts.bind(this);
-    this.fakerOpts = this.fakerOpts.bind(this);
-    this.browserOpts = this.browserOpts.bind(this);
+    this._serverOptions = this._serverOptions.bind(this);
+    this._browserOptions = this._browserOptions.bind(this);
+    this._databaseOptions = this._databaseOptions.bind(this);
+    this._networkOptions = this._networkOptions.bind(this);
+    this._snapshotOptions = this._snapshotOptions.bind(this);
+    this._fakerOptions = this._fakerOptions.bind(this);
 
     this.NETWORK_DEFAULT_OPTIONS = Object.freeze({
-      delay: this.opts.network?.delay || 0,
-      errorRate: this.opts.network?.errorRate || 0,
-      timeoutRate: this.opts.network?.timeoutRate || 0,
-      offline: this.opts.network?.offline ?? false,
+      delay: this.configOptions.network?.delay || 0,
+      errorRate: this.configOptions.network?.errorRate || 0,
+      timeoutRate: this.configOptions.network?.timeoutRate || 0,
+      offline: this.configOptions.network?.offline ?? false,
     });
   }
 
+  public get options() {
+    return {
+      server: this._serverOptions,
+      browser: this._browserOptions,
+      database: this._databaseOptions,
+      network: this._networkOptions,
+      snapshot: this._snapshotOptions,
+      faker: this._fakerOptions,
+    };
+  }
+
+  private _serverOptions(prefix?: string, port?: number): Required<ServerOptions> {
+    return {
+      pathPrefix: prefix || this.configOptions.server?.pathPrefix || FAKELABE_DEFAULT_PREFIX,
+      port: port || this.configOptions.server?.port || FAKELAB_DEFAULT_PORT,
+      includeSnapshots: this.configOptions.server?.includeSnapshots ?? true,
+    };
+  }
+
+  private _browserOptions(name?: string, mode?: "module" | "global"): Required<BrowserOptions> {
+    return {
+      expose: {
+        mode: mode || this.configOptions.browser?.expose?.mode || RUNTIME_DEFAULT_MODE,
+        name: name || this.configOptions.browser?.expose?.name || RUNTIME_DEFAULT_NAME,
+      },
+    };
+  }
+
+  private _databaseOptions(): Required<DatabaseOptions> {
+    return {
+      enabled: this.configOptions.database?.enabled ?? false,
+    };
+  }
+
+  private _networkOptions(): NetworkOptions {
+    const preset = this.configOptions.network?.preset;
+    const presets = this.configOptions.network?.presets ?? {};
+
+    if (!preset || !presets[preset]) return this.NETWORK_DEFAULT_OPTIONS;
+
+    return {
+      ...presets[preset],
+      ...(this.configOptions.network ?? {}),
+    };
+  }
+
+  private _snapshotOptions(): Required<SnapshotOptions> {
+    return {
+      enabled: this.configOptions.snapshot?.enabled ?? false,
+    };
+  }
+
+  private _fakerOptions(locale?: FakerLocale): Required<FakerEngineOptions> {
+    const lang = (locale || this.configOptions.faker?.locale)?.toLowerCase();
+
+    if (lang && FAKER_LOCALES.includes(lang as FakerLocale)) {
+      return { locale: lang as FakerLocale };
+    }
+    return { locale: defaultFakerLocale() };
+  }
+
   public async files(_sourcePath?: string) {
-    const sourcePaths = this.resolveSourcePath(_sourcePath || this.opts.sourcePath);
+    const sourcePaths = this.resolveSourcePath(_sourcePath || this.configOptions.sourcePath);
 
     const resolvedFiles = Array.from(new Set((await Promise.all(sourcePaths.map((src) => this.resolveTSFiles(src)))).flat()));
 
-    if (this.serverOpts().includeSnapshots) {
+    if (this._serverOptions().includeSnapshots) {
       const snapshots = await this.getSnapshotSourceFiles();
       resolvedFiles.push(...snapshots);
     }
@@ -48,63 +112,13 @@ export class Config {
     return resolvedFiles;
   }
 
-  public serverOpts(prefix?: string, port?: number): Required<ServerOptions> {
-    return {
-      pathPrefix: prefix || this.opts.server?.pathPrefix || FAKELABE_DEFAULT_PREFIX,
-      port: port || this.opts.server?.port || FAKELAB_DEFAULT_PORT,
-      includeSnapshots: this.opts.server?.includeSnapshots ?? true,
-    };
-  }
-
-  public browserOpts(name?: string, mode?: "module" | "global"): Required<BrowserOptions> {
-    return {
-      expose: {
-        mode: mode || this.opts.browser?.expose?.mode || RUNTIME_DEFAULT_MODE,
-        name: name || this.opts.browser?.expose?.name || RUNTIME_DEFAULT_NAME,
-      },
-    };
-  }
-
-  public databaseOpts(): Required<DatabaseOptions> {
-    return {
-      enabled: this.opts.database?.enabled ?? false,
-    };
-  }
-
-  public networkOpts(): NetworkOptions {
-    const preset = this.opts.network?.preset;
-    const presets = this.opts.network?.presets ?? {};
-
-    if (!preset || !presets[preset]) return this.NETWORK_DEFAULT_OPTIONS;
-
-    return {
-      ...presets[preset],
-      ...(this.opts.network ?? {}),
-    };
-  }
-
-  public snapshotOpts(): Required<SnapshotOptions> {
-    return {
-      enabled: this.opts.snapshot?.enabled ?? false,
-    };
-  }
-
-  public fakerOpts(locale?: FakerLocale): Required<FakerEngineOptions> {
-    const lang = (locale || this.opts.faker?.locale)?.toLowerCase();
-
-    if (lang && FAKER_LOCALES.includes(lang as FakerLocale)) {
-      return { locale: lang as FakerLocale };
-    }
-    return { locale: defaultFakerLocale() };
-  }
-
   async generateInFileRuntimeConfig(dirname: string, options: ServerCLIOptions) {
-    const { port, pathPrefix } = this.serverOpts(options.pathPrefix, options.port);
+    const { port, pathPrefix } = this._serverOptions(options.pathPrefix, options.port);
 
     const sourcePath = path.resolve(dirname, this.RUNTIME_SOURCE_FILENAME);
     const declarationPath = path.resolve(dirname, this.RUNTIME_DECL_FILENAME);
 
-    const browser = BrowserTemplate.init(port, pathPrefix, this.opts.browser, this.opts.database);
+    const browser = BrowserTemplate.init(port, pathPrefix, this.configOptions.browser, this.configOptions.database);
 
     const source = await browser.prepareSource();
 

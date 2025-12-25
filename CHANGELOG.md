@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.24](https://github.com/alirezahematidev/fakelab/compare/v0.0.23...v0.0.24) (2025-12-25)
+
+### Bug Fixes
+
+* package json description ([9c62494](https://github.com/alirezahematidev/fakelab/commit/9c624941acd571d4197253731393fbd74cff6440))
+* remove blog from website ([96d9989](https://github.com/alirezahematidev/fakelab/commit/96d998939b1155cd476d8a7f9719cec724a864da))
+* website og image ([ed2dff0](https://github.com/alirezahematidev/fakelab/commit/ed2dff0076805b21edfec262d1c1c6adc42cfe16))
+* website snapshot docs ([89bab83](https://github.com/alirezahematidev/fakelab/commit/89bab83d15947a864c7c5589faf6cb7675571979))
+
 ## [0.0.23](https://github.com/alirezahematidev/fakelab/compare/v0.0.22...v0.0.23) (2025-12-25)
 
 ### Features

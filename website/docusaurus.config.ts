@@ -41,7 +41,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    image: "img/docusaurus-social-card.jpg",
+    image: "img/fakelab-og-image.jpg",
     colorMode: {
       respectPrefersColorScheme: true,
       disableSwitch: true,
@@ -97,7 +97,6 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Fakelab.`,
     },
 
     prism: {

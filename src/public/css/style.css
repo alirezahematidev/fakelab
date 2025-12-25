@@ -26,7 +26,7 @@ pre {
   display: flex;
   width: 100%;
   height: 100%;
-  background: oklch(27.8% 0.033 256.848);
+  background: #1e2939;
 }
 
 .sidebar {

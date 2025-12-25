@@ -67,7 +67,7 @@ npx fakelab snapshot
 Snapshots are stored in your project directory:
 
 ```
-.snapshots/
+.fakelab/snapshots/
   ├── api_example_com_todos.ts
   └── api_example_com_users.ts
 ```
@@ -77,7 +77,7 @@ Snapshots are stored in your project directory:
 Fakelab automatically generates TypeScript types from the API response:
 
 ```typescript
-// .snapshots/api_example_com_todos.ts (generated)
+// .fakelab/snapshots/api_example_com_todos.ts (generated)
 export interface Todo {
   userId: number;
   id: number;
@@ -118,7 +118,7 @@ npx fakelab snapshot https://jsonplaceholder.typicode.com/users --name User
 
 ## Integration with Configuration
 
-After creating snapshots, reference them in your configuration:
+After creating snapshots, enable `includeSnapshots` in your server configuration:
 
 ```typescript
 // fakelab.config.ts

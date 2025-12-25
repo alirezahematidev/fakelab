@@ -1,0 +1,91 @@
+:root {
+  --ifm-color-primary: #6366f1;
+  --ifm-color-primary-dark: #4f46e5;
+  --ifm-color-primary-darker: #4338ca;
+  --ifm-color-primary-darkest: #3730a3;
+  --ifm-color-primary-light: #818cf8;
+  --ifm-color-primary-lighter: #a5b4fc;
+  --ifm-color-primary-lightest: #c7d2fe;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(99, 102, 241, 0.1);
+  --ifm-background-color: #ffffff;
+  --ifm-font-color-base: #1f2937;
+  --ifm-heading-color: #111827;
+}
+
+[data-theme="dark"] {
+  --ifm-color-primary: #818cf8;
+  --ifm-color-primary-dark: #6366f1;
+  --ifm-color-primary-darker: #4f46e5;
+  --ifm-color-primary-darkest: #4338ca;
+  --ifm-color-primary-light: #a5b4fc;
+  --ifm-color-primary-lighter: #c7d2fe;
+  --ifm-color-primary-lightest: #e0e7ff;
+  --docusaurus-highlighted-code-line-bg: rgba(129, 140, 248, 0.2);
+  --ifm-background-color: #0f172a;
+  --ifm-font-color-base: #e2e8f0;
+  --ifm-heading-color: #f1f5f9;
+}
+
+.hero--primary {
+  background: linear-gradient(to right bottom, hsl(216, 31%, 17%), hsl(216, 31%, 25%));
+}
+
+[data-theme="dark"] .hero--primary {
+  background: linear-gradient(to right bottom, hsl(216, 31%, 17%), hsl(216, 31%, 25%));
+}
+
+.prism-code {
+  border-radius: 8px;
+}
+
+.button--primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: #fff;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+[data-theme="dark"] .button--primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: #fff;
+}
+
+.hero__title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.hero__subtitle {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  opacity: 0.95;
+  color: #fff;
+}
+
+.features {
+  padding: 4rem 0;
+}
+
+code {
+  border-radius: 4px;
+  padding: 0.2em 0.4em;
+  font-size: 0.9em;
+}
+
+table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+a:hover {
+  text-decoration: none;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.footer--dark {
+  background-color: hsl(216, 31%, 20%);
+  border-top: 1px solid hsl(216, 31%, 22%);
+}

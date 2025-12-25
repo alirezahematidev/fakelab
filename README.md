@@ -2,6 +2,8 @@
 
 ⚡ A fast, easy-config mock API server for frontend developers.
 
+**[Documentation Website](https://alirezahematidev.github.io/fakelab/)**
+
 ## Features
 
 - 🚀 Instant mock server

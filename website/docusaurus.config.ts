@@ -4,21 +4,18 @@ import type * as Preset from "@docusaurus/preset-classic";
 
 const config: Config = {
   title: "Fakelab",
-  tagline: "A easy-config mock server for frontend developers.",
+  tagline: "A fast, easy-config mock API server for frontend developers.",
   favicon: "img/favicon.ico",
 
   future: {
     v4: true,
   },
 
-  // Set the production url of your site here
-  url: "https://your-docusaurus-site.example.com",
-  // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: "/",
-
-  organizationName: "alirezahematidev", // Usually your GitHub org/user name.
-  projectName: "fakelab", // Usually your repo name.
+  url: "https://alirezahematidev.github.io",
+  trailingSlash: false,
+  baseUrl: "/fakelab/",
+  organizationName: "alirezahematidev",
+  projectName: "fakelab",
 
   onBrokenLinks: "throw",
 
@@ -57,6 +54,8 @@ const config: Config = {
     image: "img/docusaurus-social-card.jpg",
     colorMode: {
       respectPrefersColorScheme: true,
+      disableSwitch: true,
+      defaultMode: "dark",
     },
     navbar: {
       title: "Fakelab",
@@ -65,13 +64,59 @@ const config: Config = {
         src: "img/logo.svg",
       },
       items: [
-        { to: "/docs/intro", label: "Docs", position: "left" },
+        {
+          type: "docSidebar",
+          sidebarId: "tutorialSidebar",
+          position: "left",
+          label: "Documentation",
+        },
         {
           href: "https://github.com/alirezahematidev/fakelab",
           label: "GitHub",
           position: "right",
         },
       ],
+    },
+    footer: {
+      style: "dark",
+      links: [
+        {
+          title: "Docs",
+          items: [
+            {
+              label: "Getting Started",
+              to: "/docs/intro",
+            },
+            {
+              label: "Installation",
+              to: "/docs/getting-started/installation",
+            },
+          ],
+        },
+        {
+          title: "Community",
+          items: [
+            {
+              label: "GitHub",
+              href: "https://github.com/alirezahematidev/fakelab",
+            },
+            {
+              label: "Issues",
+              href: "https://github.com/alirezahematidev/fakelab/issues",
+            },
+          ],
+        },
+        {
+          title: "More",
+          items: [
+            {
+              label: "Blog",
+              to: "/blog",
+            },
+          ],
+        },
+      ],
+      copyright: `Copyright © ${new Date().getFullYear()} Fakelab.`,
     },
 
     prism: {

@@ -2,46 +2,74 @@
 sidebar_position: 1
 ---
 
-# Tutorial Intro
+# Introduction
 
-Let's discover **Docusaurus in less than 5 minutes**.
+**Fakelab** is a fast, easy-config mock API server for frontend developers. Generate realistic mock data from your TypeScript interfaces with Faker annotations.
 
-## Getting Started
+## Why Fakelab?
 
-Get started by **creating a new site**.
+- 🚀 **Instant Setup** - Get your mock server running in seconds
+- 🗂️ **TypeScript First** - Use your existing types and interfaces
+- 📦 **Lightweight** - Minimal dependencies, fast performance
+- 🗄️ **Persistent Database** - Built-in database mode with seeding
+- 📸 **Snapshot Real APIs** - Capture real API responses as mocks
+- 🧪 **Perfect for Development** - Ideal for local development, prototyping, and frontend testing
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+## Quick Start
 
-### What you'll need
-
-- [Node.js](https://nodejs.org/en/download/) version 20.0 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
-
-## Generate a new site
-
-Generate a new Docusaurus site using the **classic template**.
-
-The classic template will automatically be added to your project after you run the command:
+1. **Install Fakelab:**
 
 ```bash
-npm init docusaurus@latest my-website classic
+npm install fakelab --save-dev
+# or
+pnpm add -D fakelab
+# or
+yarn add -D fakelab
 ```
 
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
+2. **Create a configuration file:**
 
-The command also installs all necessary dependencies you need to run Docusaurus.
+Create `fakelab.config.ts` in your project root:
 
-## Start your site
+```typescript
+import { defineConfig } from "fakelab";
 
-Run the development server:
+export default defineConfig({
+  sourcePath: ["./fixtures"],
+  server: { port: 50001 },
+});
+```
+
+3. **Define your types with Faker annotations:**
+
+```typescript
+// fixtures/user.ts
+export interface User {
+  /** @faker string.ulid */
+  id: string;
+  /** @faker person.fullName */
+  name: string;
+  /** @faker location.streetAddress */
+  address: string;
+  /** @faker phone.number */
+  phone: string;
+  /** @faker number.int({min:10,max:80}) */
+  age: number;
+}
+```
+
+4. **Start the server:**
 
 ```bash
-cd my-website
-npm run start
+npx fakelab serve
 ```
 
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
+That's it! Your mock API is ready to use.
 
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
+## What's Next?
 
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+- [Installation Guide](./getting-started/installation) - Detailed installation instructions
+- [Configuration](./getting-started/configuration) - Learn about configuration options
+- [Faker Annotations](./guides/faker-annotations) - Master Faker annotations
+- [Database Mode](./guides/database-mode) - Use persistent database features
+- [Runtime API](./guides/runtime-api) - Integrate Fakelab in your frontend code

@@ -18,8 +18,11 @@ function HomepageHeader() {
         </Heading>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
         <div className={styles.buttons}>
-          <Link className="button button--secondary button--lg" to="/docs/intro">
-            Documentation
+          <Link className="button button--primary button--lg" to="/docs/intro">
+            Get Started
+          </Link>
+          <Link className="button button--secondary button--lg" href="https://github.com/alirezahematidev/fakelab">
+            View on GitHub
           </Link>
         </div>
       </div>
@@ -30,9 +33,13 @@ function HomepageHeader() {
 export default function Home(): ReactNode {
   const { siteConfig } = useDocusaurusContext();
   return (
-    <Layout title={`Hello from ${siteConfig.title}`} description="Description will go into a meta tag in <head />">
+    <Layout
+      wrapperClassName="layout--wrapper"
+      title={`${siteConfig.title} - ${siteConfig.tagline}`}
+      description="A fast, easy-config mock API server for frontend developers. Generate realistic mock data from TypeScript interfaces with Faker annotations."
+    >
       <HomepageHeader />
-      <main>
+      <main className={styles["homepage--main"]}>
         <HomepageFeatures />
       </main>
     </Layout>

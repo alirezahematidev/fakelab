@@ -32,17 +32,7 @@ const config: Config = {
           sidebarPath: "./sidebars.ts",
           editUrl: "https://github.com/alirezahematidev/fakelab",
         },
-        blog: {
-          showReadingTime: true,
-          feedOptions: {
-            type: ["rss", "atom"],
-            xslt: true,
-          },
-          editUrl: "https://github.com/alirezahematidev/fakelab",
-          onInlineTags: "warn",
-          onInlineAuthors: "warn",
-          onUntruncatedBlogPosts: "warn",
-        },
+
         theme: {
           customCss: "./src/css/custom.css",
         },
@@ -103,15 +93,6 @@ const config: Config = {
             {
               label: "Issues",
               href: "https://github.com/alirezahematidev/fakelab/issues",
-            },
-          ],
-        },
-        {
-          title: "More",
-          items: [
-            {
-              label: "Blog",
-              to: "/blog",
             },
           ],
         },

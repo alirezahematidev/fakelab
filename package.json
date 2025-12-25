@@ -3,7 +3,7 @@
   "version": "0.0.23",
   "type": "module",
   "license": "MIT",
-  "description": "A easy-config mock server for frontend developers.",
+  "description": "A fast, easy-config mock server for frontend developers.",
   "main": "lib/main.js",
   "module": "lib/main.js",
   "types": "lib/main.d.ts",

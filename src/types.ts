@@ -110,27 +110,32 @@ export type ConfigOptions = {
   sourcePath: string | string[];
   /**
    * Server-related configuration.
+   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/server-command|Server Documentation}
    */
   server?: ServerOptions;
   /**
    * Faker engine configuration for data generation.
+   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/faker-annotations|Faker Documentation}
    */
   faker?: FakerEngineOptions;
   /**
    * Database persistence configuration.
+   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/database-mode|Database Documentation}
    */
   database?: DatabaseOptions;
   /**
    * Browser runtime exposure options.
+   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/runtime-api|Browser Documentation}
    */
-
   browser?: BrowserOptions;
   /**
    * Network simulation configuration.
+   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/network-simulation|Network Documentation}
    */
   network?: NetworkOptions;
   /**
    * Snapshot configuration.
+   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/snapshot|Snapshot Documentation}
    */
   snapshot?: SnapshotOptions;
 };

@@ -40,27 +40,6 @@ export type DatabaseOptions = {
   enabled: boolean;
 };
 
-type BrowserExposeOptions = {
-  /**
-   * Name of the exposed object or module in the browser.
-   * @example `fakelab`
-   */
-  name: string;
-  /**
-   * Exposure mode in the browser environment.
-   * - `"module"`: Exposed as an ES module
-   * - `"global"`: Attached to the global window object
-   */
-  mode: "module" | "global";
-};
-
-export type BrowserOptions = {
-  /**
-   * Controls how the runtime API is exposed in the browser.
-   */
-  expose?: Partial<BrowserExposeOptions>;
-};
-
 type NetworkBehaviourOptions = {
   /**
    * Artificial response delay in milliseconds.
@@ -123,11 +102,6 @@ export type ConfigOptions = {
    * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/database-mode|Database Documentation}
    */
   database?: DatabaseOptions;
-  /**
-   * Browser runtime exposure options.
-   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/runtime-api|Browser Documentation}
-   */
-  browser?: BrowserOptions;
   /**
    * Network simulation configuration.
    * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/network-simulation|Network Documentation}

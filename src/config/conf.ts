@@ -4,14 +4,13 @@ import fs from "fs-extra";
 import { access, constants, stat } from "node:fs/promises";
 import isGlob from "is-glob";
 import { Logger } from "../logger";
-import type { BrowserOptions, ConfigOptions, DatabaseOptions, FakerEngineOptions, NetworkOptions, ServerCLIOptions, ServerOptions, SnapshotOptions } from "../types";
-import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, RUNTIME_DEFAULT_MODE, RUNTIME_DEFAULT_NAME, type FakerLocale } from "../constants";
-import { BrowserTemplate } from "./browser";
+import type { ConfigOptions, DatabaseOptions, FakerEngineOptions, NetworkOptions, ServerCLIOptions, ServerOptions, SnapshotOptions } from "../types";
+import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, type FakerLocale } from "../constants";
+import { RuntimeTemplate } from "./browser";
 import { CWD } from "../file";
 
 export class Config {
   readonly RUNTIME_SOURCE_FILENAME = "runtime.js";
-  readonly RUNTIME_DECL_FILENAME = "runtime.d.ts";
 
   readonly FAKELAB_PERSIST_DIR = ".fakelab";
 
@@ -20,7 +19,6 @@ export class Config {
   constructor(private readonly configOptions: ConfigOptions) {
     this.files = this.files.bind(this);
     this._serverOptions = this._serverOptions.bind(this);
-    this._browserOptions = this._browserOptions.bind(this);
     this._databaseOptions = this._databaseOptions.bind(this);
     this._networkOptions = this._networkOptions.bind(this);
     this._snapshotOptions = this._snapshotOptions.bind(this);
@@ -37,7 +35,6 @@ export class Config {
   public get options() {
     return {
       server: this._serverOptions,
-      browser: this._browserOptions,
       database: this._databaseOptions,
       network: this._networkOptions,
       snapshot: this._snapshotOptions,
@@ -50,15 +47,6 @@ export class Config {
       pathPrefix: prefix || this.configOptions.server?.pathPrefix || FAKELABE_DEFAULT_PREFIX,
       port: port || this.configOptions.server?.port || FAKELAB_DEFAULT_PORT,
       includeSnapshots: this.configOptions.server?.includeSnapshots ?? true,
-    };
-  }
-
-  private _browserOptions(name?: string, mode?: "module" | "global"): Required<BrowserOptions> {
-    return {
-      expose: {
-        mode: mode || this.configOptions.browser?.expose?.mode || RUNTIME_DEFAULT_MODE,
-        name: name || this.configOptions.browser?.expose?.name || RUNTIME_DEFAULT_NAME,
-      },
     };
   }
 
@@ -116,13 +104,12 @@ export class Config {
     const { port, pathPrefix } = this._serverOptions(options.pathPrefix, options.port);
 
     const sourcePath = path.resolve(dirname, this.RUNTIME_SOURCE_FILENAME);
-    const declarationPath = path.resolve(dirname, this.RUNTIME_DECL_FILENAME);
 
-    const browser = BrowserTemplate.init(port, pathPrefix, this.configOptions.browser, this.configOptions.database);
+    const browser = RuntimeTemplate.init(port, pathPrefix, this.configOptions.database);
 
     const source = await browser.prepareSource();
 
-    await Promise.all([fs.writeFile(sourcePath, source), fs.writeFile(declarationPath, browser.declaration())]);
+    await fs.writeFile(sourcePath, source);
   }
 
   private async getSnapshotSourceFiles() {

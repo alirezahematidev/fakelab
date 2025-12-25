@@ -14,15 +14,6 @@ The runtime API is available through the `fakelab/browser` module:
 import { fakelab } from "fakelab/browser";
 ```
 
-Or enable it as a global object:
-
-```typescript
-import "fakelab/browser";
-
-// Now fakelab is available globally
-const users = await fakelab.fetch("User", 10);
-```
-
 ## `fakelab.url()`
 
 Get the base URL of the running Fakelab server.
@@ -65,16 +56,6 @@ console.log(users);
 // Get an empty array (use negative count)
 const emptyUsers = await fakelab.fetch("User", -1);
 console.log(emptyUsers); // []
-```
-
-### With TypeScript Types
-
-```typescript
-import { fakelab } from "fakelab/browser";
-import type { User } from "./types/user";
-
-const users = await fakelab.fetch<User[]>("User", 5);
-// users is typed as User[]
 ```
 
 ## Database API
@@ -141,15 +122,14 @@ await database.flush("User");
 
 ```typescript
 import { useEffect, useState } from "react";
-import { fakelab } from "fakelab/browser";
-import type { User } from "./types/user";
+import { fakelab, type Typeof } from "fakelab/browser";
 
 function UserList() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<Typeof<"User">[]>([]);
 
   useEffect(() => {
     async function loadUsers() {
-      const data = await fakelab.fetch<User[]>("User", 10);
+      const data = await fakelab.fetch("User", 10);
       setUsers(data);
     }
     loadUsers();
@@ -178,13 +158,12 @@ function UserList() {
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { fakelab } from "fakelab/browser";
-import type { User } from "./types/user";
+import { fakelab, type Typeof } from "fakelab/browser";
 
-const users = ref<User[]>([]);
+const users = ref<Typeof<"User">[]>([]);
 
 onMounted(async () => {
-  users.value = await fakelab.fetch<User[]>("User", 10);
+  users.value = await fakelab.fetch("User", 10);
 });
 </script>
 ```
@@ -194,10 +173,9 @@ onMounted(async () => {
 ```typescript
 // app/users/page.tsx
 import { fakelab } from "fakelab/browser";
-import type { User } from "@/types/user";
 
 export default async function UsersPage() {
-  const users = await fakelab.fetch<User[]>("User", 10);
+  const users = await fakelab.fetch("User", 10);
 
   return (
     <div>
@@ -229,4 +207,3 @@ try {
 
 - [Database Mode](./database-mode) - Learn more about database features
 - [Network Simulation](./network-simulation) - Simulate network conditions
-

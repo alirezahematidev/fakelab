@@ -49,7 +49,7 @@ function resolveBatch<T>({ each }: { each: () => Promise<T> }) {
 export async function prepareBuilder(config: Config, options: ServerCLIOptions, database: Database): Promise<Builder> {
   const files = await config.files(options.source);
 
-  const parser = new ParserEngine(files, config, database);
+  const parser = new ParserEngine(files, database);
 
   const entities = await parser.entities();
 

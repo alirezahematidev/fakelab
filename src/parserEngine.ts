@@ -3,7 +3,6 @@ import fs from "fs-extra";
 import { JSONFilePreset } from "lowdb/node";
 import { type InterfaceDeclaration, type TypeAliasDeclaration, Project } from "ts-morph";
 import type { UserConfig } from "./config";
-import type { Config } from "./config/conf";
 import { CWD, DIRNAME } from "./file";
 import type { Entity } from "./types";
 import type { Database } from "./database";
@@ -13,7 +12,7 @@ type ParserTypeDeclaration = InterfaceDeclaration | TypeAliasDeclaration;
 class ParserEngine {
   private __targets: ParserTypeDeclaration[];
 
-  constructor(readonly files: string[], private readonly config: Config, private readonly database: Database) {
+  constructor(readonly files: string[], private readonly database: Database) {
     const project = new Project({ tsConfigFilePath: "tsconfig.json" });
 
     const sources = project.addSourceFilesAtPaths(files);
@@ -49,15 +48,9 @@ class ParserEngine {
       ),
     ];
 
-    const { expose } = this.config.options.browser();
+    const raw = `\ninterface Runtime$ {\n${declarations.join("\n")}\n}`;
 
-    let raw = `\ninterface Runtime$ {\n${declarations.join("\n")}\n}`;
-
-    if (expose.mode === "global") {
-      raw = `\ndeclare global {${raw}\n}`;
-    }
-
-    fs.appendFile(path.resolve(DIRNAME, this.config.RUNTIME_DECL_FILENAME), raw);
+    fs.appendFile(path.resolve(DIRNAME, "runtime.d.ts"), raw);
   }
 
   private address(directoryPath: string, basename: string) {

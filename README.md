@@ -92,7 +92,6 @@ export default defineConfig({
   sourcePath: ["./types", "./fixtures/**/*.ts"], // supports glob pattern
   faker: { locale: "en" }, // optional
   server: { pathPrefix: "api/v1", port: 8080 }, // optional
-  browser: { expose: { mode: "module" } }, // optional
 });
 ```
 
@@ -182,15 +181,6 @@ fakelab.fetch(name: string, count?: number): Promise<T>
 
 ```ts
 import { fakelab } from "fakelab/browser";
-
-const users = await fakelab.fetch("User", 10);
-
-console.log(users);
-
-// or
-
-// can be enabled as a global object
-import "fakelab/browser";
 
 const users = await fakelab.fetch("User", 10);
 

@@ -17,7 +17,6 @@ export default defineConfig({
   sourcePath: ["./types", "./fixtures/**/*.ts"], // supports glob pattern
   faker: { locale: "en" }, // optional
   server: { pathPrefix: "api/v1", port: 8080 }, // optional
-  browser: { expose: { mode: "module" } }, // optional
   database: { enabled: true }, // optional
   network: { delay: [300, 1200] }, // optional
 });
@@ -56,16 +55,6 @@ Server configuration options.
 - `pathPrefix`: Prefix for all generated API routes
 - `port`: Port number to run the server on
 - `includeSnapshots` : Includes the snapshot typescript sources if exists.
-
-### `browser`
-
-Browser runtime configuration.
-
-- **Type:** `{ expose?: { mode?: "module" | "global", name?: string } }`
-- **Required:** No
-- **Default:** `{ expose: { mode: "module" } }`
-
-Controls how the Fakelab runtime is exposed in browser environments.
 
 ### `database`
 

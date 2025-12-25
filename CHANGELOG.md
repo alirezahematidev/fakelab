@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.23](https://github.com/alirezahematidev/fakelab/compare/v0.0.22...v0.0.23) (2025-12-25)
+
+### Features
+
+* docs website ([f7c3f5f](https://github.com/alirezahematidev/fakelab/commit/f7c3f5f9b325d4d9a5fe50d8b3f326fad0d7978f))
+* docs website deployed ([2271441](https://github.com/alirezahematidev/fakelab/commit/2271441994e5510fef986667898a008e319bda45))
+* update readme and types jsdoncs ([8ccad8b](https://github.com/alirezahematidev/fakelab/commit/8ccad8b48fb420a9cd4755f82ddf2a3df5468859))
+
+### Bug Fixes
+
+* readme missed some docs ([8c7eea3](https://github.com/alirezahematidev/fakelab/commit/8c7eea38329d9cfcf8d55abcfd23fdbd1711eaa8))
+* readme some commands ([4413208](https://github.com/alirezahematidev/fakelab/commit/44132084ea1eae5619275f33deb2c8e7d91ad6ba))
+* update deps ([e29d232](https://github.com/alirezahematidev/fakelab/commit/e29d23276e7d55068ee9576e37a8d32ddcff63dc))
+
 ## [0.0.22](https://github.com/alirezahematidev/fakelab/compare/v0.0.21...v0.0.22) (2025-12-24)
 
 ### Features

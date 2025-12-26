@@ -75,11 +75,22 @@ export type NetworkOptions = NetworkBehaviourOptions & {
   presets?: Record<string, NetworkBehaviourOptions>;
 };
 
+type SourceHeaders = NonNullable<Parameters<typeof fetch>[1]>["headers"];
+
+export type SnapshotDataSource = {
+  url: string;
+  name: string;
+  headers?: SourceHeaders;
+  query?: Record<string, string | number | boolean>;
+};
+
 export type SnapshotOptions = {
   /**
    * Enables snapshot data sources.
    */
   enabled: boolean;
+
+  sources?: SnapshotDataSource[];
 };
 
 export type ConfigOptions = {
@@ -144,6 +155,13 @@ export type ServerCLIOptions = {
   pathPrefix?: string;
   port?: number;
   locale?: string;
+  freshSnapshots?: boolean;
+};
+
+export type SnapshotCLIOptions = {
+  name?: string;
+  update?: boolean | string;
+  source?: string;
 };
 
 export type Booleanish = "true" | "false";

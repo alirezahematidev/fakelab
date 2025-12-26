@@ -18,6 +18,7 @@ program
   .option("-x, --pathPrefix <char>", "server url path prefix")
   .option("-p, --port <number>", "server port number", parseInt)
   .option("-l, --locale <char>", "faker custom locale")
+  .option("-f, --fresh-snapshots", "recapture all snapshot sources")
   .action(async (options) => {
     Server.init(options).start();
   });
@@ -26,9 +27,9 @@ program
   .description("snapshot a endpoint json response to a typescript type")
   .argument("[string]", "url to snapshot")
   .option("-n, --name <char>", "snapshot type name")
-  .option("-u, --update", "force update the snapshot")
+  .option("-u, --update [char]", "update a snapshot")
   .action(async (url, options) => {
-    Snapshot.init(url, options).capture();
+    Snapshot.init(options).capture(url);
   });
 
 program.parse();

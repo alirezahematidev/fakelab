@@ -71,6 +71,7 @@ export class Config {
   private _snapshotOptions(): Required<SnapshotOptions> {
     return {
       enabled: this.configOptions.snapshot?.enabled ?? false,
+      sources: this.configOptions.snapshot?.sources || [],
     };
   }
 
@@ -100,7 +101,7 @@ export class Config {
     return resolvedFiles;
   }
 
-  async generateInFileRuntimeConfig(dirname: string, options: ServerCLIOptions) {
+  async initializeRuntimeConfig(dirname: string, options: ServerCLIOptions) {
     const { port, pathPrefix } = this._serverOptions(options.pathPrefix, options.port);
 
     const sourcePath = path.resolve(dirname, this.RUNTIME_SOURCE_FILENAME);

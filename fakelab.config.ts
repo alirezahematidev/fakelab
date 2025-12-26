@@ -1,15 +1,13 @@
-import { defineConfig } from "fakelab";
+import { defineConfig } from "./src/main";
 
 export default defineConfig({
-  sourcePath: ["./fixtures"],
-  server: { port: 50001, includeSnapshots: true },
+  sourcePath: [],
   snapshot: {
     enabled: true,
     sources: [
       {
         name: "Todo",
         url: "https://jsonplaceholder.typicode.com/todos",
-        headers: { Authorization: "Bearer token" },
       },
       {
         name: "Post",
@@ -17,6 +15,4 @@ export default defineConfig({
       },
     ],
   },
-  database: { enabled: true },
-  network: { delay: [500, 1500] },
 });

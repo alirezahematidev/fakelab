@@ -12,6 +12,7 @@ import { loadConfig } from "./load-config";
 import type { Config } from "./config/conf";
 import type { ServerCLIOptions } from "./types";
 import { Database } from "./database";
+import { SnapshotRegistry } from "./snapshot/registry";
 
 export class Server {
   private constructor(private readonly serverCLIOptions: ServerCLIOptions) {
@@ -40,11 +41,15 @@ export class Server {
 
     const database = Database.register(config);
 
+    const snapshot = SnapshotRegistry.register(this.serverCLIOptions);
+
     this.setupApplication(app, network);
 
     this.setupTemplateEngine(app);
 
-    await config.generateInFileRuntimeConfig(DIRNAME, this.serverCLIOptions);
+    await snapshot.captureProvidedSources(config);
+
+    await config.initializeRuntimeConfig(DIRNAME, this.serverCLIOptions);
 
     await database.initialize();
 

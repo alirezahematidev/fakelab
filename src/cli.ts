@@ -18,18 +18,23 @@ program
   .option("-x, --pathPrefix <char>", "server url path prefix")
   .option("-p, --port <number>", "server port number", parseInt)
   .option("-l, --locale <char>", "faker custom locale")
-  .option("-f, --fresh-snapshots", "recapture all snapshot sources")
+  .option("-f, --fresh-snapshots", "capture or refresh all snapshots")
   .action(async (options) => {
-    Server.init(options).start();
+    const snapshot = await Snapshot.prepare(options);
+
+    Server.init(options, snapshot.config).start();
   });
 program
   .command("snapshot")
-  .description("snapshot a endpoint json response to a typescript type")
-  .argument("[string]", "url to snapshot")
-  .option("-n, --name <char>", "snapshot type name")
-  .option("-u, --update [char]", "update a snapshot")
+  .description("capture a url response to a fakelab entity")
+  .argument("[string]", "url to capture")
+  .option("-s, --source <string>", "specify snapshot source name")
+  .option("-r, --refresh <string>", "refresh the specified snapshot")
+  .option("-d, --delete <string>", "delete the specified snapshot")
   .action(async (url, options) => {
-    Snapshot.init(options).capture(url);
+    const snapshot = await Snapshot.init(options);
+
+    snapshot.capture(url);
   });
 
 program.parse();

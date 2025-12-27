@@ -40,3 +40,7 @@ type Typeof<T extends keyof Runtime$> = ReturnType<typeof type$<T>>;
 
 export type { Typeof };
 export { fakelab, database };
+
+interface Runtime$ {
+User: import("C:/Users/P.S/Desktop/projects/digimock/types/user.ts").User
+}

@@ -1,21 +1,19 @@
 import express from "express";
 import cors from "cors";
 import path from "node:path";
-import ejsLayouts from "express-ejs-layouts";
 import http from "http";
+import ejsLayouts from "express-ejs-layouts";
 import { RouteRegistry } from "./registry";
 import figlet from "figlet";
 import { Logger } from "./logger";
 import { DIRNAME } from "./file";
 import { Network } from "./network";
-import { loadConfig } from "./load-config";
 import type { Config } from "./config/conf";
 import type { ServerCLIOptions } from "./types";
 import { Database } from "./database";
-import { SnapshotRegistry } from "./snapshot/registry";
 
 export class Server {
-  private constructor(private readonly serverCLIOptions: ServerCLIOptions) {
+  private constructor(private readonly serverCLIOptions: ServerCLIOptions, private readonly config: Config) {
     this.start = this.start.bind(this);
     this.xPoweredMiddleware = this.xPoweredMiddleware.bind(this);
     this.setupApplication = this.setupApplication.bind(this);
@@ -24,8 +22,8 @@ export class Server {
     this.loadLocalEnv();
   }
 
-  public static init(options: ServerCLIOptions) {
-    return new Server(options);
+  public static init(options: ServerCLIOptions, config: Config) {
+    return new Server(options, config);
   }
 
   public async start() {
@@ -35,31 +33,25 @@ export class Server {
 
     const server = http.createServer(app);
 
-    const config = await loadConfig();
+    const network = Network.initHandlers(this.config);
 
-    const network = Network.initHandlers(config);
-
-    const database = Database.register(config);
-
-    const snapshot = SnapshotRegistry.register(this.serverCLIOptions);
+    const database = Database.register(this.config);
 
     this.setupApplication(app, network);
 
     this.setupTemplateEngine(app);
 
-    await snapshot.captureProvidedSources(config);
-
-    await config.initializeRuntimeConfig(DIRNAME, this.serverCLIOptions);
+    await this.config.initializeRuntimeConfig(DIRNAME, this.serverCLIOptions);
 
     await database.initialize();
 
-    const registry = new RouteRegistry(router, config, network, database, this.serverCLIOptions);
+    const registry = new RouteRegistry(router, this.config, network, database, this.serverCLIOptions);
 
     await registry.register();
 
     app.use(router);
 
-    this.run(server, config, database, this.serverCLIOptions);
+    this.run(server, database, this.serverCLIOptions);
   }
 
   private setupApplication(app: express.Express, network: Network) {
@@ -87,8 +79,8 @@ export class Server {
     console.log(figlet.textSync("FAKELAB"));
   }
 
-  private run(server: http.Server, config: Config, database: Database, options: ServerCLIOptions) {
-    const { port } = config.options.server(options.pathPrefix, options.port);
+  private run(server: http.Server, database: Database, options: ServerCLIOptions) {
+    const { port } = this.config.options.server(options.pathPrefix, options.port);
 
     server.listen(port, "localhost", () => this.listen(database, port));
   }

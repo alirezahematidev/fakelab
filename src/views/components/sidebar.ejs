@@ -17,7 +17,7 @@
       <% entities.forEach((entity,entityName) => { %>
       <a class="sidebar_content_list_item <%= entityName === name ? 'active' : '' %>" href="/entities/<%= entityName %>">
         <span class="item_name"><%= entityName %></span>
-        <span class="item_filepath"><%= entity.filepath %></span>
+        <span class="item_filepath"><%= entity.snapshot ? "(snapshot)" : entity.filepath %></span>
       </a>
       <% }) %>
     </div>

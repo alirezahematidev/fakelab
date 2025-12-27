@@ -2,9 +2,8 @@ import path from "node:path";
 import fs from "fs-extra";
 import { JSONFilePreset } from "lowdb/node";
 import { type InterfaceDeclaration, type TypeAliasDeclaration, Project } from "ts-morph";
-import type { UserConfig } from "./config";
 import { CWD, DIRNAME } from "./file";
-import type { Entity } from "./types";
+import type { Entity, UserConfig } from "./types";
 import type { Database } from "./database";
 
 type ParserTypeDeclaration = InterfaceDeclaration | TypeAliasDeclaration;
@@ -58,11 +57,8 @@ class ParserEngine {
 
     const directory = directoryPath.replace(cwd, "");
 
-    let result = `${directory}/${basename}`;
+    const result = `${directory}/${basename}`;
 
-    if (result.startsWith("/.fakelab")) {
-      result = result.replace("/.fakelab", "");
-    }
     return result;
   }
 

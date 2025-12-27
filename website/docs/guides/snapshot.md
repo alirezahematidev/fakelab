@@ -20,32 +20,40 @@ npx fakelab snapshot [url] [options]
 
 ### Options
 
-| Option            | Alias | Description                       |
-| ----------------- | ----- | --------------------------------- |
-| `--name <string>` | `-n`  | Name for the captured type        |
-| `--update`        | `-u`  | Flag to force update the snapshot |
+| Option               | Alias | Description                    |
+| -------------------- | ----- | ------------------------------ |
+| `--source <string>`  | `-s`  | specify snapshot source name   |
+| `--refresh <string>` | `-r`  | refresh the specified snapshot |
+| `--delete <string>`  | `-d`  | delete the specified snapshot  |
 
 ## Examples
 
 ### Capture a Single Endpoint
 
 ```bash
-# Basic usage - Fakelab will infer the type name
+# Basic usage
 npx fakelab snapshot https://jsonplaceholder.typicode.com/todos
 ```
 
-### Specify a Type Name
+### Specify a Source Name
 
 ```bash
 # Give the captured type a specific name
-npx fakelab snapshot https://jsonplaceholder.typicode.com/todos --name Todo
+npx fakelab snapshot https://jsonplaceholder.typicode.com/todos --source Todo
 ```
 
 ### Update Existing Snapshot
 
 ```bash
-# Force update an existing snapshot
-npx fakelab snapshot https://jsonplaceholder.typicode.com/todos --name Todo --update
+# Refresh an existing snapshot
+npx fakelab snapshot --refresh Todo
+```
+
+### Delete Existing Snapshot
+
+```bash
+# Delete an existing snapshot
+npx fakelab snapshot --delete Todo
 ```
 
 ### Update All Snapshots
@@ -93,8 +101,8 @@ export interface Todo {
 When starting a new project, you can quickly bootstrap mocks from your backend API:
 
 ```bash
-npx fakelab snapshot https://api.example.com/users --name User
-npx fakelab snapshot https://api.example.com/posts --name Post
+npx fakelab snapshot https://api.example.com/users --source User
+npx fakelab snapshot https://api.example.com/posts --source Post
 ```
 
 ### Freeze API Responses
@@ -103,7 +111,7 @@ Capture API responses for offline development:
 
 ```bash
 # Capture current API state
-npx fakelab snapshot https://api.example.com/products --name Product
+npx fakelab snapshot https://api.example.com/products --source Product
 
 # Now you can develop offline using the captured snapshot
 ```
@@ -113,7 +121,7 @@ npx fakelab snapshot https://api.example.com/products --name Product
 Instead of manually writing type definitions, capture real API responses:
 
 ```bash
-npx fakelab snapshot https://jsonplaceholder.typicode.com/users --name User
+npx fakelab snapshot https://jsonplaceholder.typicode.com/users --source User
 ```
 
 ## Integration with Configuration
@@ -134,10 +142,11 @@ export default defineConfig({
 
 ## Best Practices
 
-1. **Use Descriptive Names** - Use `--name` to give meaningful names to captured types
-2. **Update Regularly** - Use `--update` to keep snapshots in sync with API changes
-3. **Version Control** - Commit snapshots to git for team consistency
-4. **Combine with Annotations** - Add Faker annotations to generated types for dynamic data
+1. **Use Descriptive Names** - Use `--source` to give meaningful names to captured types
+2. **Update Regularly** - Use `--refresh` to keep a specific snapshot in sync with API changes
+3. **Delete Source** - Use `--delete` to delete a specific snapshot
+4. **Version Control** - Commit snapshots to git for team consistency
+5. **Combine with Annotations** - Add Faker annotations to generated types for dynamic data
 
 ## Limitations
 

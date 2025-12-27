@@ -81,15 +81,16 @@ export type SnapshotDataSource = {
   url: string;
   name: string;
   headers?: SourceHeaders;
-  query?: Record<string, string | number | boolean>;
 };
 
 export type SnapshotOptions = {
   /**
-   * Enables snapshot data sources.
+   * Enables snapshot.
    */
   enabled: boolean;
-
+  /**
+   * Predefined snapshot sources
+   */
   sources?: SnapshotDataSource[];
 };
 
@@ -159,13 +160,29 @@ export type ServerCLIOptions = {
 };
 
 export type SnapshotCLIOptions = {
-  name?: string;
-  update?: boolean | string;
   source?: string;
+  refresh?: string;
+  delete?: string;
 };
 
-export type Booleanish = "true" | "false";
+export type SnapshotPrepareOptions = {
+  freshSnapshots?: boolean;
+};
 
-export interface MockOptions {
-  locale?: string;
-}
+export type SnapshotSchema = {
+  sources: Array<{ url: string; name: string; headers?: SnapshotDataSource["headers"] }>;
+};
+
+export type SnapshotUpdateArgs =
+  | {
+      url: string;
+      delete: true;
+    }
+  | {
+      url: string;
+      name?: string;
+      delete?: false;
+      headers?: SnapshotDataSource["headers"];
+    };
+
+export type Booleanish = "true" | "false";

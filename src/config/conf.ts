@@ -95,7 +95,14 @@ export class Config {
     }
 
     if (resolvedFiles.length === 0) {
-      Logger.error("No Typescript files found in: %s", Logger.list(sourcePaths.map((sp) => path.basename(sp))));
+      const basenames = sourcePaths.map((sp) => path.basename(sp));
+
+      if (basenames.length === 0) {
+        Logger.error("No source path found.");
+      } else {
+        Logger.error("No Typescript files found in: %s", Logger.list(basenames));
+      }
+
       process.exit(1);
     }
     return resolvedFiles;

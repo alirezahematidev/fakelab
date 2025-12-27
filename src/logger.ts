@@ -5,7 +5,7 @@ const formatter = new Intl.ListFormat("en", {
   type: "unit",
 });
 
-type LogLevel = "info" | "error" | "warn";
+type LogLevel = "info" | "error" | "warn" | "success";
 export class Logger {
   private static label(level: LogLevel) {
     switch (level) {
@@ -15,6 +15,8 @@ export class Logger {
         return pico.redBright(level.toUpperCase());
       case "warn":
         return pico.yellowBright(level.toUpperCase());
+      case "success":
+        return pico.greenBright(level.toUpperCase());
     }
   }
 
@@ -32,6 +34,10 @@ export class Logger {
 
   static error(message: string, ...params: unknown[]) {
     console.error(this.log("error", message), ...params);
+  }
+
+  static success(message: string, ...params: unknown[]) {
+    console.log(this.log("success", message), ...params);
   }
 
   static debug(message: string, ...params: unknown[]) {

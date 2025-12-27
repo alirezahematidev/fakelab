@@ -9,7 +9,6 @@ export default defineConfig({
       {
         name: "Todo",
         url: "https://jsonplaceholder.typicode.com/todos",
-        headers: { Authorization: "Bearer token" },
       },
       {
         name: "Post",

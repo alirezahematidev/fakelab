@@ -273,8 +273,15 @@ This is useful when you want to:
 ### Snapshot Options
 
 ```ts
+export type SnapshotDataSource = {
+  url: string;
+  name: string;
+  headers?: SourceHeaders;
+};
+
 export type SnapshotOptions = {
   enabled: boolean;
+  sources?: SnapshotDataSource[];
 };
 ```
 
@@ -287,10 +294,11 @@ npx fakelab snapshot [url] [options]
 
 ### Options
 
-| Option            | Alias | Description                       |
-| ----------------- | ----- | --------------------------------- |
-| `--name <string>` | `-n`  | name for the captured type        |
-| `--update`        | `-u`  | flag to force update the snapshot |
+| Option               | Alias | Description                    |
+| -------------------- | ----- | ------------------------------ |
+| `--source <string>`  | `-s`  | specify snapshot source name   |
+| `--refresh <string>` | `-r`  | refresh the specified snapshot |
+| `--delete <string>`  | `-d`  | delete the specified snapshot  |
 
 ### Examples
 
@@ -298,14 +306,16 @@ npx fakelab snapshot [url] [options]
 # Basic usage
 npx fakelab snapshot https://jsonplaceholder.typicode.com/todos
 
-# consider a name for captured type
-npx fakelab snapshot https://jsonplaceholder.typicode.com/todos --name Todo
+# specify a name for captured source
+npx fakelab snapshot https://jsonplaceholder.typicode.com/todos --source Todo
 
-# add --update flag to force update the existing snapshot
-npx fakelab snapshot https://jsonplaceholder.typicode.com/todos --name Todo --update
+# refresh the existing snapshot
+npx fakelab snapshot --refresh Todo
 
+# delete the existing snapshot
+npx fakelab snapshot --delete Todo
 
-# update all existing snapshots
+# update all snapshots
 npx fakelab snapshot
 ```
 
@@ -362,6 +372,7 @@ npx fakelab serve [options]
 | `--pathPrefix <prefix>` | `-x`  | Prefix for all generated API routes                   |
 | `--locale <locale>`     | `-l`  | Locale used for fake data generation                  |
 | `--port <number>`       | `-p`  | Port to run the server on                             |
+| `--fresh-snapshots`     | `-f`  | capture or refresh all snapshots                      |
 
 ### Examples
 
@@ -374,6 +385,9 @@ npx fakelab serve -s ./types -p 4000
 
 # Custom API prefix and locale
 npx fakelab serve --pathPrefix /v1 --locale fr
+
+# refresh existing snapshots
+npx fakelab serve --fresh-snapshots
 ```
 
 ## Related

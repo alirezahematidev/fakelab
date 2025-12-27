@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.25](https://github.com/alirezahematidev/fakelab/compare/v0.0.24...v0.0.25) (2025-12-27)
+
+### Features
+
+* add snapshot sources and test few scenarios ([147a267](https://github.com/alirezahematidev/fakelab/commit/147a267dce04032b257c657f8ae12485f02f42be))
+* supported snapshot predefined sources ([80f1718](https://github.com/alirezahematidev/fakelab/commit/80f1718d45b33a927e2922764ee1184201009e83))
+
 ## [0.0.24](https://github.com/alirezahematidev/fakelab/compare/v0.0.23...v0.0.24) (2025-12-25)
 
 ### Bug Fixes

@@ -13,7 +13,7 @@ export class Snapshot {
 
   private static _instance: Snapshot;
 
-  private constructor(private readonly snapshotCLIOptions: SnapshotCLIOptions, readonly config: Config) {
+  private constructor(private readonly options: SnapshotCLIOptions, readonly config: Config) {
     this.capture = this.capture.bind(this);
   }
 
@@ -55,12 +55,12 @@ export class Snapshot {
     }
 
     if (!url) {
-      if (this.snapshotCLIOptions.refresh) {
-        return await this.refresh(sources, this.snapshotCLIOptions.refresh, schema);
+      if (this.options.refresh) {
+        return await this.refresh(sources, this.options.refresh, schema);
       }
 
-      if (this.snapshotCLIOptions.delete) {
-        return await this.delete(sources, this.snapshotCLIOptions.delete, schema);
+      if (this.options.delete) {
+        return await this.delete(sources, this.options.delete, schema);
       }
 
       return await this.updateAll(sources);
@@ -68,16 +68,16 @@ export class Snapshot {
 
     const defaultName = this.suffix(schema.sources);
 
-    if (this.snapshotCLIOptions?.refresh) {
+    if (this.options?.refresh) {
       Logger.warn("--refresh flag has no effect when used with url. Refresh skipped.");
     }
 
-    if (this.snapshotCLIOptions?.delete) {
+    if (this.options?.delete) {
       Logger.warn("--delete flag has no effect when used with url. Delete skipped.");
     }
 
-    const content = await this.fetch({ url, name: this.snapshotCLIOptions?.source || defaultName });
-    await this.save({ url, name: this.snapshotCLIOptions?.source || defaultName }, content, schema);
+    const content = await this.fetch({ url, name: this.options?.name || defaultName });
+    await this.save({ url, name: this.options?.name || defaultName }, content, schema);
 
     await this.modifyGitignoreFile(".fakelab/*");
   }
@@ -94,11 +94,11 @@ export class Snapshot {
       const capturingName = this.snapshotName(source.url, false);
 
       Logger.info("Capturing %s snapshot...", capturingName);
-      if (!(source.name || this.snapshotCLIOptions?.source)) {
+      if (!(source.name || this.options?.name)) {
         Logger.warn("Snapshot source name not found. Auto-generating a name.");
       }
 
-      await this.write(source.url, content, source.name || this.snapshotCLIOptions?.source);
+      await this.write(source.url, content, source.name || this.options?.name);
 
       Logger.success("Snapshot \x1b[34m%s\x1b[0m captured successfully.", capturingName);
     } catch (error) {

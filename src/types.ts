@@ -160,7 +160,7 @@ export type ServerCLIOptions = {
 };
 
 export type SnapshotCLIOptions = {
-  source?: string;
+  name?: string;
   refresh?: string;
   delete?: string;
 };

@@ -5,6 +5,8 @@ import type { Low } from "lowdb";
 export type EvaluatedFakerArgs = { path: string; args: any } | undefined;
 export type LazyFaker = typeof import("@faker-js/faker").faker;
 
+type HttpHeaders = NonNullable<Parameters<typeof fetch>[1]>["headers"];
+
 export type ServerOptions = {
   /**
    * Port number that the mock server will listen on.
@@ -75,12 +77,10 @@ export type NetworkOptions = NetworkBehaviourOptions & {
   presets?: Record<string, NetworkBehaviourOptions>;
 };
 
-type SourceHeaders = NonNullable<Parameters<typeof fetch>[1]>["headers"];
-
 export type SnapshotDataSource = {
   url: string;
   name: string;
-  headers?: SourceHeaders;
+  headers?: HttpHeaders;
 };
 
 export type SnapshotOptions = {
@@ -92,6 +92,20 @@ export type SnapshotOptions = {
    * Predefined snapshot sources
    */
   sources?: SnapshotDataSource[];
+};
+
+export type Hook = {
+  name: string;
+  trigger: { event: TriggerEvent };
+  method: "POST";
+  url: string;
+  headers?: HttpHeaders;
+  transform?: (data: any) => unknown;
+};
+
+export type WebhookOptions = {
+  enabled: boolean;
+  hooks: Hook[];
 };
 
 export type ConfigOptions = {
@@ -124,6 +138,8 @@ export type ConfigOptions = {
    * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/snapshot|Snapshot Documentation}
    */
   snapshot?: SnapshotOptions;
+
+  webhook?: WebhookOptions;
 };
 
 export type UserConfig = {
@@ -186,3 +202,22 @@ export type SnapshotUpdateArgs =
     };
 
 export type Booleanish = "true" | "false";
+
+// ==================== event types ========================
+
+type SnapshotEventType = "captured" | "refreshed" | "deleted";
+type DatabaseEventType = "inserted" | "flushed";
+
+export type SnapshotEvent = `snapshot:${SnapshotEventType}`;
+export type DatabaseEvent = `database:${DatabaseEventType}`;
+
+export type SnapshotEventPayload = {
+  readonly url: string;
+  readonly name: string;
+};
+
+export type DatabaseEventPayload = {
+  readonly data: unknown;
+};
+
+export type TriggerEvent = SnapshotEvent | DatabaseEvent;

@@ -11,6 +11,30 @@ import { Network } from "./network";
 import type { Config } from "./config/conf";
 import type { ServerCLIOptions } from "./types";
 import { Database } from "./database";
+// import { EventSubscriber } from "./events";
+
+function __WEBHOOK_SERVER__() {
+  const app = express();
+  app.use(express.json());
+
+  app.post("/snapshot-captured", (req, res) => {
+    const body = req.body;
+
+    console.log("snapshot:captured event just triggered!", body);
+
+    res.send(true);
+  });
+
+  app.post("/snapshot-deleted", (req, res) => {
+    const body = req.body;
+
+    console.log("snapshot:deleted event just triggered!", body);
+
+    res.send(true);
+  });
+
+  return app.listen(5000, () => console.log("Webhook server is running..."));
+}
 
 export class Server {
   private constructor(private readonly serverCLIOptions: ServerCLIOptions, private readonly config: Config) {
@@ -32,6 +56,8 @@ export class Server {
     const router = express.Router();
 
     const server = http.createServer(app);
+
+    // const subscriber = new EventSubscriber();
 
     const network = Network.initHandlers(this.config);
 
@@ -82,7 +108,17 @@ export class Server {
   private run(server: http.Server, database: Database, options: ServerCLIOptions) {
     const { port } = this.config.options.server(options.pathPrefix, options.port);
 
+    const s = __WEBHOOK_SERVER__();
+
     server.listen(port, "localhost", () => this.listen(database, port));
+
+    server.on("close", () => {
+      s.close();
+    });
+
+    s.on("close", () => {
+      server.close();
+    });
   }
 
   private xPoweredMiddleware(_: express.Request, res: express.Response, next: express.NextFunction) {

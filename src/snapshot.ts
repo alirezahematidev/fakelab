@@ -5,6 +5,8 @@ import { loadConfig } from "./load-config";
 import type { SnapshotCLIOptions, SnapshotDataSource, SnapshotPrepareOptions, SnapshotSchema, SnapshotUpdateArgs } from "./types";
 import { CWD } from "./file";
 import type { Config } from "./config/conf";
+import { EventSubscriber } from "./events";
+import { Webhook } from "./webhook";
 
 export class Snapshot {
   readonly TARGET_LANGUAGE = "typescript";
@@ -13,14 +15,23 @@ export class Snapshot {
 
   private static _instance: Snapshot;
 
+  private subscriber: EventSubscriber;
+  private webhook: Webhook;
+
   private constructor(private readonly snapshotCLIOptions: SnapshotCLIOptions, readonly config: Config) {
     this.capture = this.capture.bind(this);
+
+    this.subscriber = new EventSubscriber();
+
+    this.webhook = new Webhook(this.subscriber, this.config);
   }
 
   static async init(options: SnapshotCLIOptions) {
     const config = await loadConfig();
 
     if (!this._instance) this._instance = new Snapshot(options, config);
+
+    this._instance.webhook.activate();
 
     return this._instance;
   }
@@ -100,6 +111,8 @@ export class Snapshot {
 
       await this.write(source.url, content, source.name || this.snapshotCLIOptions?.source);
 
+      this.subscriber.snapshot.captured({ url: source.url, name: source.name ?? this.snapshotCLIOptions?.source });
+
       Logger.success("Snapshot \x1b[34m%s\x1b[0m captured successfully.", capturingName);
     } catch (error) {
       console.log({ error });
@@ -132,6 +145,7 @@ export class Snapshot {
       await this.save(source, content, schema);
     }
 
+    this.subscriber.snapshot.refreshed({ url: source.url, name: source.name ?? this.snapshotCLIOptions?.source });
     Logger.success("Snapshot source \x1b[34m%s\x1b[0m refreshed successfully.", source.name);
   }
 
@@ -154,6 +168,7 @@ export class Snapshot {
     await fs.rm(filepath, { force: true });
     await this.updateSnapshotSchema({ url: source.url, delete: true });
 
+    this.subscriber.snapshot.deleted({ url: source.url, name: source.name ?? this.snapshotCLIOptions?.source });
     Logger.success("Snapshot source \x1b[34m%s\x1b[0m deleted successfully.", source.name);
   }
 

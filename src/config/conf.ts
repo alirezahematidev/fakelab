@@ -4,7 +4,7 @@ import fs from "fs-extra";
 import { access, constants, stat } from "node:fs/promises";
 import isGlob from "is-glob";
 import { Logger } from "../logger";
-import type { ConfigOptions, DatabaseOptions, FakerEngineOptions, NetworkOptions, ServerCLIOptions, ServerOptions, SnapshotOptions } from "../types";
+import type { ConfigOptions, DatabaseOptions, FakerEngineOptions, NetworkOptions, ServerCLIOptions, ServerOptions, SnapshotOptions, WebhookOptions } from "../types";
 import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, type FakerLocale } from "../constants";
 import { RuntimeTemplate } from "./browser";
 import { CWD } from "../file";
@@ -23,6 +23,7 @@ export class Config {
     this._networkOptions = this._networkOptions.bind(this);
     this._snapshotOptions = this._snapshotOptions.bind(this);
     this._fakerOptions = this._fakerOptions.bind(this);
+    this._webhookOptions = this._webhookOptions.bind(this);
 
     this.NETWORK_DEFAULT_OPTIONS = Object.freeze({
       delay: this.configOptions.network?.delay || 0,
@@ -39,6 +40,7 @@ export class Config {
       network: this._networkOptions,
       snapshot: this._snapshotOptions,
       faker: this._fakerOptions,
+      webhook: this._webhookOptions,
     };
   }
 
@@ -84,6 +86,12 @@ export class Config {
     return { locale: defaultFakerLocale() };
   }
 
+  private _webhookOptions(): Required<WebhookOptions> {
+    return {
+      enabled: this.configOptions.snapshot?.enabled ?? false,
+      hooks: this.configOptions.webhook?.hooks ?? [],
+    };
+  }
   public async files(_sourcePath?: string) {
     const sourcePaths = this.resolveSourcePath(_sourcePath || this.configOptions.sourcePath);
 

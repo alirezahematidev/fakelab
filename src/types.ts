@@ -28,6 +28,7 @@ export type FakerEngineOptions = {
   /**
    * Locale used by the faker engine when generating mock data.
    * Controls language-specific values such as names, addresses, etc.
+   * @example "fa"
    */
   locale?: FakerLocale;
 };
@@ -38,6 +39,21 @@ export type DatabaseOptions = {
    * When enabled, `POST` mutation will be stored.
    */
   enabled: boolean;
+};
+
+type NetworkErrorOptions = {
+  /**
+   * HTTP error status codes to simulate.
+   *
+   * @example [400, 404, 500]
+   */
+  statusCodes?: ErrorStatusCode[];
+  /**
+   * Custom messages per status code.
+   *
+   * @example { 404: "Not found", 500: "Server error" }
+   */
+  messages?: Record<ErrorStatusCode, string>;
 };
 
 type NetworkBehaviourOptions = {
@@ -61,6 +77,8 @@ type NetworkBehaviourOptions = {
    * When enabled, all requests will behave as if the network is offline.
    */
   offline?: boolean;
+
+  errors?: NetworkErrorOptions;
 };
 
 export type NetworkOptions = NetworkBehaviourOptions & {
@@ -78,8 +96,20 @@ export type NetworkOptions = NetworkBehaviourOptions & {
 type SourceHeaders = NonNullable<Parameters<typeof fetch>[1]>["headers"];
 
 export type SnapshotDataSource = {
+  /**
+   * http url
+   * @example "https://api.example.com/users"
+   */
   url: string;
+  /**
+   * Snapshot name used for generated interface.
+   * @example "User"
+   */
   name: string;
+  /**
+   * Optional HTTP headers sent with the snapshot fetch request.
+   * @example { Authorization: "Bearer <token>" }
+   */
   headers?: SourceHeaders;
 };
 
@@ -186,3 +216,45 @@ export type SnapshotUpdateArgs =
     };
 
 export type Booleanish = "true" | "false";
+
+type ErrorStatusCode =
+  | 400
+  | 401
+  | 402
+  | 403
+  | 404
+  | 405
+  | 406
+  | 407
+  | 408
+  | 409
+  | 410
+  | 411
+  | 412
+  | 413
+  | 414
+  | 415
+  | 416
+  | 417
+  | 418
+  | 421
+  | 422
+  | 423
+  | 424
+  | 425
+  | 426
+  | 428
+  | 429
+  | 431
+  | 451
+  | 500
+  | 501
+  | 502
+  | 503
+  | 504
+  | 505
+  | 506
+  | 507
+  | 508
+  | 510
+  | 511;

@@ -22,14 +22,14 @@ export class Network {
   }
 
   timeout() {
-    const occured = this.chance(this.options?.timeoutRate);
+    const occured = this.chance(this.options.timeoutRate);
     if (occured) Logger.debug("Network timeout...");
 
     return occured;
   }
 
   error() {
-    const occured = this.chance(this.options?.errorRate);
+    const occured = this.chance(this.options.errorRate);
     if (occured) Logger.debug("Network error...");
 
     return occured;
@@ -37,12 +37,20 @@ export class Network {
 
   state(state: "error" | "offline") {
     switch (state) {
-      case "error":
-        return { status: 500, message: "Network error" };
-      case "offline":
+      case "error": {
+        const codes = this.options.errors?.statusCodes || [];
+        const status = codes.length > 0 ? codes[Math.floor(Math.random() * codes.length)] : 500;
+
+        const message = this.options.errors?.messages?.[status] ?? "Network error";
+
+        return { status, message };
+      }
+      case "offline": {
         return { status: 503, message: "Network offline" };
-      default:
-        return { status: 500, message: "Unknown error" };
+      }
+      default: {
+        return { status: 500, message: "Server unknown error" };
+      }
     }
   }
 
@@ -56,13 +64,13 @@ export class Network {
   }
 
   offline() {
-    return this.options?.offline ?? false;
+    return this.options.offline ?? false;
   }
 
   middleware(_: express.Request, res: express.Response, next: express.NextFunction) {
-    const error = this.options?.errorRate || 0;
-    const timeout = this.options?.timeoutRate || 0;
-    const offline = this.options?.offline ?? false;
+    const error = this.options.errorRate || 0;
+    const timeout = this.options.timeoutRate || 0;
+    const offline = this.options.offline ?? false;
 
     const value = `delay=${this.resolveDelay()},error=${error},timeout=${timeout},offline=${offline}`;
 
@@ -71,7 +79,7 @@ export class Network {
   }
 
   private resolveDelay(): number {
-    const d = this.options?.delay;
+    const d = this.options.delay;
 
     if (typeof d === "number") return Math.round(d);
 

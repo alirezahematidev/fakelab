@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.29](https://github.com/alirezahematidev/fakelab/compare/v0.0.28...v0.0.29) (2025-12-28)
+
+### Bug Fixes
+
+* load config ([1bc389d](https://github.com/alirezahematidev/fakelab/commit/1bc389d61f767923d59298b02ebb66fc44bbbf1f))
+
 ## [0.0.28](https://github.com/alirezahematidev/fakelab/compare/v0.0.27...v0.0.28) (2025-12-28)
 
 ### Bug Fixes

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.33](https://github.com/alirezahematidev/fakelab/compare/v0.0.32...v0.0.33) (2025-12-28)
+
+### Bug Fixes
+
+* snapshot disable warning ([3574bc7](https://github.com/alirezahematidev/fakelab/commit/3574bc74cd7c6f88353c400c43104df83f5a80c6))
+
 ## [0.0.32](https://github.com/alirezahematidev/fakelab/compare/v0.0.31...v0.0.32) (2025-12-28)
 
 ### Bug Fixes

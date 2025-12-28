@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.26](https://github.com/alirezahematidev/fakelab/compare/v0.0.25...v0.0.26) (2025-12-28)
+
+### Features
+
+* add error config for network ([fcb24b7](https://github.com/alirezahematidev/fakelab/commit/fcb24b7d2564a2d25cccb33e87e4bc553821cb68))
+* implement events and webhook ([ed33553](https://github.com/alirezahematidev/fakelab/commit/ed33553dd071de3e5d1de8023e6d8398430488b2))
+* webook/events completed! ([e39e288](https://github.com/alirezahematidev/fakelab/commit/e39e288f4102298eb6a18f6e487395fb99fd04f0))
+
+### Bug Fixes
+
+* rename snapshot cli source to name ([666f3c5](https://github.com/alirezahematidev/fakelab/commit/666f3c5165fe5d2941d318a946c592849a0ae2b6))
+
 ## [0.0.25](https://github.com/alirezahematidev/fakelab/compare/v0.0.24...v0.0.25) (2025-12-27)
 
 ### Features

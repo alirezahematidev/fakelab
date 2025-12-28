@@ -98,6 +98,10 @@ export class Server {
       if (process.env.NODE_ENV === "development") {
         process.loadEnvFile("./.env.local");
       }
-    } catch (error) {}
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        Logger.warn("Cannot load .env.local file for debugging. error: %s", error);
+      }
+    }
   }
 }

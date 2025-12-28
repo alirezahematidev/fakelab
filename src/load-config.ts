@@ -19,6 +19,7 @@ async function loadConfig(): Promise<Config> {
     const config = await bundleRequire({ filepath });
 
     return config.mod.default as Config;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     Logger.error("Could not load the config file.");
     process.exit(1);

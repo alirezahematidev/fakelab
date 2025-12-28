@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 declare function fetch<T extends keyof Runtime$, C extends number | undefined = undefined>(name: T, count?: C): Promise<Result$<Runtime$[T], C>>;
 declare function type$<T extends keyof Runtime$>(): Runtime$[T];
 declare function get<T extends keyof Runtime$>(name: T): Promise<Array<Runtime$[T]>>;
@@ -34,13 +35,10 @@ type SeedOptions = {
   strategy?: "reset" | "once" | "merge";
 };
 type Result$<T, CT> = CT extends number ? (CT extends 0 ? T : T[]) : T;
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface Runtime$ {}
 
 type Typeof<T extends keyof Runtime$> = ReturnType<typeof type$<T>>;
 
 export type { Typeof };
 export { fakelab, database };
-
-interface Runtime$ {
-User: import("C:/Users/P.S/Desktop/projects/digimock/types/user.ts").User
-}

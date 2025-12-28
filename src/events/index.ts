@@ -19,7 +19,7 @@ export class EventSubscriber {
     return this._snapshotEventSubscriber;
   }
 
-  subscribe(name: string, event: TriggerEvent, handler: Handler<any>) {
+  subscribe(name: string, event: TriggerEvent, handler: Handler<unknown>) {
     if (this.isSnapshotEvent(event)) {
       return this._snapshotEventSubscriber.subscribe(name, event, handler);
     }

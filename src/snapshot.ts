@@ -262,7 +262,9 @@ export class Snapshot {
 
     try {
       schema = await fs.readJSON(path.resolve(this.SNAPSHOT_DIR, "__schema.json"));
-    } catch (error) {}
+    } catch (error) {
+      Logger.warn("Cannot read snapshot __schema file. error: %s", error);
+    }
 
     if (!schema.sources) schema.sources = [];
 
@@ -308,7 +310,7 @@ export class Snapshot {
   }
 
   private snapshotName(url: string, ext = true) {
-    return url.replace(/^https?:\/\//, "").replace(/[\/:?.&=#]/g, "_") + (ext ? ".ts" : "");
+    return url.replace(/^https?:\/\//, "").replace(/[/:?.&=#]/g, "_") + (ext ? ".ts" : "");
   }
 
   private suffix<S extends { name: string }>(sources: S[]) {
@@ -333,6 +335,7 @@ export class Snapshot {
     try {
       JSON.parse(input);
       return true;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       return false;
     }
@@ -352,6 +355,8 @@ export class Snapshot {
       if (content.split("\n").some((line) => line.trim() === name.trim())) return;
 
       await fs.appendFile(filepath, `\n${name}`);
-    } catch (error) {}
+    } catch (error) {
+      Logger.warn("Cannot modify .gitignore. error: %s", error);
+    }
   }
 }

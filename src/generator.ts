@@ -83,6 +83,7 @@ class Generator {
     if (!data) return fallback();
 
     const parts = data.path.split(".");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let fn: any = this.faker;
 
     for (const part of parts) {
@@ -101,7 +102,7 @@ class Generator {
     try {
       return data.args ? fn(data.args) : fn();
     } catch (error) {
-      Logger.error("Passed invalid arguments to faker function.");
+      Logger.error("Passed invalid arguments to faker function. error: %s", error);
       return fn();
     }
   }

@@ -24,14 +24,25 @@ jobs:
         with:
           node-version: 20
           registry-url: "https://registry.npmjs.org"
+          cache: "yarn"
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Lint
+        run: yarn lint
+      - name: Test
+        run: yarn test
+
+      - name: Coverage
+        run: yarn test:coverage
       - name: Build
         run: yarn build
 
-      - name: Release
+      - name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_FAKELAB_TOKEN }}
         run: npm publish --access public

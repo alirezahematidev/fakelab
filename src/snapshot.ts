@@ -36,45 +36,38 @@ export class Snapshot {
   }
 
   static async init(options: SnapshotCLIOptions) {
-    try {
-      const config = await loadConfig();
+    const config = await loadConfig();
 
-      if (!this._instance) this._instance = new Snapshot(options, config);
+    if (!this._instance) this._instance = new Snapshot(options, config);
 
-      if (this._instance.webhook) this._instance.webhook.activate();
+    if (this._instance.webhook) this._instance.webhook.activate();
 
-      return this._instance;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      process.exit(1);
-    }
+    return this._instance;
   }
 
   static async prepare(options: SnapshotPrepareOptions) {
-    try {
-      const config = await loadConfig();
+    const config = await loadConfig();
 
-      const instance = this._instance || new Snapshot({}, config);
+    const instance = this._instance || new Snapshot({}, config);
 
-      const { enabled, sources } = config.options.snapshot();
+    const { enabled, sources } = config.options.snapshot();
 
-      if (instance.webhook) instance.webhook.activate();
+    if (instance.webhook) instance.webhook.activate();
 
-      if (enabled && options.freshSnapshots) {
-        await instance.updateAll(sources, true);
-      }
-
-      return instance;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      process.exit(1);
+    if (enabled && options.freshSnapshots) {
+      await instance.updateAll(sources, true);
     }
+
+    return instance;
   }
 
   async capture(url: string | undefined) {
     const { enabled, sources } = this.config.options.snapshot();
 
-    if (!enabled) return;
+    if (!enabled) {
+      Logger.warn("Snapshot is not enabled. Capture Skipped.");
+      return;
+    }
 
     await fs.ensureDir(this.SNAPSHOT_DIR);
     await fs.ensureFile(path.resolve(this.SNAPSHOT_DIR, "__schema.json"));
@@ -97,7 +90,6 @@ export class Snapshot {
 
       return await this.updateAll(sources);
     }
-
     const defaultName = this.suffix(schema.sources);
 
     if (this.options?.refresh) {
@@ -136,7 +128,11 @@ export class Snapshot {
 
       Logger.success("Snapshot %s captured successfully.", Logger.blue(capturingName));
     } catch (error) {
-      console.log({ error });
+      Logger.error("Cannot save the captured snapshot.");
+
+      if (error instanceof Error) Logger.debug(error.message);
+
+      process.exit(1);
     }
   }
 
@@ -272,8 +268,9 @@ export class Snapshot {
 
     try {
       schema = await fs.readJSON(path.resolve(this.SNAPSHOT_DIR, "__schema.json"));
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      Logger.warn("Cannot read snapshot __schema file. error: %s", error);
+      //
     }
 
     if (!schema.sources) schema.sources = [];
@@ -312,9 +309,8 @@ export class Snapshot {
       if (opts.enabled) {
         this.subscriber = new EventSubscriber(opts.hooks);
 
+        Logger.warn("Initializating webhook...");
         this.webhook = new Webhook(this.subscriber, this.config, this.history);
-      } else {
-        Logger.warn("Webhook is disabled. Skipping initialization.");
       }
     }
   }

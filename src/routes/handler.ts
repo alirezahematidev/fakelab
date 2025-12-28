@@ -173,7 +173,6 @@ class RouteHandler {
           res.status(400).json({ success: false, message: "The table is not exists" });
         }
       } catch (error) {
-        console.log({ error });
         res.status(500).send(error);
       }
     };

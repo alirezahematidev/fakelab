@@ -1,11 +1,12 @@
 import type { Type } from "ts-morph";
 import type { FakerLocale } from "./constants";
 import type { Low } from "lowdb";
+import type { TriggerEvent } from "./events/types";
 
 export type EvaluatedFakerArgs = { path: string; args: any } | undefined;
 export type LazyFaker = typeof import("@faker-js/faker").faker;
 
-type HttpHeaders = NonNullable<Parameters<typeof fetch>[1]>["headers"];
+export type HttpHeaders = NonNullable<Parameters<typeof fetch>[1]>["headers"];
 
 export type ServerOptions = {
   /**
@@ -94,17 +95,67 @@ export type SnapshotOptions = {
   sources?: SnapshotDataSource[];
 };
 
+export type Unsub = (reason?: string) => void;
+
+export type HookValidationResult =
+  | {
+      message: string;
+      error: true;
+      args?: string[];
+    }
+  | {
+      message: null;
+      error: false;
+      args?: string[];
+    };
+
 export type Hook = {
+  /**
+   * Unique name of the webhook hook.
+   * Used for runtime, logging, and debugging purposes.
+   *
+   * @example "snapshot-captured"
+   */
   name: string;
+  /**
+   * The event name that will trigger the webhook.
+   */
   trigger: { event: TriggerEvent };
+  /**
+   * HTTP method used to send the webhook request.
+   *
+   * @remarks
+   * Only `POST` is supported.
+   */
   method: "POST";
+  /**
+   * Target http URL where the webhook payload will be sent.
+   *
+   * @remarks
+   * Must be a valid http or https URL.
+   *
+   * @example "https://hooks.example.com/services/AAA"
+   */
   url: string;
+  /**
+   * Optional HTTP headers to include in the webhook request.
+   */
   headers?: HttpHeaders;
+  /**
+   * Optional payload transformer.
+   * If not provided, the original event data is sent as-is.
+   */
   transform?: (data: any) => unknown;
 };
 
 export type WebhookOptions = {
+  /**
+   * Enables webhook.
+   */
   enabled: boolean;
+  /**
+   * List of configured webhook hooks.
+   */
   hooks: Hook[];
 };
 
@@ -139,6 +190,10 @@ export type ConfigOptions = {
    */
   snapshot?: SnapshotOptions;
 
+  /**
+   * Webhook configuration.
+   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/webhook|Webhook Documentation}
+   */
   webhook?: WebhookOptions;
 };
 
@@ -202,22 +257,3 @@ export type SnapshotUpdateArgs =
     };
 
 export type Booleanish = "true" | "false";
-
-// ==================== event types ========================
-
-type SnapshotEventType = "captured" | "refreshed" | "deleted";
-type DatabaseEventType = "inserted" | "flushed";
-
-export type SnapshotEvent = `snapshot:${SnapshotEventType}`;
-export type DatabaseEvent = `database:${DatabaseEventType}`;
-
-export type SnapshotEventPayload = {
-  readonly url: string;
-  readonly name: string;
-};
-
-export type DatabaseEventPayload = {
-  readonly data: unknown;
-};
-
-export type TriggerEvent = SnapshotEvent | DatabaseEvent;

@@ -7,11 +7,12 @@
 ## Features
 
 - 🚀 Instant mock server
-- 🗂️ Mock from Typescript files
+- 🗂️ Mock from TypeScript files
 - 📦 Lightweight
 - 🗄️ Persistent database
 - 📸 Snapshot real APIs into mocks
-- 🧪 Perfect for local development, prototyping, and frontend testing
+- 🌐 Network simulation (latency, errors, offline mode)
+- 🔔 Webhooks for event-driven integrations
 
 ## Demo
 
@@ -151,7 +152,7 @@ export interface User {
 
 `fakelab/browser` enables `fakelab` module at runtime, allowing your frontend or Node environment to communicate with the running Fakelab mock server.
 
-## `fakelab.url`
+## `fakelab.url()`
 
 The base URL of the running Fakelab server.
 
@@ -160,7 +161,7 @@ fakelab.url();
 // e.g. "http://localhost:50000/api"
 ```
 
-## `fakelab.fetch`
+## `fakelab.fetch()`
 
 Fetch mock data from the Fakelab server by **typescript interface/type name**.
 
@@ -296,9 +297,9 @@ npx fakelab snapshot [url] [options]
 
 | Option               | Alias | Description                    |
 | -------------------- | ----- | ------------------------------ |
-| `--source <string>`  | `-s`  | specify snapshot source name   |
-| `--refresh <string>` | `-r`  | refresh the specified snapshot |
-| `--delete <string>`  | `-d`  | delete the specified snapshot  |
+| `--source <string>`  | `-s`  | Specify snapshot source name   |
+| `--refresh <string>` | `-r`  | Refresh the specified snapshot |
+| `--delete <string>`  | `-d`  | Delete the specified snapshot  |
 
 ### Examples
 
@@ -340,7 +341,7 @@ export type NetworkOptions = NetworkBehaviourOptions & {
 };
 ```
 
-### Basic example
+### Configuration
 
 ```ts
 export default defineConfig({
@@ -355,6 +356,68 @@ export default defineConfig({
 ```
 
 **NOTE:** When both inline network options and a `preset` are defined, inline options always take precedence and override the preset values.
+
+## Webhooks
+
+Webhooks allow you to listen to internal events and send HTTP requests to external services when those events occur.
+
+Each webhook hook subscribes to a specific event and sends a POST request with the event payload (or a transformed payload) to the configured endpoint.
+
+### Configuration
+
+```ts
+import { defineConfig } from "fakelab";
+
+export default defineConfig({
+  webhook: {
+    enabled: true,
+    hooks: [
+      {
+        name: "snapshot-captured",
+        trigger: {
+          event: "snapshot:captured",
+        },
+        method: "POST",
+        url: "https://example.com/webhooks/snapshot",
+        headers: {
+          Authorization: "Bearer YOUR_TOKEN",
+        },
+      },
+    ],
+  },
+});
+```
+
+### Hook Options
+
+| Name        | Type                           | Description                                  |
+| ----------- | ------------------------------ | -------------------------------------------- |
+| `name`      | `string`                       | Unique name used for logging and debugging   |
+| `trigger`   | `{ event: TriggerEvent }`      | Event that triggers the webhook              |
+| `method`    | `POST`                         | HTTP method (only POST is supported)         |
+| `url`       | `string`                       | Target webhook endpoint (must be HTTP/HTTPS) |
+| `headers`   | `HttpHeaders (optional)`       | Custom HTTP headers                          |
+| `transform` | `(data) => unknown (optional)` | Transform event payload before sending       |
+
+### Payload Transformation
+
+By default, the raw event payload is sent to the webhook endpoint.
+
+You can customize the payload using the `transform` function:
+
+```ts
+transform: (data) => ({
+  ...data,
+  createdAt: new Date().toISOString(),
+});
+```
+
+### Notes & Limitations
+
+- Only `POST` requests are supported
+- Payloads are sent as `application/json`
+- Webhooks are executed asynchronously
+- Failed webhooks are logged but not retried (yet)
 
 ## Server Command
 
@@ -372,7 +435,7 @@ npx fakelab serve [options]
 | `--pathPrefix <prefix>` | `-x`  | Prefix for all generated API routes                   |
 | `--locale <locale>`     | `-l`  | Locale used for fake data generation                  |
 | `--port <number>`       | `-p`  | Port to run the server on                             |
-| `--fresh-snapshots`     | `-f`  | capture or refresh all snapshots                      |
+| `--fresh-snapshots`     | `-f`  | Capture or refresh all snapshots                      |
 
 ### Examples
 

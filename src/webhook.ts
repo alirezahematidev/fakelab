@@ -1,65 +1,134 @@
 import type { Config } from "./config/conf";
 import type { EventSubscriber } from "./events";
+import type { TriggerEvent } from "./events/types";
 import { Logger } from "./logger";
-import type { Hook, WebhookOptions } from "./types";
+import type { Hook, HookValidationResult, HttpHeaders, Unsub, WebhookOptions } from "./types";
 
 export class Webhook {
   private options: WebhookOptions;
-  private unsubs: Set<(reason: string) => void> = new Set();
+  private unsubs: Set<Unsub> = new Set();
 
-  private _isDeactivated: boolean = false;
+  private static processHandlersRegistered = false;
 
-  constructor(private readonly subscriber: EventSubscriber, private readonly config: Config) {
+  constructor(private readonly subscriber: EventSubscriber, private readonly config: Config, private readonly history: Set<string>) {
     this.options = this.config.options.webhook();
 
     this.dispose();
   }
 
   activate() {
-    if (this._isDeactivated) return;
+    this.flush("REACTIVATE");
 
-    if (this.options.enabled && this.options.hooks.length > 0) {
-      this.options.hooks.forEach((hook) => {
-        const controller = new AbortController();
+    if (!this.options.enabled) {
+      Logger.warn("Webhook is disabled. Skipping activation.");
+      return;
+    }
 
-        const unsubscribe = this.subscriber.subscribe(hook.trigger.event, (data) => this.handle(hook, data, controller.signal));
+    if (this.options.hooks.length === 0) {
+      Logger.debug?.("Webhook enabled but no hooks configured. Skipping activation.");
+      return;
+    }
 
-        this.unsubs.add((reason) => {
+    for (const hook of this.options.hooks) {
+      const { error, message, args = [] } = this.validateHook(hook);
+      if (error) {
+        Logger.error(message, ...args);
+        continue;
+      }
+
+      if (this.history.has(hook.name)) return;
+
+      const subscriptionController = new AbortController();
+
+      const unsubscribe = this.subscriber.subscribe(hook.name, hook.trigger.event, (data) => this.handle(hook, data, subscriptionController.signal));
+      this.history.add(hook.name);
+
+      this.unsubs.add((reason) => {
+        try {
           unsubscribe();
-          controller.abort(reason);
-        });
+        } finally {
+          this.history.delete(hook.name);
+          subscriptionController.abort(reason);
+        }
       });
     }
   }
 
-  deactivate() {
-    this.clear("DEACTIVATED");
+  private flush(reason?: string) {
+    this.subscriber.clear();
 
-    this._isDeactivated = true;
-  }
-
-  private clear(reason: string) {
-    for (const unsubscribe of this.unsubs) {
-      unsubscribe(reason);
-    }
+    for (const unsub of this.unsubs) unsub(reason);
     this.unsubs.clear();
   }
 
-  private async handle<T>({ method, url, headers, transform }: Hook, data: T, signal: AbortSignal) {
-    const payload = typeof transform === "function" ? transform(data) : data;
+  private async handle<T>({ name, method, url, headers, transform, trigger }: Hook, data: T, signal: AbortSignal) {
+    let payload: T = data;
 
-    if (method !== "POST") {
-      Logger.error("Only POST method is allowed to use. received %s", method);
-      process.exit(1);
+    try {
+      payload = typeof transform === "function" ? (transform(data) as T) : data;
+    } catch (error) {
+      Logger.error(`Webhook %s payload transformation failed.`, Logger.blue(name));
     }
 
-    await fetch(url, { method, body: JSON.stringify(payload), signal, headers: { ...headers, "Content-Type": "application/json" } });
+    if (signal.aborted) {
+      Logger.error(`Webhook %s aborted`, Logger.blue(name));
+    } else {
+      signal.addEventListener("abort", () => {
+        Logger.error(`Webhook %s aborted`, Logger.blue(name));
+      });
+    }
+
+    try {
+      Logger.info(`Delivering %s to %s`, Logger.blue(name), Logger.blue(url));
+
+      const response = await fetch(url, { method, body: JSON.stringify(payload), signal, headers: this.requestHeaders(name, trigger.event, headers) });
+
+      if (response.ok) {
+        Logger.success(`Webhook %s delivered successfully.`, Logger.blue(name));
+      } else {
+        Logger.error(`Webhook %s request failed.`, Logger.blue(name));
+      }
+    } catch (error) {
+      Logger.error(`Webhook %s network error: %s`, Logger.blue(name), error);
+    }
+  }
+
+  private validateHook(hook: Hook): HookValidationResult {
+    if (hook.method.toUpperCase() !== "POST") {
+      return { error: true, message: "Webhook hook method must be 'POST'. received %s", args: [hook.method] };
+    }
+
+    try {
+      const u = new URL(hook.url);
+      if (u.protocol !== "http:" && u.protocol !== "https:") {
+        return { error: true, message: `Webhook hook URL must use http/https. Received "%s".`, args: [u.protocol] };
+      }
+    } catch (error) {
+      return { error: true, message: `Webhook hook URL is invalid. Received: %s`, args: [hook.url] };
+    }
+
+    return { error: false, message: null };
+  }
+
+  private requestHeaders(name: string, event: TriggerEvent, init?: HttpHeaders) {
+    const headers = new Headers(init);
+
+    headers.append("Content-Type", "application/json");
+
+    headers.append("X-Fakelab-Webhook", `name=${name},event=${event}`);
+
+    return headers;
   }
 
   private dispose() {
+    if (Webhook.processHandlersRegistered) return;
+    Webhook.processHandlersRegistered = true;
+
     ["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) =>
       process.on(signal, () => {
-        this.clear(signal);
+        this.history.clear();
+
+        this.flush(signal);
       })
     );
   }

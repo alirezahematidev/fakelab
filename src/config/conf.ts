@@ -132,7 +132,7 @@ export class Config {
     const snapshotFiles = await glob(".fakelab/snapshots/**/*.ts", { absolute: true, ignore: ["**/*.d.ts"], cwd: CWD });
 
     if (snapshotFiles.length > 0) {
-      Logger.info("snapshot(s): %s", Logger.list(snapshotFiles.map((file) => path.parse(file).name)));
+      Logger.info("Snapshot(s): %s", Logger.list(snapshotFiles.map((file) => path.parse(file).name)));
     }
 
     return snapshotFiles;
@@ -166,7 +166,7 @@ export class Config {
   private async resolveTSFiles(sourcePath: string): Promise<string[]> {
     // is glob pattern
     if (isGlob(sourcePath, { strict: true })) {
-      Logger.info(`source: %s`, sourcePath);
+      Logger.info(`Source: %s`, sourcePath);
       return glob(sourcePath, {
         absolute: true,
         ignore: ["**/*.d.ts"],
@@ -183,14 +183,14 @@ export class Config {
         Logger.error("Cannot read file: %s", filePath);
         process.exit(1);
       }
-      Logger.info(`source: %s`, filePath);
+      Logger.info(`Source: %s`, filePath);
       return [filePath];
     }
 
     const dirStat = await this.tryStat(absPath);
 
     if (dirStat?.isDirectory()) {
-      Logger.info(`source: %s`, absPath);
+      Logger.info(`Source: %s`, absPath);
 
       return glob("**/*.ts", {
         cwd: absPath,

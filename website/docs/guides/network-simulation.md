@@ -168,6 +168,7 @@ network: {
 ```
 
 This helps you test:
+
 - Loading spinners
 - Skeleton screens
 - Progress indicators
@@ -181,6 +182,7 @@ network: {
 ```
 
 This helps you test:
+
 - Error messages
 - Retry logic
 - Fallback UI
@@ -194,6 +196,7 @@ network: {
 ```
 
 This helps you test:
+
 - Timeout error handling
 - Request cancellation
 - User feedback
@@ -207,6 +210,7 @@ network: {
 ```
 
 This helps you test:
+
 - Offline detection
 - Cached data display
 - Offline messaging
@@ -263,9 +267,3 @@ export default defineConfig({
 2. **Test Edge Cases** - Use high error/timeout rates to test error handling
 3. **Match Real Conditions** - Use realistic delay ranges based on your target network
 4. **Document Presets** - Document what each preset simulates
-
-## Next Steps
-
-- [Server Command](./server-command) - Learn about the serve command
-- [Configuration](../getting-started/configuration) - Review all configuration options
-

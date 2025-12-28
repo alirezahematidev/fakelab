@@ -52,6 +52,7 @@ export interface Product {
 ## Supported Types
 
 Fakelab supports:
+
 - `interfaces`
 - `types`
 - `named export declarations`
@@ -185,9 +186,3 @@ export interface User {
 2. **Use Constraints**: Add min/max constraints for numbers and dates
 3. **Document Complex Types**: Add comments for complex nested structures
 4. **Reuse Types**: Import and reuse types across files
-
-## Next Steps
-
-- [Runtime API](./runtime-api) - Use Fakelab in your frontend code
-- [Database Mode](./database-mode) - Learn about persistent database
-

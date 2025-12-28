@@ -68,8 +68,5 @@ That's it! Your mock API is ready to use.
 
 ## What's Next?
 
-- [Installation Guide](./getting-started/installation) - Detailed installation instructions
-- [Configuration](./getting-started/configuration) - Learn about configuration options
 - [Faker Annotations](./guides/faker-annotations) - Master Faker annotations
-- [Database Mode](./guides/database-mode) - Use persistent database features
 - [Runtime API](./guides/runtime-api) - Integrate Fakelab in your frontend code

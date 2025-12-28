@@ -153,8 +153,3 @@ export default defineConfig({
 - Snapshots capture the structure at the time of capture
 - Nested objects and arrays are supported
 - Complex types may need manual refinement
-
-## Next Steps
-
-- [Faker Annotations](./faker-annotations) - Add dynamic data generation to snapshots
-- [Server Command](./server-command) - Start using your snapshots

@@ -11,33 +11,12 @@ import { Network } from "./network";
 import type { Config } from "./config/conf";
 import type { ServerCLIOptions } from "./types";
 import { Database } from "./database";
-// import { EventSubscriber } from "./events";
+import type { Webhook } from "./webhook";
 
-function __WEBHOOK_SERVER__() {
-  const app = express();
-  app.use(express.json());
-
-  app.post("/snapshot-captured", (req, res) => {
-    const body = req.body;
-
-    console.log("snapshot:captured event just triggered!", body);
-
-    res.send(true);
-  });
-
-  app.post("/snapshot-deleted", (req, res) => {
-    const body = req.body;
-
-    console.log("snapshot:deleted event just triggered!", body);
-
-    res.send(true);
-  });
-
-  return app.listen(5000, () => console.log("Webhook server is running..."));
-}
+type ServerBorrowedConfig = { config: Config; webhook: Webhook | undefined };
 
 export class Server {
-  private constructor(private readonly serverCLIOptions: ServerCLIOptions, private readonly config: Config) {
+  private constructor(private readonly serverCLIOptions: ServerCLIOptions, private readonly borrowedConfig: ServerBorrowedConfig) {
     this.start = this.start.bind(this);
     this.xPoweredMiddleware = this.xPoweredMiddleware.bind(this);
     this.setupApplication = this.setupApplication.bind(this);
@@ -46,8 +25,8 @@ export class Server {
     this.loadLocalEnv();
   }
 
-  public static init(options: ServerCLIOptions, config: Config) {
-    return new Server(options, config);
+  public static init(options: ServerCLIOptions, borrowedConfig: ServerBorrowedConfig) {
+    return new Server(options, borrowedConfig);
   }
 
   public async start() {
@@ -57,21 +36,19 @@ export class Server {
 
     const server = http.createServer(app);
 
-    // const subscriber = new EventSubscriber();
+    const network = Network.initHandlers(this.borrowedConfig.config);
 
-    const network = Network.initHandlers(this.config);
-
-    const database = Database.register(this.config);
+    const database = Database.register(this.borrowedConfig.config);
 
     this.setupApplication(app, network);
 
     this.setupTemplateEngine(app);
 
-    await this.config.initializeRuntimeConfig(DIRNAME, this.serverCLIOptions);
+    await this.borrowedConfig.config.initializeRuntimeConfig(DIRNAME, this.serverCLIOptions);
 
     await database.initialize();
 
-    const registry = new RouteRegistry(router, this.config, network, database, this.serverCLIOptions);
+    const registry = new RouteRegistry(router, this.borrowedConfig.config, network, database, this.serverCLIOptions);
 
     await registry.register();
 
@@ -100,25 +77,15 @@ export class Server {
   private listen(database: Database, port: number) {
     if (database.enabled()) Logger.info(`database: %s`, database.DATABASE_DIR);
 
-    Logger.info(`server listening to http://localhost:%d`, port);
+    Logger.info(`Server listening to http://localhost:%d`, port);
 
     console.log(figlet.textSync("FAKELAB"));
   }
 
   private run(server: http.Server, database: Database, options: ServerCLIOptions) {
-    const { port } = this.config.options.server(options.pathPrefix, options.port);
-
-    const s = __WEBHOOK_SERVER__();
+    const { port } = this.borrowedConfig.config.options.server(options.pathPrefix, options.port);
 
     server.listen(port, "localhost", () => this.listen(database, port));
-
-    server.on("close", () => {
-      s.close();
-    });
-
-    s.on("close", () => {
-      server.close();
-    });
   }
 
   private xPoweredMiddleware(_: express.Request, res: express.Response, next: express.NextFunction) {

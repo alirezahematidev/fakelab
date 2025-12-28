@@ -13,17 +13,26 @@ export class Snapshot {
   readonly DEFAULT_TYPE_NAME = "Fakelab";
   readonly SNAPSHOT_DIR = path.resolve(CWD, ".fakelab/snapshots");
 
+  private history: Set<string> = new Set();
+
   private static _instance: Snapshot;
 
-  private subscriber: EventSubscriber;
-  private webhook: Webhook;
+  private subscriber: EventSubscriber | undefined;
+
+  private webhook: Webhook | undefined;
 
   private constructor(private readonly snapshotCLIOptions: SnapshotCLIOptions, readonly config: Config) {
     this.capture = this.capture.bind(this);
+    this.__expose = this.__expose.bind(this);
 
-    this.subscriber = new EventSubscriber();
+    this.tryInitializeWebhook();
+  }
 
-    this.webhook = new Webhook(this.subscriber, this.config);
+  public __expose() {
+    return {
+      config: this.config,
+      webhook: this.webhook,
+    };
   }
 
   static async init(options: SnapshotCLIOptions) {
@@ -31,7 +40,7 @@ export class Snapshot {
 
     if (!this._instance) this._instance = new Snapshot(options, config);
 
-    this._instance.webhook.activate();
+    if (this._instance.webhook) this._instance.webhook.activate();
 
     return this._instance;
   }
@@ -42,6 +51,8 @@ export class Snapshot {
     const instance = this._instance || new Snapshot({}, config);
 
     const { enabled, sources } = config.options.snapshot();
+
+    if (instance.webhook) instance.webhook.activate();
 
     if (enabled && options.freshSnapshots) {
       await instance.updateAll(sources, true);
@@ -111,9 +122,9 @@ export class Snapshot {
 
       await this.write(source.url, content, source.name || this.snapshotCLIOptions?.source);
 
-      this.subscriber.snapshot.captured({ url: source.url, name: source.name ?? this.snapshotCLIOptions?.source });
+      this.subscriber?.snapshot.captured({ url: source.url, name: source.name ?? this.snapshotCLIOptions?.source, content });
 
-      Logger.success("Snapshot \x1b[34m%s\x1b[0m captured successfully.", capturingName);
+      Logger.success("Snapshot %s captured successfully.", Logger.blue(capturingName));
     } catch (error) {
       console.log({ error });
     }
@@ -131,7 +142,7 @@ export class Snapshot {
       return;
     }
 
-    Logger.info("Refreshing \x1b[34m%s\x1b[0m snapshot source...", source.name);
+    Logger.info("Refreshing %s snapshot source...", Logger.blue(source.name));
 
     const filepath = path.resolve(this.SNAPSHOT_DIR, this.snapshotName(source.url));
 
@@ -139,14 +150,15 @@ export class Snapshot {
 
     if (exists) {
       const content = await this.fetch(source);
+      this.subscriber?.snapshot.refreshed({ url: source.url, name: source.name ?? this.snapshotCLIOptions?.source, content });
       await fs.writeFile(filepath, content);
     } else {
       const content = await this.fetch(source);
+      this.subscriber?.snapshot.refreshed({ url: source.url, name: source.name ?? this.snapshotCLIOptions?.source, content });
       await this.save(source, content, schema);
     }
 
-    this.subscriber.snapshot.refreshed({ url: source.url, name: source.name ?? this.snapshotCLIOptions?.source });
-    Logger.success("Snapshot source \x1b[34m%s\x1b[0m refreshed successfully.", source.name);
+    Logger.success("Snapshot source %s refreshed successfully.", Logger.blue(source.name));
   }
 
   private async delete(sources: SnapshotDataSource[], name: string, schema: SnapshotSchema) {
@@ -161,15 +173,16 @@ export class Snapshot {
       return;
     }
 
-    Logger.info("Deleting \x1b[34m%s\x1b[0m snapshot source...", source.name);
+    Logger.info("Deleting %s snapshot source...", Logger.blue(source.name));
 
     const filepath = path.resolve(this.SNAPSHOT_DIR, this.snapshotName(source.url));
 
     await fs.rm(filepath, { force: true });
     await this.updateSnapshotSchema({ url: source.url, delete: true });
 
-    this.subscriber.snapshot.deleted({ url: source.url, name: source.name ?? this.snapshotCLIOptions?.source });
-    Logger.success("Snapshot source \x1b[34m%s\x1b[0m deleted successfully.", source.name);
+    this.subscriber?.snapshot.deleted({ url: source.url, name: source.name ?? this.snapshotCLIOptions?.source });
+
+    Logger.success("Snapshot source %s deleted successfully.", Logger.blue(source.name));
   }
 
   private async updateAll(sources: SnapshotDataSource[], serve = false) {
@@ -279,6 +292,21 @@ export class Snapshot {
     await fs.writeJSON(path.resolve(this.SNAPSHOT_DIR, "__schema.json"), schema);
   }
 
+  private tryInitializeWebhook() {
+    const { enabled } = this.config.options.snapshot();
+
+    if (enabled) {
+      const opts = this.config.options.webhook();
+      if (opts.enabled) {
+        this.subscriber = new EventSubscriber(opts.hooks);
+
+        this.webhook = new Webhook(this.subscriber, this.config, this.history);
+      } else {
+        Logger.warn("Webhook is disabled. Skipping initialization.");
+      }
+    }
+  }
+
   private snapshotName(url: string, ext = true) {
     return url.replace(/^https?:\/\//, "").replace(/[\/:?.&=#]/g, "_") + (ext ? ".ts" : "");
   }
@@ -291,7 +319,10 @@ export class Snapshot {
 
   private isValidUrl(url: string): boolean {
     try {
-      new URL(url);
+      const u = new URL(url);
+
+      if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+
       return true;
     } catch {
       return false;

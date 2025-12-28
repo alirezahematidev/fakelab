@@ -202,8 +202,3 @@ try {
   console.error("Failed to fetch users:", error);
 }
 ```
-
-## Next Steps
-
-- [Database Mode](./database-mode) - Learn more about database features
-- [Network Simulation](./network-simulation) - Simulate network conditions

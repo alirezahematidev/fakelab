@@ -1,9 +1,12 @@
 import type { Type } from "ts-morph";
 import type { FakerLocale } from "./constants";
 import type { Low } from "lowdb";
+import type { TriggerEvent } from "./events/types";
 
 export type EvaluatedFakerArgs = { path: string; args: any } | undefined;
 export type LazyFaker = typeof import("@faker-js/faker").faker;
+
+export type HttpHeaders = NonNullable<Parameters<typeof fetch>[1]>["headers"];
 
 export type ServerOptions = {
   /**
@@ -28,6 +31,7 @@ export type FakerEngineOptions = {
   /**
    * Locale used by the faker engine when generating mock data.
    * Controls language-specific values such as names, addresses, etc.
+   * @example "fa"
    */
   locale?: FakerLocale;
 };
@@ -38,6 +42,21 @@ export type DatabaseOptions = {
    * When enabled, `POST` mutation will be stored.
    */
   enabled: boolean;
+};
+
+type NetworkErrorOptions = {
+  /**
+   * HTTP error status codes to simulate.
+   *
+   * @example [400, 404, 500]
+   */
+  statusCodes?: ErrorStatusCode[];
+  /**
+   * Custom messages per status code.
+   *
+   * @example { 404: "Not found", 500: "Server error" }
+   */
+  messages?: Record<ErrorStatusCode, string>;
 };
 
 type NetworkBehaviourOptions = {
@@ -61,6 +80,8 @@ type NetworkBehaviourOptions = {
    * When enabled, all requests will behave as if the network is offline.
    */
   offline?: boolean;
+
+  errors?: NetworkErrorOptions;
 };
 
 export type NetworkOptions = NetworkBehaviourOptions & {
@@ -75,12 +96,22 @@ export type NetworkOptions = NetworkBehaviourOptions & {
   presets?: Record<string, NetworkBehaviourOptions>;
 };
 
-type SourceHeaders = NonNullable<Parameters<typeof fetch>[1]>["headers"];
-
 export type SnapshotDataSource = {
+  /**
+   * http url
+   * @example "https://api.example.com/users"
+   */
   url: string;
+  /**
+   * Snapshot name used for generated interface.
+   * @example "User"
+   */
   name: string;
-  headers?: SourceHeaders;
+  /**
+   * Optional HTTP headers sent with the snapshot fetch request.
+   * @example { Authorization: "Bearer <token>" }
+   */
+  headers?: HttpHeaders;
 };
 
 export type SnapshotOptions = {
@@ -92,6 +123,70 @@ export type SnapshotOptions = {
    * Predefined snapshot sources
    */
   sources?: SnapshotDataSource[];
+};
+
+export type Unsub = (reason?: string) => void;
+
+export type HookValidationResult =
+  | {
+      message: string;
+      error: true;
+      args?: string[];
+    }
+  | {
+      message: null;
+      error: false;
+      args?: string[];
+    };
+
+export type Hook = {
+  /**
+   * Unique name of the webhook hook.
+   * Used for runtime, logging, and debugging purposes.
+   *
+   * @example "snapshot-captured"
+   */
+  name: string;
+  /**
+   * The event name that will trigger the webhook.
+   */
+  trigger: { event: TriggerEvent };
+  /**
+   * HTTP method used to send the webhook request.
+   *
+   * @remarks
+   * Only `POST` is supported.
+   */
+  method: "POST";
+  /**
+   * Target http URL where the webhook payload will be sent.
+   *
+   * @remarks
+   * Must be a valid http or https URL.
+   *
+   * @example "https://hooks.example.com/services/AAA"
+   */
+  url: string;
+  /**
+   * Optional HTTP headers to include in the webhook request.
+   */
+  headers?: HttpHeaders;
+  /**
+   * Optional payload transformer.
+   * If not provided, the original event data is sent as-is.
+   */
+  transform?: (data: any) => unknown;
+};
+
+export type WebhookOptions = {
+  /**
+   * Enables webhook.
+   */
+  enabled: boolean;
+  /**
+   * List of configured webhook hooks.
+   */
+  hooks: Hook[];
 };
 
 export type ConfigOptions = {
@@ -124,6 +219,12 @@ export type ConfigOptions = {
    * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/snapshot|Snapshot Documentation}
    */
   snapshot?: SnapshotOptions;
+
+  /**
+   * Webhook configuration.
+   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/webhook|Webhook Documentation}
+   */
+  webhook?: WebhookOptions;
 };
 
 export type UserConfig = {
@@ -160,7 +261,7 @@ export type ServerCLIOptions = {
 };
 
 export type SnapshotCLIOptions = {
-  source?: string;
+  name?: string;
   refresh?: string;
   delete?: string;
 };
@@ -186,3 +287,45 @@ export type SnapshotUpdateArgs =
     };
 
 export type Booleanish = "true" | "false";
+
+type ErrorStatusCode =
+  | 400
+  | 401
+  | 402
+  | 403
+  | 404
+  | 405
+  | 406
+  | 407
+  | 408
+  | 409
+  | 410
+  | 411
+  | 412
+  | 413
+  | 414
+  | 415
+  | 416
+  | 417
+  | 418
+  | 421
+  | 422
+  | 423
+  | 424
+  | 425
+  | 426
+  | 428
+  | 429
+  | 431
+  | 451
+  | 500
+  | 501
+  | 502
+  | 503
+  | 504
+  | 505
+  | 506
+  | 507
+  | 508
+  | 510
+  | 511;

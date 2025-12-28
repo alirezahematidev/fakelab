@@ -11,9 +11,12 @@ import { Network } from "./network";
 import type { Config } from "./config/conf";
 import type { ServerCLIOptions } from "./types";
 import { Database } from "./database";
+import type { Webhook } from "./webhook";
+
+type ServerBorrowedConfig = { config: Config; webhook: Webhook | undefined };
 
 export class Server {
-  private constructor(private readonly serverCLIOptions: ServerCLIOptions, private readonly config: Config) {
+  private constructor(private readonly serverCLIOptions: ServerCLIOptions, private readonly borrowedConfig: ServerBorrowedConfig) {
     this.start = this.start.bind(this);
     this.xPoweredMiddleware = this.xPoweredMiddleware.bind(this);
     this.setupApplication = this.setupApplication.bind(this);
@@ -22,8 +25,8 @@ export class Server {
     this.loadLocalEnv();
   }
 
-  public static init(options: ServerCLIOptions, config: Config) {
-    return new Server(options, config);
+  public static init(options: ServerCLIOptions, borrowedConfig: ServerBorrowedConfig) {
+    return new Server(options, borrowedConfig);
   }
 
   public async start() {
@@ -33,19 +36,19 @@ export class Server {
 
     const server = http.createServer(app);
 
-    const network = Network.initHandlers(this.config);
+    const network = Network.initHandlers(this.borrowedConfig.config);
 
-    const database = Database.register(this.config);
+    const database = Database.register(this.borrowedConfig.config);
 
     this.setupApplication(app, network);
 
     this.setupTemplateEngine(app);
 
-    await this.config.initializeRuntimeConfig(DIRNAME, this.serverCLIOptions);
+    await this.borrowedConfig.config.initializeRuntimeConfig(DIRNAME, this.serverCLIOptions);
 
     await database.initialize();
 
-    const registry = new RouteRegistry(router, this.config, network, database, this.serverCLIOptions);
+    const registry = new RouteRegistry(router, this.borrowedConfig.config, network, database, this.serverCLIOptions);
 
     await registry.register();
 
@@ -74,13 +77,13 @@ export class Server {
   private listen(database: Database, port: number) {
     if (database.enabled()) Logger.info(`database: %s`, database.DATABASE_DIR);
 
-    Logger.info(`server listening to http://localhost:%d`, port);
+    Logger.info(`Server listening to http://localhost:%d`, port);
 
     console.log(figlet.textSync("FAKELAB"));
   }
 
   private run(server: http.Server, database: Database, options: ServerCLIOptions) {
-    const { port } = this.config.options.server(options.pathPrefix, options.port);
+    const { port } = this.borrowedConfig.config.options.server(options.pathPrefix, options.port);
 
     server.listen(port, "localhost", () => this.listen(database, port));
   }

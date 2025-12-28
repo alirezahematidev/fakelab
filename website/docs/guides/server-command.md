@@ -1,5 +1,5 @@
 ---
-sidebar_position: 6
+sidebar_position: 7
 ---
 
 # Server Command
@@ -172,8 +172,3 @@ Check:
 2. Correct port number
 3. Correct API prefix
 4. Network/firewall settings
-
-## Next Steps
-
-- [Configuration](../getting-started/configuration) - Learn about configuration options
-- [Runtime API](./runtime-api) - Use Fakelab in your frontend code

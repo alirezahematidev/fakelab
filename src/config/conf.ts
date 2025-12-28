@@ -4,7 +4,7 @@ import fs from "fs-extra";
 import { access, constants, stat } from "node:fs/promises";
 import isGlob from "is-glob";
 import { Logger } from "../logger";
-import type { ConfigOptions, DatabaseOptions, FakerEngineOptions, NetworkOptions, ServerCLIOptions, ServerOptions, SnapshotOptions } from "../types";
+import type { ConfigOptions, DatabaseOptions, FakerEngineOptions, NetworkOptions, ServerCLIOptions, ServerOptions, SnapshotOptions, WebhookOptions } from "../types";
 import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, type FakerLocale } from "../constants";
 import { RuntimeTemplate } from "./browser";
 import { CWD } from "../file";
@@ -23,6 +23,7 @@ export class Config {
     this._networkOptions = this._networkOptions.bind(this);
     this._snapshotOptions = this._snapshotOptions.bind(this);
     this._fakerOptions = this._fakerOptions.bind(this);
+    this._webhookOptions = this._webhookOptions.bind(this);
 
     this.NETWORK_DEFAULT_OPTIONS = Object.freeze({
       delay: this.configOptions.network?.delay || 0,
@@ -39,6 +40,7 @@ export class Config {
       network: this._networkOptions,
       snapshot: this._snapshotOptions,
       faker: this._fakerOptions,
+      webhook: this._webhookOptions,
     };
   }
 
@@ -84,6 +86,12 @@ export class Config {
     return { locale: defaultFakerLocale() };
   }
 
+  private _webhookOptions(): Required<WebhookOptions> {
+    return {
+      enabled: this.configOptions.snapshot?.enabled ?? false,
+      hooks: this.configOptions.webhook?.hooks ?? [],
+    };
+  }
   public async files(_sourcePath?: string) {
     const sourcePaths = this.resolveSourcePath(_sourcePath || this.configOptions.sourcePath);
 
@@ -124,7 +132,7 @@ export class Config {
     const snapshotFiles = await glob(".fakelab/snapshots/**/*.ts", { absolute: true, ignore: ["**/*.d.ts"], cwd: CWD });
 
     if (snapshotFiles.length > 0) {
-      Logger.info("snapshot(s): %s", Logger.list(snapshotFiles.map((file) => path.parse(file).name)));
+      Logger.info("Snapshot(s): %s", Logger.list(snapshotFiles.map((file) => path.parse(file).name)));
     }
 
     return snapshotFiles;
@@ -158,7 +166,7 @@ export class Config {
   private async resolveTSFiles(sourcePath: string): Promise<string[]> {
     // is glob pattern
     if (isGlob(sourcePath, { strict: true })) {
-      Logger.info(`source: %s`, sourcePath);
+      Logger.info(`Source: %s`, sourcePath);
       return glob(sourcePath, {
         absolute: true,
         ignore: ["**/*.d.ts"],
@@ -175,14 +183,14 @@ export class Config {
         Logger.error("Cannot read file: %s", filePath);
         process.exit(1);
       }
-      Logger.info(`source: %s`, filePath);
+      Logger.info(`Source: %s`, filePath);
       return [filePath];
     }
 
     const dirStat = await this.tryStat(absPath);
 
     if (dirStat?.isDirectory()) {
-      Logger.info(`source: %s`, absPath);
+      Logger.info(`Source: %s`, absPath);
 
       return glob("**/*.ts", {
         cwd: absPath,

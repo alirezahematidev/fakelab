@@ -24,6 +24,22 @@ export class Logger {
     return [pico.dim(`[${new Date().toISOString()}]`), this.label(level), message].join(" ");
   }
 
+  static blue(text: string) {
+    return pico.blueBright(text);
+  }
+
+  static red(text: string) {
+    return pico.redBright(text);
+  }
+
+  static yellow(text: string) {
+    return pico.yellowBright(text);
+  }
+
+  static green(text: string) {
+    return pico.greenBright(text);
+  }
+
   static info(message: string, ...params: unknown[]) {
     console.log(this.log("info", message), ...params);
   }

@@ -5,22 +5,42 @@ import { loadConfig } from "./load-config";
 import type { SnapshotCLIOptions, SnapshotDataSource, SnapshotPrepareOptions, SnapshotSchema, SnapshotUpdateArgs } from "./types";
 import { CWD } from "./file";
 import type { Config } from "./config/conf";
+import { EventSubscriber } from "./events";
+import { Webhook } from "./webhook";
 
 export class Snapshot {
   readonly TARGET_LANGUAGE = "typescript";
   readonly DEFAULT_TYPE_NAME = "Fakelab";
   readonly SNAPSHOT_DIR = path.resolve(CWD, ".fakelab/snapshots");
 
+  private history: Set<string> = new Set();
+
   private static _instance: Snapshot;
 
-  private constructor(private readonly snapshotCLIOptions: SnapshotCLIOptions, readonly config: Config) {
+  private subscriber: EventSubscriber | undefined;
+
+  private webhook: Webhook | undefined;
+
+  private constructor(private readonly options: SnapshotCLIOptions, private readonly config: Config) {
     this.capture = this.capture.bind(this);
+    this.__expose = this.__expose.bind(this);
+
+    this.tryInitializeWebhook();
+  }
+
+  public __expose() {
+    return {
+      config: this.config,
+      webhook: this.webhook,
+    };
   }
 
   static async init(options: SnapshotCLIOptions) {
     const config = await loadConfig();
 
     if (!this._instance) this._instance = new Snapshot(options, config);
+
+    if (this._instance.webhook) this._instance.webhook.activate();
 
     return this._instance;
   }
@@ -31,6 +51,8 @@ export class Snapshot {
     const instance = this._instance || new Snapshot({}, config);
 
     const { enabled, sources } = config.options.snapshot();
+
+    if (instance.webhook) instance.webhook.activate();
 
     if (enabled && options.freshSnapshots) {
       await instance.updateAll(sources, true);
@@ -55,12 +77,12 @@ export class Snapshot {
     }
 
     if (!url) {
-      if (this.snapshotCLIOptions.refresh) {
-        return await this.refresh(sources, this.snapshotCLIOptions.refresh, schema);
+      if (this.options.refresh) {
+        return await this.refresh(sources, this.options.refresh, schema);
       }
 
-      if (this.snapshotCLIOptions.delete) {
-        return await this.delete(sources, this.snapshotCLIOptions.delete, schema);
+      if (this.options.delete) {
+        return await this.delete(sources, this.options.delete, schema);
       }
 
       return await this.updateAll(sources);
@@ -68,16 +90,16 @@ export class Snapshot {
 
     const defaultName = this.suffix(schema.sources);
 
-    if (this.snapshotCLIOptions?.refresh) {
+    if (this.options?.refresh) {
       Logger.warn("--refresh flag has no effect when used with url. Refresh skipped.");
     }
 
-    if (this.snapshotCLIOptions?.delete) {
+    if (this.options?.delete) {
       Logger.warn("--delete flag has no effect when used with url. Delete skipped.");
     }
 
-    const content = await this.fetch({ url, name: this.snapshotCLIOptions?.source || defaultName });
-    await this.save({ url, name: this.snapshotCLIOptions?.source || defaultName }, content, schema);
+    const content = await this.fetch({ url, name: this.options?.name || defaultName });
+    await this.save({ url, name: this.options?.name || defaultName }, content, schema);
 
     await this.modifyGitignoreFile(".fakelab/*");
   }
@@ -94,13 +116,15 @@ export class Snapshot {
       const capturingName = this.snapshotName(source.url, false);
 
       Logger.info("Capturing %s snapshot...", capturingName);
-      if (!(source.name || this.snapshotCLIOptions?.source)) {
+      if (!(source.name || this.options?.name)) {
         Logger.warn("Snapshot source name not found. Auto-generating a name.");
       }
 
-      await this.write(source.url, content, source.name || this.snapshotCLIOptions?.source);
+      await this.write(source.url, content, source.name || this.options?.name);
 
-      Logger.success("Snapshot \x1b[34m%s\x1b[0m captured successfully.", capturingName);
+      this.subscriber?.snapshot.captured({ url: source.url, name: source.name ?? this.options?.name, content });
+
+      Logger.success("Snapshot %s captured successfully.", Logger.blue(capturingName));
     } catch (error) {
       console.log({ error });
     }
@@ -118,7 +142,7 @@ export class Snapshot {
       return;
     }
 
-    Logger.info("Refreshing \x1b[34m%s\x1b[0m snapshot source...", source.name);
+    Logger.info("Refreshing %s snapshot source...", Logger.blue(source.name));
 
     const filepath = path.resolve(this.SNAPSHOT_DIR, this.snapshotName(source.url));
 
@@ -126,13 +150,15 @@ export class Snapshot {
 
     if (exists) {
       const content = await this.fetch(source);
+      this.subscriber?.snapshot.refreshed({ url: source.url, name: source.name ?? this.options?.name, content });
       await fs.writeFile(filepath, content);
     } else {
       const content = await this.fetch(source);
+      this.subscriber?.snapshot.refreshed({ url: source.url, name: source.name ?? this.options?.name, content });
       await this.save(source, content, schema);
     }
 
-    Logger.success("Snapshot source \x1b[34m%s\x1b[0m refreshed successfully.", source.name);
+    Logger.success("Snapshot source %s refreshed successfully.", Logger.blue(source.name));
   }
 
   private async delete(sources: SnapshotDataSource[], name: string, schema: SnapshotSchema) {
@@ -147,14 +173,16 @@ export class Snapshot {
       return;
     }
 
-    Logger.info("Deleting \x1b[34m%s\x1b[0m snapshot source...", source.name);
+    Logger.info("Deleting %s snapshot source...", Logger.blue(source.name));
 
     const filepath = path.resolve(this.SNAPSHOT_DIR, this.snapshotName(source.url));
 
     await fs.rm(filepath, { force: true });
     await this.updateSnapshotSchema({ url: source.url, delete: true });
 
-    Logger.success("Snapshot source \x1b[34m%s\x1b[0m deleted successfully.", source.name);
+    this.subscriber?.snapshot.deleted({ url: source.url, name: source.name ?? this.options?.name });
+
+    Logger.success("Snapshot source %s deleted successfully.", Logger.blue(source.name));
   }
 
   private async updateAll(sources: SnapshotDataSource[], serve = false) {
@@ -264,6 +292,21 @@ export class Snapshot {
     await fs.writeJSON(path.resolve(this.SNAPSHOT_DIR, "__schema.json"), schema);
   }
 
+  private tryInitializeWebhook() {
+    const { enabled } = this.config.options.snapshot();
+
+    if (enabled) {
+      const opts = this.config.options.webhook();
+      if (opts.enabled) {
+        this.subscriber = new EventSubscriber(opts.hooks);
+
+        this.webhook = new Webhook(this.subscriber, this.config, this.history);
+      } else {
+        Logger.warn("Webhook is disabled. Skipping initialization.");
+      }
+    }
+  }
+
   private snapshotName(url: string, ext = true) {
     return url.replace(/^https?:\/\//, "").replace(/[\/:?.&=#]/g, "_") + (ext ? ".ts" : "");
   }
@@ -276,7 +319,10 @@ export class Snapshot {
 
   private isValidUrl(url: string): boolean {
     try {
-      new URL(url);
+      const u = new URL(url);
+
+      if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+
       return true;
     } catch {
       return false;

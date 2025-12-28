@@ -36,6 +36,8 @@
     "build": "tsc && tsup",
     "prepack": "yarn build",
     "release": "release-it --ci",
+    "serve": "yarn build && node --import=tsx lib/cli.js serve",
+    "snapshot": "yarn build && node --import=tsx lib/cli.js snapshot",
     "example": "node --import=tsx scripts/example.ts"
   },
   "directories": {
@@ -86,6 +88,7 @@
     "is-glob": "^4.0.3",
     "joycon": "^3.1.1",
     "lowdb": "^7.0.1",
+    "mitt": "^3.0.1",
     "picocolors": "^1.1.1",
     "qs": "^6.14.0",
     "quicktype-core": "23.2.6",

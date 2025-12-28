@@ -22,13 +22,13 @@ program
   .action(async (options) => {
     const snapshot = await Snapshot.prepare(options);
 
-    Server.init(options, snapshot.config).start();
+    Server.init(options, snapshot.__expose()).start();
   });
 program
   .command("snapshot")
   .description("capture a url response to a fakelab entity")
   .argument("[string]", "url to capture")
-  .option("-s, --source <string>", "specify snapshot source name")
+  .option("-s, --name <string>", "specify snapshot source name")
   .option("-r, --refresh <string>", "refresh the specified snapshot")
   .option("-d, --delete <string>", "delete the specified snapshot")
   .action(async (url, options) => {

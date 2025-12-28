@@ -202,8 +202,3 @@ await database.seed("User", {
 2. **Flush before tests** - Ensure clean state for each test run
 3. **Limit merge operations** - Remember the 1000 record limit per table
 4. **Commit database file to git** - For consistent development environments (optional)
-
-## Next Steps
-
-- [Runtime API](./runtime-api) - Learn about the full runtime API
-- [Network Simulation](./network-simulation) - Add network simulation to your mocks

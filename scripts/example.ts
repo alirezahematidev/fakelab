@@ -11,7 +11,7 @@ function wait(serve: ResultPromise<{ stdio: ["pipe", "pipe", "inherit"]; reject:
     serve.stdout?.on("data", (chunk) => {
       const output = chunk.toString();
       process.stdout.write(output);
-      if (output.includes("server listening to http://localhost")) resolve();
+      if (output.includes("Server listening to http://localhost")) resolve();
     });
 
     serve.on("exit", (code) => {

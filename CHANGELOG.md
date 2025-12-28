@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.31](https://github.com/alirezahematidev/fakelab/compare/v0.0.30...v0.0.31) (2025-12-28)
+
+### Bug Fixes
+
+* attempt fixing tests ([c99c9d6](https://github.com/alirezahematidev/fakelab/commit/c99c9d652dcc904cc6a392c777ba417d3f750bb6))
+
 ## [0.0.30](https://github.com/alirezahematidev/fakelab/compare/v0.0.29...v0.0.30) (2025-12-28)
 
 ### Features

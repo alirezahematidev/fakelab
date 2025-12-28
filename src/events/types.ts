@@ -1,24 +1,26 @@
 import { type Emitter } from "mitt";
 export { type Handler } from "mitt";
 
-type SnapshotEventType = "captured" | "refreshed" | "deleted";
+export type ServerEvent = "server:started" | "server:shutdown";
+
+export type SnapshotEvent = "snapshot:captured" | "snapshot:refreshed" | "snapshot:deleted";
 
 type EventMap<T extends TriggerEvent, P = unknown> = Record<T, P>;
 
-type InferredType<T extends string> = T extends "snapshot" ? SnapshotEventType : never;
-
-type EventBuilder<Scope extends string> = `${Lowercase<Scope>}:${InferredType<Scope>}`;
-
-export type SnapshotEvent = EventBuilder<"snapshot">;
-
-export type SnapshotEmitter = Emitter<EventMap<SnapshotEvent, SnapshotEventArgs>>;
+export type SnapshotEmitter = Emitter<EventMap<SnapshotEvent, Readonly<SnapshotEventArgs>>>;
+export type ServerEmitter = Emitter<EventMap<ServerEvent, Readonly<ServerEventArgs>>>;
 
 export type SnapshotEventArgs = {
-  readonly url: string;
-  readonly name: string;
-  readonly content?: string;
+  url: string;
+  name: string;
+  content?: string;
 };
 
-export type TriggerEvent = SnapshotEvent;
+export type ServerEventArgs = {
+  port: number;
+  prefix: string;
+};
+
+export type TriggerEvent = ServerEvent | SnapshotEvent;
 
 export type EmitterEventMap = EventMap<TriggerEvent>;

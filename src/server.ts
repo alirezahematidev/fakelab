@@ -9,13 +9,19 @@ import { Logger } from "./logger";
 import { DIRNAME } from "./file";
 import { Network } from "./network";
 import type { Config } from "./config/conf";
-import type { ServerCLIOptions } from "./types";
+import type { ServerCLIOptions, ServerOptions } from "./types";
 import { Database } from "./database";
-import type { Webhook } from "./webhook";
+import { Webhook } from "./webhook";
+import { EventSubscriber } from "./events";
 
 type ServerBorrowedConfig = { config: Config; webhook: Webhook | undefined };
 
 export class Server {
+  private history: Set<string> = new Set();
+
+  private webhook: Webhook | undefined;
+  private subscriber: EventSubscriber | undefined;
+
   private constructor(private readonly serverCLIOptions: ServerCLIOptions, private readonly borrowedConfig: ServerBorrowedConfig) {
     this.start = this.start.bind(this);
     this.xPoweredMiddleware = this.xPoweredMiddleware.bind(this);
@@ -23,10 +29,36 @@ export class Server {
     this.setupTemplateEngine = this.setupTemplateEngine.bind(this);
 
     this.loadLocalEnv();
+
+    this.tryInitializeWebhook();
+
+    process.on("SIGINT", () => {
+      const opts = this.borrowedConfig.config.options.server(this.serverCLIOptions.pathPrefix, this.serverCLIOptions.port);
+      this.subscriber?.server.shutdown(opts);
+      process.exit(0);
+    });
+  }
+
+  private tryInitializeWebhook() {
+    const opts = this.borrowedConfig.config.options.webhook();
+
+    if (opts.enabled) {
+      this.subscriber = new EventSubscriber();
+
+      Logger.warn("Initializating webhook...");
+
+      this.webhook = this.borrowedConfig.webhook || new Webhook(this.subscriber, this.borrowedConfig.config, this.history);
+    }
   }
 
   public static init(options: ServerCLIOptions, borrowedConfig: ServerBorrowedConfig) {
-    return new Server(options, borrowedConfig);
+    const instance = new Server(options, borrowedConfig);
+
+    if (instance.webhook && !instance.webhook.isActivated()) {
+      instance.webhook.activate();
+    }
+
+    return instance;
   }
 
   public async start() {
@@ -74,18 +106,20 @@ export class Server {
     app.set("layout", "layouts/main");
   }
 
-  private listen(database: Database, port: number) {
+  private listen(database: Database, opts: Required<ServerOptions>) {
+    this.subscriber?.server.started(opts);
+
     if (database.enabled()) Logger.info(`database: %s`, database.DATABASE_DIR);
 
-    Logger.info(`Server listening to http://localhost:%d`, port);
+    Logger.info(`Server listening to http://localhost:%d`, opts.port);
 
     console.log(figlet.textSync("FAKELAB"));
   }
 
   private run(server: http.Server, database: Database, options: ServerCLIOptions) {
-    const { port } = this.borrowedConfig.config.options.server(options.pathPrefix, options.port);
+    const opts = this.borrowedConfig.config.options.server(options.pathPrefix, options.port);
 
-    server.listen(port, "localhost", () => this.listen(database, port));
+    server.listen(opts.port, "localhost", () => this.listen(database, opts));
   }
 
   private xPoweredMiddleware(_: express.Request, res: express.Response, next: express.NextFunction) {

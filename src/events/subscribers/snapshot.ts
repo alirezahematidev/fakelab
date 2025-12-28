@@ -8,6 +8,8 @@ export class SnapshotEventSubscriber {
     this.refreshed = this.refreshed.bind(this);
     this.deleted = this.deleted.bind(this);
     this.subscribe = this.subscribe.bind(this);
+
+    this.$emitter.all.clear();
   }
 
   public captured(args: SnapshotEventArgs) {

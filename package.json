@@ -38,6 +38,7 @@
     "prepack": "yarn build",
     "release": "release-it --ci",
     "example": "node --import=tsx scripts/example.ts",
+    "serve": "yarn build && node --import=tsx lib/cli.js serve",
     "lint": "yarn eslint",
     "test": "vitest run",
     "test:watch": "vitest",

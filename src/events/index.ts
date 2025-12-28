@@ -1,16 +1,23 @@
 import mitt from "mitt";
-import type { EmitterEventMap, Handler, SnapshotEmitter, SnapshotEvent, TriggerEvent } from "./types";
-import { SnapshotEventSubscriber } from "./subscribers";
+import type { EmitterEventMap, Handler, SnapshotEmitter, ServerEmitter, SnapshotEvent, TriggerEvent, ServerEvent } from "./types";
 import { Logger } from "../logger";
 import type { Hook } from "../types";
+
+import { ServerEventSubscriber, SnapshotEventSubscriber } from "./subscribers";
+
+type EventSubscriberPayload = {
+  hooks?: Hook[];
+};
 
 export class EventSubscriber {
   private $emitter = mitt<EmitterEventMap>();
 
   private _snapshotEventSubscriber: SnapshotEventSubscriber;
+  private _serverEventSubscriber: ServerEventSubscriber;
 
-  constructor(private readonly hooks: Hook[]) {
-    this._snapshotEventSubscriber = new SnapshotEventSubscriber(this.$emitter as SnapshotEmitter, this.hooks);
+  constructor(private readonly payload?: EventSubscriberPayload) {
+    this._snapshotEventSubscriber = new SnapshotEventSubscriber(this.$emitter as unknown as SnapshotEmitter, this.payload?.hooks || []);
+    this._serverEventSubscriber = new ServerEventSubscriber(this.$emitter as unknown as ServerEmitter);
 
     this.dispose();
   }
@@ -19,7 +26,15 @@ export class EventSubscriber {
     return this._snapshotEventSubscriber;
   }
 
+  get server() {
+    return this._serverEventSubscriber;
+  }
+
   subscribe(name: string, event: TriggerEvent, handler: Handler<unknown>) {
+    if (this.isServerEvent(event)) {
+      return this._serverEventSubscriber.subscribe(name, event, handler);
+    }
+
     if (this.isSnapshotEvent(event)) {
       return this._snapshotEventSubscriber.subscribe(name, event, handler);
     }
@@ -32,6 +47,10 @@ export class EventSubscriber {
     this.$emitter.all.clear();
   }
 
+  private isServerEvent(event: TriggerEvent): event is ServerEvent {
+    return event.startsWith("server");
+  }
+
   private isSnapshotEvent(event: TriggerEvent): event is SnapshotEvent {
     return event.startsWith("snapshot");
   }
@@ -40,6 +59,7 @@ export class EventSubscriber {
     ["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) =>
       process.on(signal, () => {
         this.clear();
+        process.exit(0);
       })
     );
   }

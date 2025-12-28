@@ -317,7 +317,7 @@ export class Snapshot {
     if (enabled) {
       const opts = this.config.options.webhook();
       if (opts.enabled) {
-        this.subscriber = new EventSubscriber(opts.hooks);
+        this.subscriber = new EventSubscriber({ hooks: opts.hooks });
 
         Logger.warn("Initializating webhook...");
         this.webhook = new Webhook(this.subscriber, this.config, this.history);

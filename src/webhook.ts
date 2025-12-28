@@ -8,12 +8,18 @@ export class Webhook {
   private options: WebhookOptions;
   private unsubs: Set<Unsub> = new Set();
 
+  private activated: boolean = false;
+
   private static processHandlersRegistered = false;
 
   constructor(private readonly subscriber: EventSubscriber, private readonly config: Config, private readonly history: Set<string>) {
     this.options = this.config.options.webhook();
 
     this.dispose();
+  }
+
+  isActivated() {
+    return this.activated;
   }
 
   activate() {
@@ -28,6 +34,8 @@ export class Webhook {
       Logger.debug?.("Webhook enabled but no hooks configured. Skipping activation.");
       return;
     }
+
+    this.activated = true;
 
     for (const hook of this.options.hooks) {
       const { error, message, args = [] } = this.validateHook(hook);
@@ -126,9 +134,13 @@ export class Webhook {
 
     ["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) =>
       process.on(signal, () => {
+        this.activated = false;
+
         this.history.clear();
 
         this.flush(signal);
+
+        process.exit(0);
       })
     );
   }

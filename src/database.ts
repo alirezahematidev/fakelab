@@ -32,7 +32,7 @@ export class Database {
 
         await this.modifyGitignoreFile(".fakelab/*");
       } catch (error) {
-        Logger.error(`Could not create database.`);
+        Logger.error(`Could not create database. error: %s`, error);
       }
     }
   }
@@ -45,6 +45,8 @@ export class Database {
       if (content.split("\n").some((line) => line.trim() === name.trim())) return;
 
       await fs.appendFile(filepath, `\n${name}`);
-    } catch (error) {}
+    } catch (error) {
+      Logger.warn("Cannot modify .gitignore file. error: %s", error);
+    }
   }
 }

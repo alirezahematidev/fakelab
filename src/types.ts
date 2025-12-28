@@ -3,7 +3,7 @@ import type { FakerLocale } from "./constants";
 import type { Low } from "lowdb";
 import type { TriggerEvent } from "./events/types";
 
-export type EvaluatedFakerArgs = { path: string; args: any } | undefined;
+export type EvaluatedFakerArgs = { path: string; args: unknown } | undefined;
 export type LazyFaker = typeof import("@faker-js/faker").faker;
 
 export type HttpHeaders = NonNullable<Parameters<typeof fetch>[1]>["headers"];
@@ -56,7 +56,7 @@ type NetworkErrorOptions = {
    *
    * @example { 404: "Not found", 500: "Server error" }
    */
-  messages?: Record<ErrorStatusCode, string>;
+  messages?: Record<number, string>;
 };
 
 type NetworkBehaviourOptions = {
@@ -175,7 +175,7 @@ export type Hook = {
    * Optional payload transformer.
    * If not provided, the original event data is sent as-is.
    */
-  transform?: (data: any) => unknown;
+  transform?: (data: unknown) => unknown;
 };
 
 export type WebhookOptions = {

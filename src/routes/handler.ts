@@ -199,6 +199,7 @@ class RouteHandler {
         } else {
           res.status(400).redirect("/database");
         }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         res.status(500).redirect("/database");
       }
@@ -224,6 +225,7 @@ class RouteHandler {
         } else {
           res.status(400).redirect("/database");
         }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         res.status(500).redirect("/database");
       }

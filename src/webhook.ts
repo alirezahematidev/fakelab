@@ -67,7 +67,7 @@ export class Webhook {
     try {
       payload = typeof transform === "function" ? (transform(data) as T) : data;
     } catch (error) {
-      Logger.error(`Webhook %s payload transformation failed.`, Logger.blue(name));
+      Logger.error(`Webhook %s payload transformation failed. error: %s`, Logger.blue(name), error);
     }
 
     if (signal.aborted) {
@@ -104,7 +104,7 @@ export class Webhook {
         return { error: true, message: `Webhook hook URL must use http/https. Received "%s".`, args: [u.protocol] };
       }
     } catch (error) {
-      return { error: true, message: `Webhook hook URL is invalid. Received: %s`, args: [hook.url] };
+      return { error: true, message: `Webhook hook URL is invalid. Received: %s. error: %s`, args: [hook.url, JSON.stringify(error)] };
     }
 
     return { error: false, message: null };

@@ -2,8 +2,11 @@ name: Publish
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
+
+    # tags:
+    #   - "v*"
 
 jobs:
   publish:
@@ -35,10 +38,13 @@ jobs:
       - name: Lint
         run: yarn lint
 
-      - name: Build
-        run: yarn build
+      - name: Test
+        run: yarn test
 
-      - name: Publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_FAKELAB_TOKEN }}
-        run: npm publish --access public
+      # - name: Build
+      #   run: yarn build
+
+      # - name: Publish
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_FAKELAB_TOKEN }}
+      #   run: npm publish --access public

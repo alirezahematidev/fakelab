@@ -42,8 +42,6 @@ export default defineConfig({
 
     const config = await loadConfig();
 
-    console.log({ config });
-
     expect(config).toBeDefined();
     expect(config.options.server().pathPrefix).toBe(FAKELABE_DEFAULT_PREFIX);
     expect(config.options.server().port).toBe(FAKELAB_DEFAULT_PORT);

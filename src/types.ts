@@ -236,7 +236,7 @@ export type UserConfig = {
 type BuilderResult = { data: unknown; json: string };
 
 export type ForgeOptions = {
-  count?: string;
+  count?: string | number;
 };
 
 export type Entity = {

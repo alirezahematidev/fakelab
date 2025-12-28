@@ -1,60 +1,16 @@
 import { describe, expect, test, beforeEach, afterEach, vi } from "vitest";
 import { Command } from "commander";
-import path from "node:path";
-import fs from "fs-extra";
 import type { ServerCLIOptions, SnapshotCLIOptions } from "../src/types";
 
-// Mock dependencies
-vi.mock("../src/server", () => ({
-  Server: {
-    init: vi.fn(() => ({
-      start: vi.fn(),
-    })),
-  },
-}));
-
-vi.mock("../src/snapshot", () => ({
-  Snapshot: {
-    init: vi.fn(() => ({
-      capture: vi.fn(),
-      __expose: vi.fn(() => ({})),
-    })),
-    prepare: vi.fn(() => ({
-      __expose: vi.fn(() => ({})),
-    })),
-  },
-}));
-
 describe("CLI", () => {
-  let testDir: string;
-  let originalCwd: string;
-  let program: Command;
+  let program = new Command();
 
   beforeEach(async () => {
-    testDir = path.join(process.cwd(), "tests", "fixtures");
-    await fs.ensureDir(testDir);
-
-    originalCwd = process.cwd();
-    process.chdir(testDir);
     program = new Command();
-
-    // Mock package.json
-    const mockPkg = {
-      name: "fakelab",
-      description: "A fast, easy-config mock server for frontend developers.",
-      version: "0.0.26",
-    };
-
-    vi.spyOn(fs, "readJSONSync").mockReturnValue(mockPkg);
   });
 
   afterEach(async () => {
-    process.chdir(originalCwd);
     vi.restoreAllMocks();
-
-    if (await fs.pathExists(testDir)) {
-      await fs.emptyDir(testDir);
-    }
   });
 
   test("should parse serve command with no options", async () => {

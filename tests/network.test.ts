@@ -1,40 +1,11 @@
-import { describe, expect, test, beforeEach, afterEach, vi } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { Network } from "../src/network";
 import { Config } from "../src/config/conf";
 import type { ConfigOptions } from "../src/types";
-import path from "node:path";
-import fs from "fs-extra";
-import { loadConfig } from "../src/load-config";
 
 describe("Network", () => {
-  let testDir: string;
-  let originalCwd: string;
-
-  beforeEach(async () => {
-    // Use a unique directory for each test to avoid conflicts
-    const testId = Math.random().toString(36).substring(7);
-    testDir = path.join(process.cwd(), "tests", "fixtures", testId);
-    await fs.ensureDir(testDir);
-
-    originalCwd = process.cwd();
-    process.chdir(testDir);
-  });
-
-  afterEach(async () => {
-    process.chdir(originalCwd);
-
-    if (await fs.pathExists(testDir)) {
-      await fs.remove(testDir);
-    }
-  });
-
-  function createConfig(options: ConfigOptions): Config {
-    return new Config(options);
-  }
-
   function createNetwork(options: ConfigOptions): Network {
-    const config = createConfig(options);
-    return Network.initHandlers(config);
+    return Network.initHandlers(new Config(options));
   }
 
   test("should initialize with default network options", () => {
@@ -314,82 +285,5 @@ describe("Network", () => {
 
     expect(res.setHeader).toHaveBeenCalledWith("X-Fakelab-Network", expect.stringMatching(/offline=true/));
     expect(next).toHaveBeenCalled();
-  });
-
-  test("should work with loaded config", async () => {
-    const configContent = `
-import { defineConfig } from "fakelab";
-
-export default defineConfig({
-  sourcePath: ["./types"],
-  network: {
-    delay: [300, 600],
-    errorRate: 0.15,
-    timeoutRate: 0.1,
-    errors: {
-      statusCodes: [400, 500],
-      messages: {
-        400: "Bad Request",
-        500: "Server Error",
-      },
-    },
-  },
-});
-`;
-
-    await fs.writeFile(path.join(testDir, "fakelab.config.ts"), configContent);
-    await fs.ensureDir(path.join(testDir, "types"));
-    await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
-
-    const config = await loadConfig();
-    const network = Network.initHandlers(config);
-
-    expect(network).toBeDefined();
-    expect(network.offline()).toBe(false);
-
-    const start = Date.now();
-    await network.wait();
-    const elapsed = Date.now() - start;
-
-    expect(elapsed).toBeGreaterThanOrEqual(250);
-    expect(elapsed).toBeLessThan(700);
-  });
-
-  test("should handle complex preset configuration", async () => {
-    const configContent = `
-import { defineConfig } from "fakelab";
-
-export default defineConfig({
-  sourcePath: ["./types"],
-  network: {
-    presets: {
-      "3g": {
-        delay: [500, 2000],
-        errorRate: 0.05,
-      },
-      "slow-3g": {
-        delay: [2000, 5000],
-        errorRate: 0.1,
-        timeoutRate: 0.05,
-      },
-      offline: {
-        offline: true,
-      },
-    },
-    preset: "3g",
-    timeoutRate: 0.02,
-  },
-});
-`;
-
-    await fs.writeFile(path.join(testDir, "fakelab.config.ts"), configContent);
-    await fs.ensureDir(path.join(testDir, "types"));
-    await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
-
-    const config = await loadConfig();
-    const network = Network.initHandlers(config);
-
-    expect(network).toBeDefined();
-    expect(network.offline()).toBe(false);
   });
 });

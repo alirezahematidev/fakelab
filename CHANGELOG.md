@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.32](https://github.com/alirezahematidev/fakelab/compare/v0.0.31...v0.0.32) (2025-12-28)
+
+### Bug Fixes
+
+* test for husky ([cd1b728](https://github.com/alirezahematidev/fakelab/commit/cd1b7289067f9ac17fae6028c24decbe54ce079c))
+
 ## [0.0.31](https://github.com/alirezahematidev/fakelab/compare/v0.0.30...v0.0.31) (2025-12-28)
 
 ### Bug Fixes

@@ -15,11 +15,17 @@ Network simulation helps you test how your application behaves under various net
 ### Basic Network Options
 
 ```typescript
+type NetworkErrorOptions = {
+  statusCodes?: ErrorStatusCode[];
+  messages?: Record<ErrorStatusCode, string>;
+};
+
 type NetworkBehaviourOptions = {
   delay?: number | [number, number];
   errorRate?: number;
   timeoutRate?: number;
   offline?: boolean;
+  errors?: NetworkErrorOptions;
 };
 
 export type NetworkOptions = NetworkBehaviourOptions & {
@@ -69,6 +75,14 @@ Simulate random network errors.
 ```typescript
 network: {
   errorRate: 0.1, // 10% chance of returning an error
+  errors: {
+    statusCodes: [400, 404, 500] // Random error status code
+    messages: {
+      400: "Bad request",
+      404: "Not found",
+      500: "Server error"
+    } // Custom messages per status code
+  }
 }
 ```
 

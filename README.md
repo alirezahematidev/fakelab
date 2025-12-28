@@ -350,11 +350,17 @@ This is useful for testing loading states, retry logic, and poor network UX with
 ### Network Options
 
 ```ts
+type NetworkErrorOptions = {
+  statusCodes?: ErrorStatusCode[];
+  messages?: Record<ErrorStatusCode, string>;
+};
+
 type NetworkBehaviourOptions = {
   delay?: number | [number, number];
   errorRate?: number;
   timeoutRate?: number;
   offline?: boolean;
+  errors?: NetworkErrorOptions;
 };
 
 export type NetworkOptions = NetworkBehaviourOptions & {
@@ -371,6 +377,14 @@ export default defineConfig({
     delay: [300, 1200],
     errorRate: 0.1,
     timeoutRate: 0.05,
+    errors: {
+      statusCodes: [400, 404, 500],
+      messages: {
+        400: "Bad request",
+        404: "Not found",
+        500: "Server error",
+      },
+    },
     presets: { wifi: { errorRate: 1 } },
     preset: "wifi",
   },

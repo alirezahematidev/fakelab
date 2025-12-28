@@ -60,7 +60,7 @@ export async function prepareBuilder(config: Config, options: ServerCLIOptions, 
   async function build(type: Type, options: ForgeOptions) {
     const resolver = resolveBatch({ each: () => factory(type, generator) });
 
-    const data = await (options.count ? resolver.resolve(parseInt(options.count)) : factory(type, generator));
+    const data = await (options.count ? resolver.resolve(parseInt(String(options.count))) : factory(type, generator));
 
     const json = JSON.stringify(data, null, 2);
 

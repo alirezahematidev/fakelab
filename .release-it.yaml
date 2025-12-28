@@ -9,8 +9,7 @@ hooks:
   before:release: "yarn build"
 
 github:
-  release: true
-  tokenRef: "FAKELAB_GH_TOKEN"
+  release: false
 
 npm:
   publish: false

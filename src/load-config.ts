@@ -13,7 +13,7 @@ async function loadConfig(): Promise<Config> {
 
     if (!filepath) {
       Logger.error("No fakelab config file is detected.");
-      process.exit(1);
+      throw new Error("No fakelab config file is detected.");
     }
 
     const config = await bundleRequire({ filepath });
@@ -22,7 +22,10 @@ async function loadConfig(): Promise<Config> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     Logger.error("Could not load the config file.");
-    process.exit(1);
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Could not load the config file.");
   }
 }
 

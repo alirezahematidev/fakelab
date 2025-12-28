@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.28](https://github.com/alirezahematidev/fakelab/compare/v0.0.27...v0.0.28) (2025-12-28)
+
+### Bug Fixes
+
+* load config catch ([abd602e](https://github.com/alirezahematidev/fakelab/commit/abd602ec17d2397e08ceb9e9b63b82225d8b5d12))
+
 ## [0.0.27](https://github.com/alirezahematidev/fakelab/compare/v0.0.26...v0.0.27) (2025-12-28)
 
 ### Features

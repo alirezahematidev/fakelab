@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.0.30](https://github.com/alirezahematidev/fakelab/compare/v0.0.29...v0.0.30) (2025-12-28)
+
+### Features
+
+* husky ([5f5932b](https://github.com/alirezahematidev/fakelab/commit/5f5932b9143b30d9a1dc358843a22b7cfa405fae))
+
+### Bug Fixes
+
+* modify pre-commit ([ad72d7c](https://github.com/alirezahematidev/fakelab/commit/ad72d7c15bb4618a287691404f1231683e4e2863))
+
 ## [0.0.29](https://github.com/alirezahematidev/fakelab/compare/v0.0.28...v0.0.29) (2025-12-28)
 
 ### Bug Fixes

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.27](https://github.com/alirezahematidev/fakelab/compare/v0.0.26...v0.0.27) (2025-12-28)
+
+### Features
+
+* add tests and linter ([fcc3cef](https://github.com/alirezahematidev/fakelab/commit/fcc3cef953c534e3ff7f464031aa1f67e9788ece))
+
 ## [0.0.26](https://github.com/alirezahematidev/fakelab/compare/v0.0.25...v0.0.26) (2025-12-28)
 
 ### Features

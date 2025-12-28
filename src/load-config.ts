@@ -2,40 +2,43 @@ import { bundleRequire } from "bundle-require";
 import JoyCon from "joycon";
 import { Logger } from "./logger";
 import type { Config } from "./config/conf";
+import path from "node:path";
+import fs from "fs-extra";
+import { CWD } from "./file";
 
 const CONFIG_FILE = "fakelab.config.ts";
 
-interface LoadConfigOptions {
-  cwd: string;
-}
-
-async function loadConfig({ cwd }: LoadConfigOptions = { cwd: process.cwd() }): Promise<Config> {
+async function loadConfig(): Promise<Config> {
   try {
-    const joycon = new JoyCon({ cwd });
+    const joycon = new JoyCon();
 
     const filepath = await joycon.resolve({
       files: [CONFIG_FILE],
     });
 
     if (!filepath) {
-      Logger.error("No fakelab config file is detected.");
-      process.exit(1);
+      const error = new Error("No fakelab config file is detected.");
+      throw error;
+    }
+
+    const normalizedPath = path.resolve(filepath);
+    if (!(await fs.pathExists(normalizedPath))) {
+      const error = new Error(`Config file not found: ${normalizedPath}`);
+      throw error;
     }
 
     const config = await bundleRequire({
-      filepath,
+      filepath: normalizedPath,
+      cwd: CWD,
     });
 
     return config.mod.default as Config;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    Logger.error("Could not load the config file: %s", message);
-
     if (error instanceof Error && error.stack) {
       Logger.debug("Stack trace: %s", error.stack);
     }
 
-    process.exit(1);
+    throw error;
   }
 }
 

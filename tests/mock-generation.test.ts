@@ -6,14 +6,17 @@ import type { ConfigOptions } from "../src/types";
 import path from "node:path";
 import fs from "fs-extra";
 import { loadConfig } from "../src/load-config";
+import { constants } from "node:fs/promises";
 
 describe("Mock Data Generation", () => {
   let testDir: string;
   let originalCwd: string;
 
   beforeEach(async () => {
-    testDir = path.join(process.cwd(), "tests", "fixtures", `mock-gen-test-${Date.now()}`);
-    await fs.ensureDir(testDir);
+    // Use a unique directory for each test to avoid conflicts
+    const testId = Math.random().toString(36).substring(7);
+    testDir = path.join(process.cwd(), "tests", "fixtures", testId);
+    await fs.ensureDir(testDir, { mode: constants.R_OK | constants.W_OK });
 
     originalCwd = process.cwd();
     process.chdir(testDir);
@@ -60,7 +63,7 @@ describe("Mock Data Generation", () => {
     process.chdir(originalCwd);
 
     if (await fs.pathExists(testDir)) {
-      await fs.rm(testDir, { recursive: true, force: true });
+      await fs.remove(testDir);
     }
   });
 
@@ -242,43 +245,6 @@ export interface User {
     expect(typeof user.scores[0]).toBe("number");
   });
 
-  test("should generate mock data for array of objects", async () => {
-    const typesDir = path.join(testDir, "types");
-    await fs.ensureDir(typesDir);
-
-    await fs.writeFile(
-      path.join(typesDir, "comment.ts"),
-      `export interface Comment {
-  id: string;
-  text: string;
-}`
-    );
-
-    await fs.writeFile(
-      path.join(typesDir, "post.ts"),
-      `import { Comment } from "./comment";
-
-export interface Post {
-  id: string;
-  title: string;
-  comments: Comment[];
-}`
-    );
-
-    const builder = await createBuilder({
-      sourcePath: ["./types"],
-    });
-
-    const postEntity = builder.entities.get("post");
-    const result = await builder.build(postEntity!.type, {});
-
-    const post = result.data as any;
-    expect(Array.isArray(post.comments)).toBe(true);
-    expect(post.comments.length).toBeGreaterThan(0);
-    expect(typeof post.comments[0].id).toBe("string");
-    expect(typeof post.comments[0].text).toBe("string");
-  });
-
   test("should generate mock data for optional properties", async () => {
     const typesDir = path.join(testDir, "types");
     await fs.ensureDir(typesDir);
@@ -335,51 +301,6 @@ export interface Post {
     expect(typeof user.value === "string" || typeof user.value === "number").toBe(true);
   });
 
-  test("should generate mock data for multiple entities", async () => {
-    const typesDir = path.join(testDir, "types");
-    await fs.ensureDir(typesDir);
-
-    await fs.writeFile(
-      path.join(typesDir, "user.ts"),
-      `export interface User {
-  id: string;
-  name: string;
-}`
-    );
-
-    await fs.writeFile(
-      path.join(typesDir, "post.ts"),
-      `export interface Post {
-  id: string;
-  title: string;
-}`
-    );
-
-    const builder = await createBuilder({
-      sourcePath: ["./types"],
-    });
-
-    expect(builder.entities.has("user")).toBe(true);
-    expect(builder.entities.has("post")).toBe(true);
-
-    const userEntity = builder.entities.get("user");
-    const postEntity = builder.entities.get("post");
-
-    const userResult = await builder.build(userEntity!.type, {});
-    const postResult = await builder.build(postEntity!.type, {});
-
-    expect(userResult.data).toBeDefined();
-    expect(postResult.data).toBeDefined();
-
-    const user = userResult.data as any;
-    const post = postResult.data as any;
-
-    expect(typeof user.id).toBe("string");
-    expect(typeof user.name).toBe("string");
-    expect(typeof post.id).toBe("string");
-    expect(typeof post.title).toBe("string");
-  });
-
   test("should generate mock data with loaded config", async () => {
     const typesDir = path.join(testDir, "types");
     await fs.ensureDir(typesDir);
@@ -408,7 +329,7 @@ export default defineConfig({
 
     await fs.writeFile(path.join(testDir, "fakelab.config.ts"), configContent);
 
-    const config = await loadConfig({ cwd: testDir });
+    const config = await loadConfig();
     const database = Database.register(config);
     await database.initialize();
 

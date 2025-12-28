@@ -9,7 +9,9 @@ describe("Config Loading", () => {
   let originalCwd: string;
 
   beforeEach(async () => {
-    testDir = path.join(process.cwd(), "tests", "fixtures", `test-${Date.now()}`);
+    // Use a unique directory for each test to avoid conflicts
+    const testId = Math.random().toString(36).substring(7);
+    testDir = path.join(process.cwd(), "tests", "fixtures", testId);
     await fs.ensureDir(testDir);
 
     originalCwd = process.cwd();
@@ -21,7 +23,7 @@ describe("Config Loading", () => {
     process.chdir(originalCwd);
 
     if (await fs.pathExists(testDir)) {
-      await fs.rm(testDir, { recursive: true, force: true });
+      await fs.remove(testDir);
     }
   });
 
@@ -38,7 +40,9 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig({ cwd: testDir });
+    const config = await loadConfig();
+
+    console.log({ config });
 
     expect(config).toBeDefined();
     expect(config.options.server().pathPrefix).toBe(FAKELABE_DEFAULT_PREFIX);
@@ -91,7 +95,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "fixtures"));
     await fs.writeFile(path.join(testDir, "fixtures", "test.ts"), "export interface Test { id: string; }");
 
-    const config = await loadConfig({ cwd: testDir });
+    const config = await loadConfig();
 
     expect(config).toBeDefined();
     expect(config.options.server().port).toBe(8080);
@@ -124,7 +128,7 @@ export default defineConfig({
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
     await fs.writeFile(path.join(testDir, "fixtures", "post.ts"), "export interface Post { id: string; }");
 
-    const config = await loadConfig({ cwd: testDir });
+    const config = await loadConfig();
 
     expect(config).toBeDefined();
     const files = await config.files();
@@ -146,7 +150,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig({ cwd: testDir });
+    const config = await loadConfig();
 
     expect(config).toBeDefined();
     const files = await config.files();
@@ -166,7 +170,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig({ cwd: testDir });
+    const config = await loadConfig();
 
     expect(config.options.server().pathPrefix).toBe(FAKELABE_DEFAULT_PREFIX);
     expect(config.options.server().port).toBe(FAKELAB_DEFAULT_PORT);
@@ -200,7 +204,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig({ cwd: testDir });
+    const config = await loadConfig();
 
     expect(config).toBeDefined();
     const networkOptions = config.options.network();

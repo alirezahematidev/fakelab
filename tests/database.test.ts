@@ -5,14 +5,17 @@ import type { ConfigOptions } from "../src/types";
 import path from "node:path";
 import fs from "fs-extra";
 import { loadConfig } from "../src/load-config";
+import { constants } from "node:fs/promises";
 
 describe("Database", () => {
   let testDir: string;
   let originalCwd: string;
 
   beforeEach(async () => {
-    testDir = path.join(process.cwd(), "tests", "fixtures", `database-test-${Date.now()}`);
-    await fs.ensureDir(testDir);
+    // Use a unique directory for each test to avoid conflicts
+    const testId = Math.random().toString(36).substring(7);
+    testDir = path.join(process.cwd(), "tests", "fixtures", testId);
+    await fs.ensureDir(testDir, { mode: constants.R_OK | constants.W_OK });
 
     originalCwd = process.cwd();
     process.chdir(testDir);
@@ -22,7 +25,7 @@ describe("Database", () => {
     process.chdir(originalCwd);
 
     if (await fs.pathExists(testDir)) {
-      await fs.rm(testDir, { recursive: true, force: true });
+      await fs.remove(testDir);
     }
   });
 
@@ -139,7 +142,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig({ cwd: testDir });
+    const config = await loadConfig();
     const database = Database.register(config);
 
     expect(database).toBeDefined();
@@ -165,7 +168,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig({ cwd: testDir });
+    const config = await loadConfig();
     const database = Database.register(config);
 
     expect(database.enabled()).toBe(false);
@@ -185,7 +188,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig({ cwd: testDir });
+    const config = await loadConfig();
     const database = Database.register(config);
 
     expect(database.enabled()).toBe(false);
@@ -232,10 +235,6 @@ export default defineConfig({
       },
     });
 
-    // Mock fs.ensureDir to throw an error
-    const originalEnsureDir = fs.ensureDir;
-    vi.spyOn(fs, "ensureDir").mockRejectedValueOnce(new Error("Permission denied"));
-
     // Should not throw, but handle error gracefully
     await expect(database.initialize()).resolves.not.toThrow();
 
@@ -272,7 +271,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig({ cwd: testDir });
+    const config = await loadConfig();
     const database = Database.register(config);
 
     expect(database.enabled()).toBe(true);

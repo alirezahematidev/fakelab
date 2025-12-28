@@ -10,7 +10,9 @@ describe("Snapshot", () => {
   let originalCwd: string;
 
   beforeEach(async () => {
-    testDir = path.join(process.cwd(), "tests", "fixtures", `snapshot-test-${Date.now()}`);
+    // Use a unique directory for each test to avoid conflicts
+    const testId = Math.random().toString(36).substring(7);
+    testDir = path.join(process.cwd(), "tests", "fixtures", testId);
     await fs.ensureDir(testDir);
 
     originalCwd = process.cwd();
@@ -21,7 +23,7 @@ describe("Snapshot", () => {
     process.chdir(originalCwd);
 
     if (await fs.pathExists(testDir)) {
-      await fs.rm(testDir, { recursive: true, force: true });
+      await fs.remove(testDir);
     }
   });
 
@@ -137,7 +139,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig({ cwd: testDir });
+    const config = await loadConfig();
     const snapshotOptions = config.options.snapshot();
 
     expect(snapshotOptions.enabled).toBe(true);
@@ -179,7 +181,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig({ cwd: testDir });
+    const config = await loadConfig();
     const snapshotOptions = config.options.snapshot();
 
     expect(snapshotOptions.enabled).toBe(true);
@@ -213,7 +215,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig({ cwd: testDir });
+    const config = await loadConfig();
     const snapshotOptions = config.options.snapshot();
 
     expect(snapshotOptions.enabled).toBe(false);
@@ -284,7 +286,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig({ cwd: testDir });
+    const config = await loadConfig();
     const snapshotOptions = config.options.snapshot();
     const serverOptions = config.options.server();
 

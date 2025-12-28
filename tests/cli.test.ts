@@ -31,13 +31,11 @@ describe("CLI", () => {
   let program: Command;
 
   beforeEach(async () => {
-    testDir = path.join(process.cwd(), "tests", "fixtures", `cli-test-${Date.now()}`);
+    testDir = path.join(process.cwd(), "tests", "fixtures");
     await fs.ensureDir(testDir);
 
     originalCwd = process.cwd();
     process.chdir(testDir);
-
-    // Create a test program instance
     program = new Command();
 
     // Mock package.json
@@ -55,7 +53,7 @@ describe("CLI", () => {
     vi.restoreAllMocks();
 
     if (await fs.pathExists(testDir)) {
-      await fs.rm(testDir, { recursive: true, force: true });
+      await fs.emptyDir(testDir);
     }
   });
 

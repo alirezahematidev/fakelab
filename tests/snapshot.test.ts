@@ -137,7 +137,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig();
+    const config = await loadConfig({ cwd: testDir });
     const snapshotOptions = config.options.snapshot();
 
     expect(snapshotOptions.enabled).toBe(true);
@@ -179,7 +179,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig();
+    const config = await loadConfig({ cwd: testDir });
     const snapshotOptions = config.options.snapshot();
 
     expect(snapshotOptions.enabled).toBe(true);
@@ -213,7 +213,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig();
+    const config = await loadConfig({ cwd: testDir });
     const snapshotOptions = config.options.snapshot();
 
     expect(snapshotOptions.enabled).toBe(false);
@@ -284,7 +284,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig();
+    const config = await loadConfig({ cwd: testDir });
     const snapshotOptions = config.options.snapshot();
     const serverOptions = config.options.server();
 

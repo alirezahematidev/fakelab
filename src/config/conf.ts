@@ -88,7 +88,7 @@ export class Config {
 
   private _webhookOptions(): Required<WebhookOptions> {
     return {
-      enabled: this.configOptions.snapshot?.enabled ?? false,
+      enabled: this.configOptions.webhook?.enabled ?? false,
       hooks: this.configOptions.webhook?.hooks ?? [],
     };
   }

@@ -408,7 +408,7 @@ export default defineConfig({
 
     await fs.writeFile(path.join(testDir, "fakelab.config.ts"), configContent);
 
-    const config = await loadConfig();
+    const config = await loadConfig({ cwd: testDir });
     const database = Database.register(config);
     await database.initialize();
 

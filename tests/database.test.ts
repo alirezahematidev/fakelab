@@ -139,7 +139,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig();
+    const config = await loadConfig({ cwd: testDir });
     const database = Database.register(config);
 
     expect(database).toBeDefined();
@@ -165,7 +165,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig();
+    const config = await loadConfig({ cwd: testDir });
     const database = Database.register(config);
 
     expect(database.enabled()).toBe(false);
@@ -185,7 +185,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig();
+    const config = await loadConfig({ cwd: testDir });
     const database = Database.register(config);
 
     expect(database.enabled()).toBe(false);
@@ -272,7 +272,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig();
+    const config = await loadConfig({ cwd: testDir });
     const database = Database.register(config);
 
     expect(database.enabled()).toBe(true);

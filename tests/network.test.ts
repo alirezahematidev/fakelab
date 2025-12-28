@@ -339,7 +339,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig();
+    const config = await loadConfig({ cwd: testDir });
     const network = Network.initHandlers(config);
 
     expect(network).toBeDefined();
@@ -384,7 +384,7 @@ export default defineConfig({
     await fs.ensureDir(path.join(testDir, "types"));
     await fs.writeFile(path.join(testDir, "types", "user.ts"), "export interface User { id: string; }");
 
-    const config = await loadConfig();
+    const config = await loadConfig({ cwd: testDir });
     const network = Network.initHandlers(config);
 
     expect(network).toBeDefined();

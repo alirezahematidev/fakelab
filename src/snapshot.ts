@@ -36,29 +36,39 @@ export class Snapshot {
   }
 
   static async init(options: SnapshotCLIOptions) {
-    const config = await loadConfig();
+    try {
+      const config = await loadConfig();
 
-    if (!this._instance) this._instance = new Snapshot(options, config);
+      if (!this._instance) this._instance = new Snapshot(options, config);
 
-    if (this._instance.webhook) this._instance.webhook.activate();
+      if (this._instance.webhook) this._instance.webhook.activate();
 
-    return this._instance;
+      return this._instance;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      process.exit(1);
+    }
   }
 
   static async prepare(options: SnapshotPrepareOptions) {
-    const config = await loadConfig();
+    try {
+      const config = await loadConfig();
 
-    const instance = this._instance || new Snapshot({}, config);
+      const instance = this._instance || new Snapshot({}, config);
 
-    const { enabled, sources } = config.options.snapshot();
+      const { enabled, sources } = config.options.snapshot();
 
-    if (instance.webhook) instance.webhook.activate();
+      if (instance.webhook) instance.webhook.activate();
 
-    if (enabled && options.freshSnapshots) {
-      await instance.updateAll(sources, true);
+      if (enabled && options.freshSnapshots) {
+        await instance.updateAll(sources, true);
+      }
+
+      return instance;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      process.exit(1);
     }
-
-    return instance;
   }
 
   async capture(url: string | undefined) {

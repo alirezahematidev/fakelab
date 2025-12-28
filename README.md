@@ -297,7 +297,7 @@ npx fakelab snapshot [url] [options]
 
 | Option               | Alias | Description                    |
 | -------------------- | ----- | ------------------------------ |
-| `--source <string>`  | `-s`  | Specify snapshot source name   |
+| `--name <string>`    | `-n`  | Specify snapshot source name   |
 | `--refresh <string>` | `-r`  | Refresh the specified snapshot |
 | `--delete <string>`  | `-d`  | Delete the specified snapshot  |
 
@@ -308,7 +308,7 @@ npx fakelab snapshot [url] [options]
 npx fakelab snapshot https://jsonplaceholder.typicode.com/todos
 
 # specify a name for captured source
-npx fakelab snapshot https://jsonplaceholder.typicode.com/todos --source Todo
+npx fakelab snapshot https://jsonplaceholder.typicode.com/todos --name Todo
 
 # refresh the existing snapshot
 npx fakelab snapshot --refresh Todo
@@ -318,6 +318,28 @@ npx fakelab snapshot --delete Todo
 
 # update all snapshots
 npx fakelab snapshot
+```
+
+Also can define snapshot sources in config, run `npx fakelab snapshot` command to capture them all:
+
+```ts
+export default defineConfig({
+  sourcePath: ["./fixtures"],
+  server: { includeSnapshots: true },
+  snapshot: {
+    enabled: true,
+    sources: [
+      {
+        name: "Todo",
+        url: "https://jsonplaceholder.typicode.com/todos",
+      },
+      {
+        name: "Post",
+        url: "https://jsonplaceholder.typicode.com/posts",
+      },
+    ],
+  },
+});
 ```
 
 ## Network Simulation

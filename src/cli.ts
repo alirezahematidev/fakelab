@@ -28,7 +28,7 @@ program
   .command("snapshot")
   .description("capture a url response to a fakelab entity")
   .argument("[string]", "url to capture")
-  .option("-s, --source <string>", "specify snapshot source name")
+  .option("-s, --name <string>", "specify snapshot source name")
   .option("-r, --refresh <string>", "refresh the specified snapshot")
   .option("-d, --delete <string>", "delete the specified snapshot")
   .action(async (url, options) => {

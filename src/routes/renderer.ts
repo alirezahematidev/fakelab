@@ -100,6 +100,20 @@ class RouteRenderer {
       }
     };
   }
+
+  graphql(prefix: string) {
+    return (req: express.Request, res: express.Response) => {
+      const address = `${req.protocol}://${req.host}/`;
+
+      res.render("graphql", {
+        address,
+        prefix,
+        entities: this.builder.entities,
+        version: this.pkg.version,
+        enabled: this.database.enabled(),
+      });
+    };
+  }
 }
 
 export { RouteRenderer };

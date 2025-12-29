@@ -89,7 +89,7 @@ export class Server {
   private setupApplication(app: express.Express, network: Network) {
     app.disable("x-powered-by");
     app.use(express.json());
-    app.use(cors({ methods: "GET" }));
+    app.use(cors({ methods: ["GET", "POST", "OPTIONS"] }));
     app.use(express.static(DIRNAME + "/public"));
     app.use(this.xPoweredMiddleware);
     app.use(network.middleware);

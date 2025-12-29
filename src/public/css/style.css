@@ -112,6 +112,23 @@ pre {
     background: linear-gradient(to right bottom, oklch(70.4% 0.14 182.503), oklch(71.5% 0.143 215.221));
   }
 }
+.graphql_btn {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 16px;
+  background: #e10098;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inter;
+  transition: background 250ms ease-in-out;
+  margin-bottom: 8px;
+  &:hover {
+    background: hsl(319, 100%, 47%);
+  }
+}
 
 .sidebar_content .sidebar_content_leading {
   display: flex;
@@ -610,4 +627,159 @@ pre {
     opacity: 0;
     transform: scale(2.5);
   }
+}
+
+.graphql-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #161616;
+}
+
+.graphql-editor-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+}
+
+.graphql-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: hsl(0, 0%, 12%);
+  border-bottom: 1px solid hsl(0, 0%, 15%);
+}
+
+.graphql-endpoint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.endpoint-method {
+  padding: 0.25rem 0.5rem;
+  background: #007acc;
+  color: white;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-family: inter;
+}
+
+.endpoint-url {
+  color: #afafaf;
+  font-family: monospace;
+  font-size: 0.875rem;
+}
+
+.graphql-execute-btn {
+  padding: 0.5rem 1rem;
+  background: #007acc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inter;
+}
+
+.graphql-execute-btn:hover {
+  background: var(--accent-hover, #005a9e);
+}
+
+.graphql-editor-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+}
+
+.graphql-query-editor {
+  width: 100%;
+  display: flex;
+  flex: 1;
+  min-height: 300px;
+  padding: 16px;
+  background: #161616;
+  color: #d4d4d4;
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: none;
+  border: none;
+  outline: none;
+  tab-size: 2;
+}
+
+.graphql-query-editor:focus {
+  outline: none;
+  border-color: var(--accent-color, #007acc);
+}
+
+.graphql-result-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+  background: #161616;
+  border: none;
+  outline: none;
+}
+
+.graphql-result-header {
+  display: flex;
+  padding: 16px;
+  justify-content: space-between;
+  align-items: center;
+  background-color: hsl(0, 0%, 12%);
+  > span {
+    font-family: inter;
+    font-size: 14px;
+    color: #afafaf;
+  }
+}
+
+.graphql-result-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.graphql-result-content {
+  flex: 1;
+  padding: 1rem;
+  overflow: auto;
+}
+
+.graphql-result-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #afafaf;
+  font-size: 14px;
+}
+
+.graphql-result-content pre {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text-primary, #d4d4d4);
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.graphql-error {
+  color: #f48771;
+}
+
+.graphql-success {
+  color: #4ec9b0;
+}
+
+.pointer_auto {
+  cursor: pointer;
 }

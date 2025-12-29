@@ -1,14 +1,14 @@
 <aside class="sidebar">
   <a class="logo" href="/"><img src="/icons/logo.svg" width="20px" height="20px" /><span>Fakelab</span></a>
   <div class="sidebar_content">
-    <% if (enabled) { %>
     <div class="database_section">
+      <% if (enabled) { %>
       <a href="/database" class="database_btn">
         <img src="/icons/database.svg" width="18px" height="18px" />
         <span>Database</span>
       </a>
+      <% } %>
     </div>
-    <% } %>
     <div class="sidebar_content_leading">
       <div class="sidebar_content_indicator_icon"></div>
       <span class="sidebar_content_title">Entities</span>
@@ -22,6 +22,10 @@
       <% }) %>
     </div>
   </div>
+  <a href="/graphql" class="graphql_btn">
+    <img src="/icons/graphql-logo.png" width="18px" height="18px" />
+    <span>GraphQL</span>
+  </a>
   <a class="sidebar_docs" href="https://fakerjs.dev/" target="_blank" rel="noopener noreferrer">
     <span>Fakerjs documents</span>
     <img class="icon" src="/icons/link.svg" width="18px" height="18px" />

@@ -7,6 +7,7 @@ import type { Config } from "./config/conf";
 import { DIRNAME } from "./file";
 import { RouteRenderer } from "./routes/renderer";
 import { RouteHandler } from "./routes/handler";
+import { GraphQLHandler } from "./graphql/handler";
 import type { Network } from "./network";
 import type { Database } from "./database";
 
@@ -33,14 +34,21 @@ class RouteRegistry {
 
     const handler = new RouteHandler(builder, this.network, this.database);
 
+    const graphqlHandler = new GraphQLHandler(builder, this.network, this.database);
+
     // template renderers
     this.router.get("/", renderer.index());
+
+    this.router.get("/graphql", renderer.graphql(this.prefix));
 
     this.router.get("/entities/:name", renderer.preview(this.prefix));
 
     this.router.get("/database", renderer.db());
 
     this.router.get("/database/:name", renderer.table(this.prefix));
+
+    // GraphQL endpoint (must be registered before wildcard routes)
+    this.router.all(`/${this.prefix}/graphql`, graphqlHandler.createMiddleware());
 
     // api handlers
     this.router.get(`/${this.prefix}/:name`, handler.entity());

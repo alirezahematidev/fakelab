@@ -5,34 +5,25 @@ import { loadConfig } from "./load-config";
 import type { SnapshotCLIOptions, SnapshotDataSource, SnapshotPrepareOptions, SnapshotSchema, SnapshotUpdateArgs } from "./types";
 import { CWD } from "./file";
 import type { Config } from "./config/conf";
-import { EventSubscriber } from "./events";
 import { Webhook } from "./webhook";
+import { SnapshotEventSubscriber } from "./events/subscribers";
+import type { SnapshotEvent, SnapshotEventArgs } from "./events/types";
 
 export class Snapshot {
   readonly TARGET_LANGUAGE = "typescript";
   readonly DEFAULT_TYPE_NAME = "Fakelab";
   readonly SNAPSHOT_DIR = path.resolve(CWD, ".fakelab/snapshots");
 
-  private history: Set<string> = new Set();
-
   private static _instance: Snapshot;
 
-  private subscriber: EventSubscriber | undefined;
+  private subscriber: SnapshotEventSubscriber | undefined;
 
-  private webhook: Webhook | undefined;
+  private webhook: Webhook<SnapshotEvent, SnapshotEventArgs> | undefined;
 
-  private constructor(private readonly options: SnapshotCLIOptions, private readonly config: Config) {
+  private constructor(private readonly options: SnapshotCLIOptions, readonly config: Config) {
     this.capture = this.capture.bind(this);
-    this.__expose = this.__expose.bind(this);
 
-    this.tryInitializeWebhook();
-  }
-
-  public __expose() {
-    return {
-      config: this.config,
-      webhook: this.webhook,
-    };
+    this.initWebhook();
   }
 
   static async init(options: SnapshotCLIOptions) {
@@ -41,7 +32,9 @@ export class Snapshot {
 
       if (!this._instance) this._instance = new Snapshot(options, config);
 
-      if (this._instance.webhook) this._instance.webhook.activate();
+      if (this._instance.webhook && !this._instance.webhook.isActivated()) {
+        this._instance.webhook.activate();
+      }
 
       return this._instance;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -58,7 +51,9 @@ export class Snapshot {
 
       const { enabled, sources } = config.options.snapshot();
 
-      if (instance.webhook) instance.webhook.activate();
+      if (instance.webhook && !instance.webhook.isActivated()) {
+        instance.webhook.activate();
+      }
 
       if (enabled && options.freshSnapshots) {
         await instance.updateAll(sources, true);
@@ -134,7 +129,7 @@ export class Snapshot {
 
       await this.write(source.url, content, source.name || this.options?.name);
 
-      this.subscriber?.snapshot.captured({ url: source.url, name: source.name ?? this.options?.name, content });
+      this.subscriber?.captured({ url: source.url, name: source.name ?? this.options?.name, content });
 
       Logger.success("Snapshot %s captured successfully.", Logger.blue(capturingName));
     } catch (error) {
@@ -166,11 +161,11 @@ export class Snapshot {
 
     if (exists) {
       const content = await this.fetch(source);
-      this.subscriber?.snapshot.refreshed({ url: source.url, name: source.name ?? this.options?.name, content });
+      this.subscriber?.refreshed({ url: source.url, name: source.name ?? this.options?.name, content });
       await fs.writeFile(filepath, content);
     } else {
       const content = await this.fetch(source);
-      this.subscriber?.snapshot.refreshed({ url: source.url, name: source.name ?? this.options?.name, content });
+      this.subscriber?.refreshed({ url: source.url, name: source.name ?? this.options?.name, content });
       await this.save(source, content, schema);
     }
 
@@ -196,7 +191,7 @@ export class Snapshot {
     await fs.rm(filepath, { force: true });
     await this.updateSnapshotSchema({ url: source.url, delete: true });
 
-    this.subscriber?.snapshot.deleted({ url: source.url, name: source.name ?? this.options?.name });
+    this.subscriber?.deleted({ url: source.url, name: source.name ?? this.options?.name });
 
     Logger.success("Snapshot source %s deleted successfully.", Logger.blue(source.name));
   }
@@ -311,16 +306,16 @@ export class Snapshot {
     await fs.writeJSON(path.resolve(this.SNAPSHOT_DIR, "__schema.json"), schema);
   }
 
-  private tryInitializeWebhook() {
+  private initWebhook() {
     const { enabled } = this.config.options.snapshot();
 
     if (enabled) {
       const opts = this.config.options.webhook();
       if (opts.enabled) {
-        this.subscriber = new EventSubscriber({ hooks: opts.hooks });
+        this.subscriber = new SnapshotEventSubscriber(opts.hooks);
 
         Logger.warn("Initializating webhook...");
-        this.webhook = new Webhook(this.subscriber, this.config, this.history);
+        this.webhook = new Webhook(this.subscriber, this.config);
       }
     }
   }

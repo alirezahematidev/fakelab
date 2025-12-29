@@ -22,7 +22,7 @@ program
   .action(async (options) => {
     const snapshot = await Snapshot.prepare(options);
 
-    Server.init(options, snapshot.__expose()).start();
+    Server.init(options, snapshot.config).start();
   });
 program
   .command("snapshot")

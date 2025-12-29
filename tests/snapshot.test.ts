@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { Config } from "../src/config/conf";
 import type { ConfigOptions } from "../src/types";
+import path from "path";
 
 describe("Snapshot", () => {
   function createConfig(options: ConfigOptions): Config {
@@ -9,7 +10,7 @@ describe("Snapshot", () => {
 
   test("should initialize with default snapshot options", () => {
     const config = createConfig({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
     });
 
     const snapshotOptions = config.options.snapshot();
@@ -19,7 +20,7 @@ describe("Snapshot", () => {
 
   test("should load snapshot options with enabled true", () => {
     const config = createConfig({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       snapshot: {
         enabled: true,
         sources: [],
@@ -33,7 +34,7 @@ describe("Snapshot", () => {
 
   test("should load snapshot options with sources", () => {
     const config = createConfig({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       snapshot: {
         enabled: true,
         sources: [
@@ -60,7 +61,7 @@ describe("Snapshot", () => {
 
   test("should load snapshot options with headers", () => {
     const config = createConfig({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       snapshot: {
         enabled: true,
         sources: [
@@ -85,7 +86,7 @@ describe("Snapshot", () => {
 
   test("should use default values when snapshot options are not provided", () => {
     const config = createConfig({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
     });
 
     const snapshotOptions = config.options.snapshot();
@@ -95,7 +96,7 @@ describe("Snapshot", () => {
 
   test("should handle snapshot with empty sources array", () => {
     const config = createConfig({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       snapshot: {
         enabled: true,
         sources: [],
@@ -109,7 +110,7 @@ describe("Snapshot", () => {
 
   test("should handle snapshot sources without headers", () => {
     const config = createConfig({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       snapshot: {
         enabled: true,
         sources: [

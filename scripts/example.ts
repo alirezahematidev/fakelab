@@ -1,32 +1,16 @@
 import glob from "fast-glob";
 import path from "node:path";
 import fs from "fs-extra";
-import { execa, type ResultPromise } from "execa";
+import { execa } from "execa";
 import { select } from "@inquirer/prompts";
-
-const EXAMPLES_PATH = path.resolve(process.cwd(), "examples");
-
-function wait(serve: ResultPromise<{ stdio: ["pipe", "pipe", "inherit"]; reject: boolean }>) {
-  return new Promise<void>((resolve, reject) => {
-    serve.stdout?.on("data", (chunk) => {
-      const output = chunk.toString();
-      process.stdout.write(output);
-      if (output.includes("Server listening to http://localhost")) resolve();
-    });
-
-    serve.on("exit", (code) => {
-      reject(`Serve exited prematurely with code ${code}`);
-      process.exit(1);
-    });
-  });
-}
+import { Project, Runner } from "./runner";
 
 async function run() {
-  const choices = await glob("./*", { onlyDirectories: true, cwd: EXAMPLES_PATH });
+  const choices = (await glob("./*", { onlyDirectories: true, cwd: Runner.EXAMPLES_PATH })) as Project[];
 
-  const example = await select({ message: "Select a example project", choices });
+  const project = await select<Project>({ message: "Select a example project", choices });
 
-  const target = path.resolve(EXAMPLES_PATH, example);
+  const projectDir = path.resolve(Runner.EXAMPLES_PATH, project);
 
   await execa("yarn", ["link"], {
     cwd: process.cwd(),
@@ -37,39 +21,19 @@ async function run() {
     stdio: "inherit",
   });
 
-  if (!fs.existsSync(path.join(target, "node_modules/fakelab"))) {
+  if (!fs.existsSync(path.join(projectDir, "node_modules/fakelab"))) {
     await execa("yarn", ["link", "fakelab"], {
-      cwd: target,
+      cwd: projectDir,
       stdio: "inherit",
     });
   }
 
   await execa("yarn", ["install", "--check-files"], {
-    cwd: target,
+    cwd: projectDir,
     stdio: "inherit",
   });
 
-  const serve = execa("yarn", ["serve"], {
-    cwd: target,
-    stdio: ["pipe", "pipe", "inherit"],
-    reject: false,
-  });
-
-  await wait(serve);
-
-  const dev = execa("yarn", ["dev"], {
-    cwd: target,
-    stdio: "inherit",
-    reject: false,
-  });
-
-  process.on("SIGINT", () => {
-    serve.kill("SIGINT");
-    dev.kill("SIGINT");
-
-    process.exit(0);
-  });
-  await dev;
+  Runner.start(project);
 }
 
 run().catch(console.error);

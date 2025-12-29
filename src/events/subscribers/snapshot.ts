@@ -1,13 +1,18 @@
+import mitt from "mitt";
 import { Logger } from "../../logger";
 import type { Hook } from "../../types";
-import type { Handler, SnapshotEmitter, SnapshotEvent, SnapshotEventArgs, TriggerEvent } from "../types";
+import type { SnapshotEvent, SnapshotEventArgs, TriggerEvent } from "../types";
+import { BaseSubscriber } from "./base";
 
-export class SnapshotEventSubscriber {
-  constructor(private $emitter: SnapshotEmitter, private readonly hooks: Hook[]) {
+export class SnapshotEventSubscriber extends BaseSubscriber<SnapshotEvent, SnapshotEventArgs> {
+  constructor(private readonly hooks: Hook[]) {
+    const $emitter = mitt<Record<SnapshotEvent, SnapshotEventArgs>>();
+
+    super($emitter);
+
     this.captured = this.captured.bind(this);
     this.refreshed = this.refreshed.bind(this);
     this.deleted = this.deleted.bind(this);
-    this.subscribe = this.subscribe.bind(this);
 
     this.$emitter.all.clear();
   }
@@ -43,15 +48,6 @@ export class SnapshotEventSubscriber {
     } else {
       Logger.warn(`Webhook skipped: missing trigger event %s.`, Logger.blue("snapshot:deleted"));
     }
-  }
-
-  public subscribe(name: string, event: SnapshotEvent, handler: Handler<SnapshotEventArgs>) {
-    this.$emitter.on(event, handler);
-
-    return () => {
-      Logger.info("Webhook %s unsubscribed.", Logger.blue(name));
-      this.$emitter.off(event, handler);
-    };
   }
 
   private getTriggeredHook(event: TriggerEvent) {

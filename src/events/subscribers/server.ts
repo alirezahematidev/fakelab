@@ -1,12 +1,16 @@
-import { Logger } from "../../logger";
+import mitt from "mitt";
 import type { ServerOptions } from "../../types";
-import type { Handler, ServerEmitter, ServerEvent, ServerEventArgs } from "../types";
+import type { ServerEvent, ServerEventArgs } from "../types";
+import { BaseSubscriber } from "./base";
 
-export class ServerEventSubscriber {
-  constructor(private $emitter: ServerEmitter) {
+export class ServerEventSubscriber extends BaseSubscriber<ServerEvent, ServerEventArgs> {
+  constructor() {
+    const $emitter = mitt<Record<ServerEvent, ServerEventArgs>>();
+
+    super($emitter);
+
     this.started = this.started.bind(this);
     this.shutdown = this.shutdown.bind(this);
-    this.subscribe = this.subscribe.bind(this);
   }
 
   public started({ pathPrefix, port }: Required<ServerOptions>) {
@@ -15,14 +19,5 @@ export class ServerEventSubscriber {
 
   public shutdown({ pathPrefix, port }: Required<ServerOptions>) {
     this.$emitter.emit("server:shutdown", { port, prefix: pathPrefix });
-  }
-
-  public subscribe(name: string, event: ServerEvent, handler: Handler<ServerEventArgs>) {
-    this.$emitter.on(event, handler);
-
-    return () => {
-      Logger.info("Webhook %s unsubscribed.", Logger.blue(name));
-      this.$emitter.off(event, handler);
-    };
   }
 }

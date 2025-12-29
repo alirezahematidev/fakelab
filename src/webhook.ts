@@ -1,18 +1,20 @@
 import type { Config } from "./config/conf";
-import type { EventSubscriber } from "./events";
+import type { BaseSubscriber } from "./events/subscribers/base";
 import type { TriggerEvent } from "./events/types";
 import { Logger } from "./logger";
 import type { Hook, HookValidationResult, HttpHeaders, Unsub, WebhookOptions } from "./types";
 
-export class Webhook {
+export class Webhook<E extends string, Arg> {
   private options: WebhookOptions;
   private unsubs: Set<Unsub> = new Set();
+
+  private history: Set<string> = new Set();
 
   private activated: boolean = false;
 
   private static processHandlersRegistered = false;
 
-  constructor(private readonly subscriber: EventSubscriber, private readonly config: Config, private readonly history: Set<string>) {
+  constructor(private readonly subscriber: BaseSubscriber<E, Arg>, private readonly config: Config) {
     this.options = this.config.options.webhook();
 
     this.dispose();
@@ -48,7 +50,7 @@ export class Webhook {
 
       const subscriptionController = new AbortController();
 
-      const unsubscribe = this.subscriber.subscribe(hook.name, hook.trigger.event, (data) => this.handle(hook, data, subscriptionController.signal));
+      const unsubscribe = this.subscriber.subscribe(hook.name, hook.trigger.event as E, (data) => this.handle(hook, data, subscriptionController.signal));
       this.history.add(hook.name);
 
       this.unsubs.add((reason) => {

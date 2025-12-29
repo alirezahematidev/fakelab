@@ -2,6 +2,7 @@ import { describe, expect, test, vi } from "vitest";
 import { Network } from "../src/network";
 import { Config } from "../src/config/conf";
 import type { ConfigOptions } from "../src/types";
+import path from "path";
 
 describe("Network", () => {
   function createNetwork(options: ConfigOptions): Network {
@@ -10,7 +11,7 @@ describe("Network", () => {
 
   test("should initialize with default network options", () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
     });
 
     expect(network).toBeDefined();
@@ -19,7 +20,7 @@ describe("Network", () => {
 
   test("should handle fixed delay", async () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       network: {
         delay: 500,
       },
@@ -35,7 +36,7 @@ describe("Network", () => {
 
   test("should handle delay range", async () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       network: {
         delay: [200, 400],
       },
@@ -58,7 +59,7 @@ describe("Network", () => {
 
   test("should handle zero delay", async () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       network: {
         delay: 0,
       },
@@ -73,7 +74,7 @@ describe("Network", () => {
 
   test("should handle no delay configuration", async () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
     });
 
     const start = Date.now();
@@ -85,7 +86,7 @@ describe("Network", () => {
 
   test("should simulate error rate", () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       network: {
         errorRate: 1.0,
       },
@@ -101,7 +102,7 @@ describe("Network", () => {
 
   test("should simulate zero error rate", () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       network: {
         errorRate: 0,
       },
@@ -117,7 +118,7 @@ describe("Network", () => {
 
   test("should simulate timeout rate", () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       network: {
         timeoutRate: 1.0,
       },
@@ -133,7 +134,7 @@ describe("Network", () => {
 
   test("should simulate zero timeout rate", () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       network: {
         timeoutRate: 0,
       },
@@ -149,7 +150,7 @@ describe("Network", () => {
 
   test("should handle offline mode", () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       network: {
         offline: true,
       },
@@ -160,7 +161,7 @@ describe("Network", () => {
 
   test("should return offline state", () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       network: {
         offline: true,
       },
@@ -173,7 +174,7 @@ describe("Network", () => {
 
   test("should return error state with default values", () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       network: {
         errorRate: 1.0,
       },
@@ -186,7 +187,7 @@ describe("Network", () => {
 
   test("should return error state with custom status codes", () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       network: {
         errorRate: 1.0,
         errors: {
@@ -206,7 +207,7 @@ describe("Network", () => {
 
   test("should handle network presets", () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       network: {
         presets: {
           slow: {
@@ -227,7 +228,7 @@ describe("Network", () => {
 
   test("should override preset with inline options", () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       network: {
         presets: {
           slow: {
@@ -246,7 +247,7 @@ describe("Network", () => {
 
   test("should set network headers in middleware", () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       network: {
         delay: 500,
         errorRate: 0.1,
@@ -269,7 +270,7 @@ describe("Network", () => {
 
   test("should set network headers with offline mode", () => {
     const network = createNetwork({
-      sourcePath: ["./types"],
+      sourcePath: [path.join(__dirname, "fixtures/types")],
       network: {
         offline: true,
       },

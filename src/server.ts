@@ -12,17 +12,14 @@ import type { Config } from "./config/conf";
 import type { ServerCLIOptions, ServerOptions } from "./types";
 import { Database } from "./database";
 import { Webhook } from "./webhook";
-import { EventSubscriber } from "./events";
-
-type ServerBorrowedConfig = { config: Config; webhook: Webhook | undefined };
+import { ServerEventSubscriber } from "./events/subscribers";
+import type { ServerEvent, ServerEventArgs } from "./events/types";
 
 export class Server {
-  private history: Set<string> = new Set();
+  private webhook: Webhook<ServerEvent, ServerEventArgs> | undefined;
+  private subscriber: ServerEventSubscriber | undefined;
 
-  private webhook: Webhook | undefined;
-  private subscriber: EventSubscriber | undefined;
-
-  private constructor(private readonly serverCLIOptions: ServerCLIOptions, private readonly borrowedConfig: ServerBorrowedConfig) {
+  private constructor(private readonly serverCLIOptions: ServerCLIOptions, private readonly config: Config) {
     this.start = this.start.bind(this);
     this.xPoweredMiddleware = this.xPoweredMiddleware.bind(this);
     this.setupApplication = this.setupApplication.bind(this);
@@ -30,35 +27,35 @@ export class Server {
 
     this.loadLocalEnv();
 
-    this.tryInitializeWebhook();
+    this.initWebhook();
 
     process.on("SIGINT", () => {
-      const opts = this.borrowedConfig.config.options.server(this.serverCLIOptions.pathPrefix, this.serverCLIOptions.port);
-      this.subscriber?.server.shutdown(opts);
+      const opts = this.config.options.server(this.serverCLIOptions.pathPrefix, this.serverCLIOptions.port);
+      this.subscriber?.shutdown(opts);
       process.exit(0);
     });
   }
 
-  private tryInitializeWebhook() {
-    const opts = this.borrowedConfig.config.options.webhook();
+  private initWebhook() {
+    const opts = this.config.options.webhook();
 
     if (opts.enabled) {
-      this.subscriber = new EventSubscriber();
+      this.subscriber = new ServerEventSubscriber();
 
       Logger.warn("Initializating webhook...");
 
-      this.webhook = this.borrowedConfig.webhook || new Webhook(this.subscriber, this.borrowedConfig.config, this.history);
+      this.webhook = new Webhook(this.subscriber, this.config);
     }
   }
 
-  public static init(options: ServerCLIOptions, borrowedConfig: ServerBorrowedConfig) {
-    const instance = new Server(options, borrowedConfig);
+  public static init(options: ServerCLIOptions, config: Config) {
+    const server = new Server(options, config);
 
-    if (instance.webhook && !instance.webhook.isActivated()) {
-      instance.webhook.activate();
+    if (server.webhook && !server.webhook.isActivated()) {
+      server.webhook.activate();
     }
 
-    return instance;
+    return server;
   }
 
   public async start() {
@@ -68,19 +65,19 @@ export class Server {
 
     const server = http.createServer(app);
 
-    const network = Network.initHandlers(this.borrowedConfig.config);
+    const network = Network.initHandlers(this.config);
 
-    const database = Database.register(this.borrowedConfig.config);
+    const database = Database.register(this.config);
 
     this.setupApplication(app, network);
 
     this.setupTemplateEngine(app);
 
-    await this.borrowedConfig.config.initializeRuntimeConfig(DIRNAME, this.serverCLIOptions);
+    await this.config.initializeRuntimeConfig(DIRNAME, this.serverCLIOptions);
 
     await database.initialize();
 
-    const registry = new RouteRegistry(router, this.borrowedConfig.config, network, database, this.serverCLIOptions);
+    const registry = new RouteRegistry(router, this.config, network, database, this.serverCLIOptions);
 
     await registry.register();
 
@@ -107,7 +104,7 @@ export class Server {
   }
 
   private listen(database: Database, opts: Required<ServerOptions>) {
-    this.subscriber?.server.started(opts);
+    this.subscriber?.started(opts);
 
     if (database.enabled()) Logger.info(`database: %s`, database.DATABASE_DIR);
 
@@ -117,7 +114,7 @@ export class Server {
   }
 
   private run(server: http.Server, database: Database, options: ServerCLIOptions) {
-    const opts = this.borrowedConfig.config.options.server(options.pathPrefix, options.port);
+    const opts = this.config.options.server(options.pathPrefix, options.port);
 
     server.listen(opts.port, "localhost", () => this.listen(database, opts));
   }

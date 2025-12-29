@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.0](https://github.com/alirezahematidev/fakelab/compare/v0.0.34...v1.0.0) (2025-12-29)
+
+### Features
+
+* add node-express-webhook example project ([5f6be4a](https://github.com/alirezahematidev/fakelab/commit/5f6be4a5160949614180704c68f7ad198853999d))
+* server subscription ([74ac7c7](https://github.com/alirezahematidev/fakelab/commit/74ac7c7a353c1473a955d6dc1af76c271cf56c6f))
+
+### Bug Fixes
+
+* examples reset to manual ([1539a17](https://github.com/alirezahematidev/fakelab/commit/1539a170353fcad7bf2e15fb06eb932cc5d54833))
+* type error ([3082b52](https://github.com/alirezahematidev/fakelab/commit/3082b52a9e4f7509c30edc4cd85f5f0d0b4ecea8))
+
 ## [0.0.34](https://github.com/alirezahematidev/fakelab/compare/v0.0.32...v0.0.34) (2025-12-28)
 
 ### Bug Fixes

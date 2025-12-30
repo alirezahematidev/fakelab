@@ -2,13 +2,21 @@ import express from "express";
 import qs from "qs";
 import type { Builder } from "../types";
 import type { Database } from "../database";
+import type { Config } from "../config/conf";
+import type { GraphQLBuilder } from "../graphql/builder";
 
 interface PackageJson {
   version: string;
 }
 
 class RouteRenderer {
-  constructor(private readonly builder: Builder, private readonly database: Database, private readonly pkg: PackageJson) {}
+  constructor(
+    private readonly builder: Builder,
+    private readonly database: Database,
+    private readonly config: Config,
+    private readonly graphqlBuilder: GraphQLBuilder,
+    private readonly pkg: PackageJson
+  ) {}
 
   private async handleQueries(request: express.Request) {
     const count = request.query.count;
@@ -20,7 +28,7 @@ class RouteRenderer {
 
   index() {
     return (_: express.Request, res: express.Response) => {
-      res.render("index", { name: null, entities: this.builder.entities, version: this.pkg.version, enabled: this.database.enabled() });
+      res.render("index", { name: null, entities: this.builder.entities, version: this.pkg.version, dbEnabled: this.database.enabled() });
     };
   }
 
@@ -50,7 +58,8 @@ class RouteRenderer {
           prefix,
           entities: this.builder.entities,
           version: this.pkg.version,
-          enabled: this.database.enabled(),
+          dbEnabled: this.database.enabled(),
+          graphqlEnabled: this.config.options.graphql().enabled,
         });
       } else res.redirect("/");
     };
@@ -102,16 +111,48 @@ class RouteRenderer {
   }
 
   graphql(prefix: string) {
+    return (_: express.Request, res: express.Response) => {
+      const { enabled } = this.config.options.graphql();
+
+      if (!enabled) res.redirect("/");
+      else
+        res.render("graphql", {
+          name: null,
+          address: "",
+          prefix,
+          query: "",
+          entities: this.builder.entities,
+          version: this.pkg.version,
+          dbEnabled: this.database.enabled(),
+        });
+    };
+  }
+
+  graphqlEntity(prefix: string) {
     return (req: express.Request, res: express.Response) => {
       const address = `${req.protocol}://${req.host}/`;
+      const name = req.params.name;
 
-      res.render("graphql", {
-        address,
-        prefix,
-        entities: this.builder.entities,
-        version: this.pkg.version,
-        enabled: this.database.enabled(),
-      });
+      const entity = this.builder.entities.get(name.toLowerCase());
+
+      const { enabled } = this.config.options.graphql();
+
+      if (!enabled) res.redirect("/");
+      else {
+        if (entity) {
+          const graphqlQuery = this.graphqlBuilder.buildQuery(name.toLowerCase(), entity.type);
+
+          res.render("graphql", {
+            name,
+            address,
+            prefix,
+            query: graphqlQuery,
+            entities: this.builder.entities,
+            version: this.pkg.version,
+            dbEnabled: this.database.enabled(),
+          });
+        } else res.redirect("/graphql");
+      }
     };
   }
 }

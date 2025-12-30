@@ -189,6 +189,13 @@ export type WebhookOptions = {
   hooks: Hook[];
 };
 
+export type GraphqlOptions = {
+  /**
+   * Enables graphql.
+   */
+  enabled: boolean;
+};
+
 export type ConfigOptions = {
   /**
    * Path or paths to the source files that define the typescript types.
@@ -225,6 +232,12 @@ export type ConfigOptions = {
    * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/webhook|Webhook Documentation}
    */
   webhook?: WebhookOptions;
+
+  /**
+   * GraphQL configuration.
+   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/graphql|GraphQL Documentation}
+   */
+  graphql?: GraphqlOptions;
 };
 
 export type UserConfig = {

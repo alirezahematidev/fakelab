@@ -349,6 +349,7 @@ pre {
   width: 32px;
   cursor: pointer;
   transition: opacity 250ms ease-in-out;
+  text-decoration: none;
   &:hover > .icon {
     opacity: 1;
   }
@@ -685,7 +686,7 @@ pre {
 }
 
 .graphql-execute-btn:hover {
-  background: var(--accent-hover, #005a9e);
+  background: #005a9e;
 }
 
 .graphql-editor-wrapper {
@@ -711,9 +712,19 @@ pre {
   tab-size: 2;
 }
 
+.graphql-query-editor::-webkit-scrollbar {
+  width: 10px;
+}
+.graphql-query-editor::-webkit-scrollbar-track {
+  background: hsl(0, 0%, 12%);
+}
+.graphql-query-editor::-webkit-scrollbar-thumb {
+  background: hsl(0, 0%, 18%);
+}
+
 .graphql-query-editor:focus {
   outline: none;
-  border-color: var(--accent-color, #007acc);
+  border-color: #007acc;
 }
 
 .graphql-result-section {
@@ -742,13 +753,35 @@ pre {
 .graphql-result-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 12px;
+}
+
+.graphql-result-actions .graphql-action-item {
+  transition: opacity 250ms ease-in-out;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  &:hover > .icon {
+    opacity: 1;
+  }
 }
 
 .graphql-result-content {
   flex: 1;
   padding: 1rem;
   overflow: auto;
+}
+
+.graphql-result-content::-webkit-scrollbar {
+  width: 10px;
+}
+.graphql-result-content::-webkit-scrollbar-track {
+  background: hsl(0, 0%, 12%);
+}
+.graphql-result-content::-webkit-scrollbar-thumb {
+  background: hsl(0, 0%, 18%);
 }
 
 .graphql-result-placeholder {
@@ -764,7 +797,7 @@ pre {
   margin: 0;
   padding: 0;
   background: transparent;
-  color: var(--text-primary, #d4d4d4);
+  color: #d4d4d4;
   font-family: "Consolas", "Monaco", "Courier New", monospace;
   font-size: 14px;
   line-height: 1.5;

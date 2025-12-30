@@ -2,14 +2,14 @@ import express from "express";
 import fs from "fs-extra";
 import path from "node:path";
 import { prepareBuilder } from "./factory";
-import type { ServerCLIOptions } from "./types";
-import type { Config } from "./config/conf";
 import { DIRNAME } from "./file";
+import { GraphQLBuilder } from "./graphql/builder";
 import { RouteRenderer } from "./routes/renderer";
 import { RouteHandler } from "./routes/handler";
-import { GraphQLHandler } from "./graphql/handler";
 import type { Network } from "./network";
 import type { Database } from "./database";
+import type { Config } from "./config/conf";
+import type { ServerCLIOptions } from "./types";
 
 const packageJson = fs.readJSONSync(path.join(DIRNAME, "../package.json"));
 
@@ -30,16 +30,17 @@ class RouteRegistry {
   async register() {
     const builder = await prepareBuilder(this.config, this.serverCLIOptions, this.database);
 
-    const renderer = new RouteRenderer(builder, this.database, packageJson);
+    const graphqlBuilder = new GraphQLBuilder(builder, this.network, this.database);
 
     const handler = new RouteHandler(builder, this.network, this.database);
 
-    const graphqlHandler = new GraphQLHandler(builder, this.network, this.database);
+    const renderer = new RouteRenderer(builder, this.database, this.config, graphqlBuilder, packageJson);
 
     // template renderers
     this.router.get("/", renderer.index());
 
     this.router.get("/graphql", renderer.graphql(this.prefix));
+    this.router.get("/graphql/:name", renderer.graphqlEntity(this.prefix));
 
     this.router.get("/entities/:name", renderer.preview(this.prefix));
 
@@ -47,8 +48,7 @@ class RouteRegistry {
 
     this.router.get("/database/:name", renderer.table(this.prefix));
 
-    // GraphQL endpoint (must be registered before wildcard routes)
-    this.router.all(`/${this.prefix}/graphql`, graphqlHandler.createMiddleware());
+    this.router.all(`/${this.prefix}/graphql`, graphqlBuilder.createMiddleware());
 
     // api handlers
     this.router.get(`/${this.prefix}/:name`, handler.entity());

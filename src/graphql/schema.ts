@@ -26,7 +26,7 @@ class GraphQLSchemaGenerator {
     if (type.isString()) return GraphQLString;
     if (type.isNumber()) return GraphQLFloat;
     if (type.isBoolean()) return GraphQLBoolean;
-    if (type.isBigInt()) return GraphQLString; // GraphQL doesn't have BigInt, use String
+    if (type.isBigInt()) return GraphQLString;
 
     if (type.isArray()) {
       const elementType = type.getArrayElementTypeOrThrow();
@@ -53,7 +53,7 @@ class GraphQLSchemaGenerator {
       }
     }
 
-    return GraphQLString; // Default fallback
+    return GraphQLString;
   }
 
   private getTypeName(type: Type): string | null {
@@ -100,44 +100,40 @@ class GraphQLSchemaGenerator {
     const queryFields: GraphQLFieldConfigMap<any, any> = {};
     const mutationFields: GraphQLFieldConfigMap<any, any> = {};
 
-    // Generate query fields for each entity
     for (const [entityName, entity] of this.builder.entities) {
       const graphqlType = this.tsTypeToGraphQLType(entity.type);
 
       if (graphqlType instanceof GraphQLObjectType || graphqlType instanceof GraphQLList) {
-        // Query: getEntityName(count: Int): [EntityType]
         const listType = graphqlType instanceof GraphQLList ? graphqlType : new GraphQLList(graphqlType);
         queryFields[entityName] = {
           type: listType,
           args: {
             count: { type: GraphQLInt },
           },
-          resolve: async (_: any, args: { count?: number }) => {
+          resolve: async (_, args: { count?: number }) => {
             const { data } = await this.builder.build(entity.type, { count: args.count || 1 });
             return Array.isArray(data) ? data : [data];
           },
         };
 
-        // Query: getEntityNameById(id: ID): EntityType (for database mode)
         queryFields[`${entityName}ById`] = {
           type: graphqlType instanceof GraphQLList ? graphqlType.ofType : graphqlType,
           args: {
             id: { type: new GraphQLNonNull(GraphQLID) },
           },
-          resolve: async (_: any, args: { id: string }, context: any) => {
+          resolve: async (_, args: { id: string }, context) => {
             if (!context.database?.enabled()) {
               throw new Error("Database is not enabled");
             }
             await entity.table.read();
-            const item = entity.table.data.find((item: any) => String(item.id) === args.id);
+            const item = entity.table.data.find((item) => String((item as { id: string }).id) === args.id);
             return item || null;
           },
         };
 
-        // Query: getAllEntityName: [EntityType] (for database mode)
         queryFields[`all${entityName.charAt(0).toUpperCase() + entityName.slice(1)}`] = {
           type: new GraphQLList(graphqlType instanceof GraphQLList ? graphqlType.ofType : graphqlType),
-          resolve: async (_: any, __: any, context: any) => {
+          resolve: async (_, __, context) => {
             if (!context.database?.enabled()) {
               throw new Error("Database is not enabled");
             }
@@ -146,7 +142,6 @@ class GraphQLSchemaGenerator {
           },
         };
 
-        // Mutation: createEntityName(input: EntityTypeInput!): EntityType
         const inputType = this.tsTypeToGraphQLType(entity.type, true);
         if (inputType instanceof GraphQLInputObjectType) {
           mutationFields[`create${entityName.charAt(0).toUpperCase() + entityName.slice(1)}`] = {
@@ -154,7 +149,7 @@ class GraphQLSchemaGenerator {
             args: {
               input: { type: new GraphQLNonNull(inputType) },
             },
-            resolve: async (_: any, args: { input: any }, context: any) => {
+            resolve: async (_, args: { input: { id: string } }, context) => {
               if (!context.database?.enabled()) {
                 throw new Error("Database is not enabled");
               }
@@ -166,18 +161,17 @@ class GraphQLSchemaGenerator {
           };
         }
 
-        // Mutation: deleteEntityName(id: ID!): Boolean
         mutationFields[`delete${entityName.charAt(0).toUpperCase() + entityName.slice(1)}`] = {
           type: GraphQLBoolean,
           args: {
             id: { type: new GraphQLNonNull(GraphQLID) },
           },
-          resolve: async (_: any, args: { id: string }, context: any) => {
+          resolve: async (_, args: { id: string }, context) => {
             if (!context.database?.enabled()) {
               throw new Error("Database is not enabled");
             }
             await entity.table.read();
-            const index = entity.table.data.findIndex((item: any) => String(item.id) === args.id);
+            const index = entity.table.data.findIndex((item) => String((item as { id: string }).id) === args.id);
             if (index !== -1) {
               await entity.table.update((items) => items.splice(index, 1));
               return true;
@@ -186,10 +180,9 @@ class GraphQLSchemaGenerator {
           },
         };
 
-        // Mutation: flushEntityName: Boolean
         mutationFields[`flush${entityName.charAt(0).toUpperCase() + entityName.slice(1)}`] = {
           type: GraphQLBoolean,
-          resolve: async (_: any, __: any, context: any) => {
+          resolve: async (_, __, context) => {
             if (!context.database?.enabled()) {
               throw new Error("Database is not enabled");
             }

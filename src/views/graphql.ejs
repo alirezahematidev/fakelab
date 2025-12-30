@@ -1,45 +1,38 @@
-<%- include("components/sidebar", {entities, name: null, version, enabled }) %> <% title = "GraphQL" %>
+<%- include("components/graphql/sidebar", {entities, name, version }) %> <% title = "GraphQL" %>
 <main class="main">
   <header class="header">
     <span class="interface_name">GraphQL Playground</span>
   </header>
   <div class="preview">
+    <% if (!name) { %>
+    <div class="nodata">
+      <span>Select an entity to get the corresponding GraphQL query.</span>
+    </div>
+    <% } else { %>
     <div class="graphql-container">
       <div class="graphql-editor-section">
         <div class="graphql-toolbar">
           <div class="graphql-endpoint">
             <span class="endpoint-method">POST</span>
             <span id="graphql-endpoint-url" class="endpoint-url"><%= address %><%= prefix %>/graphql</span>
-            <img id="graphql-copy-btn" onclick="copyGraphQLEndpoint()" class="icon pointer_auto" src="/icons/copy.svg" width="16px" height="16px" />
+            <img id="graphql-copy-btn" title="Copy the URL" onclick="copyGraphQLEndpoint()" class="icon pointer_auto" src="/icons/copy.svg" width="16px" height="16px" />
           </div>
           <button class="graphql-execute-btn" onclick="executeGraphQLQuery()">
             <span>Execute Query</span>
           </button>
         </div>
         <div class="graphql-editor-wrapper">
-          <textarea
-            id="graphql-query-editor"
-            class="graphql-query-editor"
-            placeholder="Enter your GraphQL query here...&#10;&#10;Example:&#10;query {&#10;  user(count: 2) {&#10;    id&#10;    name&#10;  }&#10;}"
-          >
-query {
-  user(count: 2) {
-    id
-    name
-  }
-}</textarea
-          >
+          <textarea id="graphql-query-editor" class="graphql-query-editor" placeholder="Enter your GraphQL query here..."><%- query || "" %></textarea>
         </div>
       </div>
       <div class="graphql-result-section">
         <div class="graphql-result-header">
           <span>Response</span>
           <div class="graphql-result-actions">
-            <div class="toolbar_action_item" onclick="copyGraphQLResult()">
+            <div class="graphql-action-item" title="Copy" onclick="copyGraphQLResult()">
               <img class="icon" src="/icons/copy.svg" width="18px" height="18px" />
             </div>
-            <div class="divider"></div>
-            <div class="toolbar_action_item" onclick="clearGraphQLResult()">
+            <div class="graphql-action-item" title="Clear" onclick="clearGraphQLResult()">
               <img class="icon" src="/icons/eraser.svg" width="18px" height="18px" />
             </div>
           </div>
@@ -51,79 +44,10 @@ query {
         </div>
       </div>
     </div>
+    <% } %>
   </div>
 </main>
 
-<script>
-  const graphqlEndpoint = "<%= address %><%= prefix %>/graphql";
-
-  function copyGraphQLEndpoint() {
-    navigator.clipboard.writeText(graphqlEndpoint);
-    const btn = document.getElementById("graphql-copy-btn");
-    const originalSrc = btn.src;
-    btn.src = "/icons/copy.svg";
-    setTimeout(() => {
-      btn.src = originalSrc;
-    }, 200);
-  }
-
-  function copyGraphQLResult() {
-    const resultEl = document.getElementById("graphql-result");
-    const text = resultEl.textContent || resultEl.innerText;
-    if (text && !text.includes("Execute a query")) {
-      navigator.clipboard.writeText(text);
-    }
-  }
-
-  function clearGraphQLResult() {
-    const resultEl = document.getElementById("graphql-result");
-    resultEl.innerHTML = '<div class="graphql-result-placeholder"><span>Execute a query to see results here</span></div>';
-  }
-
-  async function executeGraphQLQuery() {
-    const queryEditor = document.getElementById("graphql-query-editor");
-    const resultEl = document.getElementById("graphql-result");
-    const query = queryEditor.value.trim();
-
-    if (!query) {
-      resultEl.innerHTML = '<div class="graphql-error">Please enter a GraphQL query</div>';
-      return;
-    }
-
-    resultEl.innerHTML = '<div class="graphql-result-placeholder"><span>Executing query...</span></div>';
-
-    try {
-      const response = await fetch(graphqlEndpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ query }),
-      });
-
-      const data = await response.json();
-      const formatted = JSON.stringify(data, null, 2);
-
-      if (data.errors) {
-        resultEl.innerHTML = `<pre class="graphql-error">${formatted}</pre>`;
-      } else {
-        resultEl.innerHTML = `<pre class="graphql-success">${formatted}</pre>`;
-      }
-    } catch (error) {
-      resultEl.innerHTML = `<pre class="graphql-error">Error: ${error.message}</pre>`;
-    }
-  }
-
-  // Allow Ctrl+Enter to execute query
-  document.addEventListener("DOMContentLoaded", () => {
-    const editor = document.getElementById("graphql-query-editor");
-    if (editor) {
-      editor.addEventListener("keydown", (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-          e.preventDefault();
-          executeGraphQLQuery();
-        }
-      });
-    }
-  });
-</script>
+<% if (name) { %>
+<script id="gql-script" data-address="<%= address %>" data-prefix="<%= prefix %>" src="/js/fakelab-gql.min.js"></script>
+<% } %>

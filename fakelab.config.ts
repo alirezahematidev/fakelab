@@ -17,5 +17,6 @@ export default defineConfig({
     ],
   },
   database: { enabled: true },
+  graphql: { enabled: true },
   network: { delay: [500, 1500] },
 });

@@ -110,8 +110,17 @@ export class Config {
       hooks: this.configOptions.webhook?.hooks ?? [],
     };
   }
+
+  public enabled() {
+    return this.configOptions.enabled ?? true;
+  }
+
   public async files(_sourcePath?: string) {
-    const sourcePaths = this.resolveSourcePath(_sourcePath || this.configOptions.sourcePath);
+    const inputSourcePath = _sourcePath || this.configOptions.sourcePath;
+
+    if (!inputSourcePath || !this.enabled()) return [];
+
+    const sourcePaths = this.resolveSourcePath(inputSourcePath);
 
     const resolvedFiles = Array.from(new Set((await Promise.all(sourcePaths.map((src) => this.resolveTSFiles(src)))).flat()));
 
@@ -135,6 +144,11 @@ export class Config {
   }
 
   async initializeRuntimeConfig(dirname: string, options: ServerCLIOptions) {
+    if (!this.enabled()) {
+      Logger.warn("Fakelab is disabled. Skipping runtime initialization.");
+      return;
+    }
+
     const { port, pathPrefix } = this._serverOptions(options.pathPrefix, options.port);
 
     const sourcePath = path.resolve(dirname, this.RUNTIME_SOURCE_FILENAME);

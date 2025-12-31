@@ -2,6 +2,7 @@ import { defineConfig } from "fakelab";
 
 export default defineConfig({
   sourcePath: ["./fixtures"],
+  enabled: false,
   server: { port: 50001, includeSnapshots: true },
   snapshot: {
     enabled: true,

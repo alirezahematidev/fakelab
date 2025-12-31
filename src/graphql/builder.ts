@@ -5,11 +5,12 @@ import type { Network } from "../network";
 import type { Database } from "../database";
 import type express from "express";
 import type { Type } from "ts-morph";
+import type { Config } from "../config/conf";
 
 class GraphQLBuilder {
   private schema: ReturnType<GraphQLSchemaGenerator["generateSchema"]> | null = null;
 
-  constructor(private readonly builder: Builder, private readonly network: Network, private readonly database: Database) {}
+  constructor(private readonly builder: Builder, private readonly network: Network, private readonly database: Database, private readonly config: Config) {}
 
   private async applyNetworkHandlers(res: express.Response): Promise<boolean> {
     if (this.network.offline()) {
@@ -44,6 +45,10 @@ class GraphQLBuilder {
     const schema = this.getSchema();
 
     return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+      if (!this.config.enabled()) {
+        return;
+      }
+
       if (await this.applyNetworkHandlers(res)) {
         return;
       }

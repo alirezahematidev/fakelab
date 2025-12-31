@@ -10,13 +10,19 @@ interface PackageJson {
 }
 
 class RouteRenderer {
+  private isFakelabEnabled: boolean;
+  private isDatabaseEnabled: boolean;
+
   constructor(
     private readonly builder: Builder,
     private readonly database: Database,
     private readonly config: Config,
     private readonly graphqlBuilder: GraphQLBuilder,
     private readonly pkg: PackageJson
-  ) {}
+  ) {
+    this.isFakelabEnabled = this.config.enabled();
+    this.isDatabaseEnabled = this.database.enabled();
+  }
 
   private async handleQueries(request: express.Request) {
     const count = request.query.count;
@@ -28,12 +34,20 @@ class RouteRenderer {
 
   index() {
     return (_: express.Request, res: express.Response) => {
-      res.render("index", { name: null, entities: this.builder.entities, version: this.pkg.version, dbEnabled: this.database.enabled() });
+      res.render("index", {
+        name: null,
+        entities: this.builder.entities,
+        version: this.pkg.version,
+        isFakelabEnabled: this.isFakelabEnabled,
+        isDatabaseEnabled: this.isDatabaseEnabled,
+      });
     };
   }
 
   preview(prefix: string) {
     return async (req: express.Request, res: express.Response) => {
+      if (!this.isFakelabEnabled) return res.redirect("/");
+
       const address = `${req.protocol}://${req.host}/`;
 
       const name = req.params.name;
@@ -48,6 +62,8 @@ class RouteRenderer {
         const { json } = await this.builder.build(entity.type, queries);
         const filepath = entity.filepath;
 
+        const graphqlOptions = this.config.options.graphql();
+
         res.render("preview", {
           name,
           suffix: entity.snapshot ? "(snapshot)" : "",
@@ -58,8 +74,9 @@ class RouteRenderer {
           prefix,
           entities: this.builder.entities,
           version: this.pkg.version,
-          dbEnabled: this.database.enabled(),
-          graphqlEnabled: this.config.options.graphql().enabled,
+          isDatabaseEnabled: this.isDatabaseEnabled,
+          isFakelabEnabled: this.isFakelabEnabled,
+          isGraphqlEnabled: graphqlOptions.enabled,
         });
       } else res.redirect("/");
     };
@@ -67,7 +84,9 @@ class RouteRenderer {
 
   db() {
     return (_: express.Request, res: express.Response) => {
-      const enabled = this.database.enabled();
+      if (!this.isFakelabEnabled) return res.redirect("/");
+
+      const enabled = this.isDatabaseEnabled;
 
       if (!enabled) res.redirect("/");
       else res.render("database", { name: null, entities: this.builder.entities, version: this.pkg.version });
@@ -76,13 +95,15 @@ class RouteRenderer {
 
   table(prefix: string) {
     return async (req: express.Request, res: express.Response) => {
+      if (!this.isFakelabEnabled) return res.redirect("/");
+
       const address = `${req.protocol}://${req.host}/`;
 
       const name = req.params.name;
 
       const entity = this.builder.entities.get(name.toLowerCase());
 
-      const enabled = this.database.enabled();
+      const enabled = this.isDatabaseEnabled;
 
       if (!enabled) res.redirect("/");
       else {
@@ -104,6 +125,7 @@ class RouteRenderer {
             hasData,
             entities: this.builder.entities,
             version: this.pkg.version,
+            isFakelabEnabled: this.isFakelabEnabled,
           });
         } else res.redirect("/database");
       }
@@ -112,6 +134,8 @@ class RouteRenderer {
 
   graphql(prefix: string) {
     return (_: express.Request, res: express.Response) => {
+      if (!this.isFakelabEnabled) return res.redirect("/");
+
       const { enabled } = this.config.options.graphql();
 
       if (!enabled) res.redirect("/");
@@ -123,13 +147,16 @@ class RouteRenderer {
           query: "",
           entities: this.builder.entities,
           version: this.pkg.version,
-          dbEnabled: this.database.enabled(),
+          isDatabaseEnabled: this.isDatabaseEnabled,
+          isFakelabEnabled: this.isFakelabEnabled,
         });
     };
   }
 
   graphqlEntity(prefix: string) {
     return (req: express.Request, res: express.Response) => {
+      if (!this.isFakelabEnabled) return res.redirect("/");
+
       const address = `${req.protocol}://${req.host}/`;
       const name = req.params.name;
 
@@ -149,7 +176,8 @@ class RouteRenderer {
             query: graphqlQuery,
             entities: this.builder.entities,
             version: this.pkg.version,
-            dbEnabled: this.database.enabled(),
+            isDatabaseEnabled: this.isDatabaseEnabled,
+            isFakelabEnabled: this.isFakelabEnabled,
           });
         } else res.redirect("/graphql");
       }

@@ -202,6 +202,18 @@ export type ConfigOptions = {
    */
   sourcePath: string | string[];
   /**
+   * Enables or disables Fakelab.
+   *
+   * When set to `false`, Fakelab will not initialize or start any services,
+   * regardless of other configuration options.
+   *
+   * This is useful for conditionally enabling Fakelab based on the current
+   * runtime environment (for example, `process.env.NODE_ENV === "development"`).
+   *
+   * @default true
+   */
+  enabled?: boolean;
+  /**
    * Server-related configuration.
    * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/server-command|Server Documentation}
    */
@@ -223,6 +235,7 @@ export type ConfigOptions = {
   network?: NetworkOptions;
   /**
    * Snapshot configuration.
+   *
    * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/snapshot|Snapshot Documentation}
    */
   snapshot?: SnapshotOptions;

@@ -55,7 +55,7 @@ export class Snapshot {
         instance.webhook.activate();
       }
 
-      if (enabled && options.freshSnapshots) {
+      if (enabled && instance.config.enabled() && options.freshSnapshots) {
         await instance.updateAll(sources, true);
       }
 
@@ -67,10 +67,15 @@ export class Snapshot {
   }
 
   async capture(url: string | undefined) {
+    if (!this.config.enabled()) {
+      Logger.error("Fakelab is disabled. Capture Skipped.");
+      return;
+    }
+
     const { enabled, sources } = this.config.options.snapshot();
 
     if (!enabled) {
-      Logger.warn("Snapshot is not enabled. Capture Skipped.");
+      Logger.warn("Snapshot is disabled. Capture Skipped.");
       return;
     }
 
@@ -307,6 +312,8 @@ export class Snapshot {
   }
 
   private initWebhook() {
+    if (!this.config.enabled()) return;
+
     const { enabled } = this.config.options.snapshot();
 
     if (enabled) {

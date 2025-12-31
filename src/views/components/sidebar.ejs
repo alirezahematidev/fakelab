@@ -2,24 +2,32 @@
   <a class="logo" href="/"><img src="/icons/logo.svg" width="20px" height="20px" /><span>Fakelab</span></a>
   <div class="sidebar_content">
     <div class="database_section">
-      <% if (dbEnabled) { %>
-      <a href="/database" class="database_btn">
+      <% if (isDatabaseEnabled) { %>
+      <a href="/database" class="database_btn <%= !isFakelabEnabled ? "disabled" : "" %>">
         <img src="/icons/database.svg" width="18px" height="18px" />
         <span>Database</span>
       </a>
       <% } %>
     </div>
-    <div class="sidebar_content_leading">
-      <div class="sidebar_content_indicator_icon"></div>
-      <span class="sidebar_content_title">Entities</span>
-    </div>
+    <% if(isFakelabEnabled) { %>
+      <div class="sidebar_content_leading">
+        <div class="sidebar_content_indicator_icon"></div>
+        <span class="sidebar_content_title">Entities</span>
+      </div>
+    <% } %>
     <div class="sidebar_content_list">
-      <% entities.forEach((entity,entityName) => { %>
-      <a class="sidebar_content_list_item <%= entityName === name ? 'active' : '' %>" href="/entities/<%= entityName %>">
-        <span class="item_name"><%= entityName %></span>
-        <span class="item_filepath"><%= entity.snapshot ? "(snapshot)" : entity.filepath %></span>
-      </a>
-      <% }) %>
+    <% if(entities.size > 0) { %>
+        <% entities.forEach((entity,entityName) => { %>
+        <a class="sidebar_content_list_item <%= (entityName === name && isFakelabEnabled) ? 'active' : '' %>" href="/entities/<%= entityName %>">
+          <span class="item_name"><%= entityName %></span>
+          <span class="item_filepath"><%= entity.snapshot ? "(snapshot)" : entity.filepath %></span>
+        </a>
+        <% }) %>
+    <% } else { %>
+        <div class="sidebar_notfound">
+          <span>Can't load any entities.</span>
+        </div>
+    <% } %>
     </div>
   </div>
   <a class="sidebar_docs" href="https://fakerjs.dev/" target="_blank" rel="noopener noreferrer">

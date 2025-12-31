@@ -40,6 +40,10 @@ export class Server {
     const opts = this.config.options.webhook();
 
     if (opts.enabled) {
+      if (!this.config.enabled()) {
+        Logger.warn("Fakelab is disabled. Skipped webhook initialization.");
+        return;
+      }
       this.subscriber = new ServerEventSubscriber();
 
       Logger.warn("Initializating webhook...");
@@ -106,11 +110,13 @@ export class Server {
   private listen(database: Database, opts: Required<ServerOptions>) {
     this.subscriber?.started(opts);
 
-    if (database.enabled()) Logger.info(`database: %s`, database.DATABASE_DIR);
+    if (database.enabled() && this.config.enabled()) Logger.info(`database enabled (%s)`, database.DATABASE_DIR);
 
-    Logger.info(`Server listening to http://localhost:%d`, opts.port);
+    Logger.info(`Server%s listening at http://localhost:%d`, !this.config.enabled() ? "(disabled)" : "", opts.port);
 
-    console.log(figlet.textSync("FAKELAB"));
+    if (this.config.enabled()) {
+      console.log(figlet.textSync("FAKELAB"));
+    }
   }
 
   private run(server: http.Server, database: Database, options: ServerCLIOptions) {

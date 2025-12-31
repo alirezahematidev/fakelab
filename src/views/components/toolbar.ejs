@@ -10,7 +10,7 @@
     <div id="overlay_trigger" title="Open Settings" class="toolbar_setting_option" onclick="openSettings()">
       <img class="icon" src="/icons/settings.svg" width="18px" height="18px" />
     </div>
-    <% if(graphqlEnabled) { %>
+    <% if(isGraphqlEnabled) { %>
     <a href="/graphql/<%= name %>" class="toolbar_setting_option" title="Open GraphQL Playground">
       <img class="icon" src="/icons/graphql-logo.png" width="18px" height="18px" />
     </a>

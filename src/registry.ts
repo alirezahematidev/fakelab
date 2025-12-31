@@ -30,9 +30,9 @@ class RouteRegistry {
   async register() {
     const builder = await prepareBuilder(this.config, this.serverCLIOptions, this.database);
 
-    const graphqlBuilder = new GraphQLBuilder(builder, this.network, this.database);
+    const graphqlBuilder = new GraphQLBuilder(builder, this.network, this.database, this.config);
 
-    const handler = new RouteHandler(builder, this.network, this.database);
+    const handler = new RouteHandler(builder, this.network, this.database, this.config);
 
     const renderer = new RouteRenderer(builder, this.database, this.config, graphqlBuilder, packageJson);
 

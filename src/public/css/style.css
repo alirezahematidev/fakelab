@@ -112,6 +112,12 @@ pre {
     background: linear-gradient(to right bottom, oklch(70.4% 0.14 182.503), oklch(71.5% 0.143 215.221));
   }
 }
+
+.database_section .database_btn.disabled {
+  pointer-events: none;
+  opacity: 0.4;
+}
+
 .graphql_btn {
   display: flex;
   gap: 8px;
@@ -144,6 +150,18 @@ pre {
   flex-direction: column;
   gap: 2px;
   overflow: auto;
+}
+
+.sidebar_content .sidebar_notfound {
+  display: flex;
+  min-height: 200px;
+  align-items: center;
+  justify-content: center;
+  > span {
+    font-style: italic;
+    color: oklch(98.463% 0.00181 249.248 / 0.7);
+    font-size: 14px;
+  }
 }
 
 .sidebar_content_list::-webkit-scrollbar {

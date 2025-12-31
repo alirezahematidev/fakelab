@@ -8,7 +8,7 @@ import type {
   ConfigOptions,
   DatabaseOptions,
   FakerEngineOptions,
-  GraphqlOptions,
+  GraphQLOptions,
   NetworkOptions,
   ServerCLIOptions,
   ServerOptions,
@@ -34,7 +34,7 @@ export class Config {
     this._snapshotOptions = this._snapshotOptions.bind(this);
     this._fakerOptions = this._fakerOptions.bind(this);
     this._webhookOptions = this._webhookOptions.bind(this);
-    this._graphqlOptions = this._graphqlOptions.bind(this);
+    this._graphQLOptions = this._graphQLOptions.bind(this);
 
     this.NETWORK_DEFAULT_OPTIONS = Object.freeze({
       delay: this.configOptions.network?.delay || 0,
@@ -52,7 +52,7 @@ export class Config {
       snapshot: this._snapshotOptions,
       faker: this._fakerOptions,
       webhook: this._webhookOptions,
-      graphql: this._graphqlOptions,
+      graphQL: this._graphQLOptions,
     };
   }
 
@@ -89,9 +89,9 @@ export class Config {
     };
   }
 
-  private _graphqlOptions(): Required<GraphqlOptions> {
+  private _graphQLOptions(): Required<GraphQLOptions> {
     return {
-      enabled: this.configOptions.graphql?.enabled ?? false,
+      enabled: this.configOptions.graphQL?.enabled ?? false,
     };
   }
 

@@ -21,7 +21,7 @@ export type ServerOptions = {
   pathPrefix?: string;
 
   /**
-   * Includes the snapshot typescript sources if exists.
+   * Includes snapshot sources if exists.
    * @default true
    */
   includeSnapshots?: boolean;
@@ -31,7 +31,7 @@ export type FakerEngineOptions = {
   /**
    * Locale used by the faker engine when generating mock data.
    * Controls language-specific values such as names, addresses, etc.
-   * @example "fa"
+   * @example "en"
    */
   locale?: FakerLocale;
 };
@@ -98,7 +98,7 @@ export type NetworkOptions = NetworkBehaviourOptions & {
 
 export type SnapshotDataSource = {
   /**
-   * http url
+   * Target http or https URL
    * @example "https://api.example.com/users"
    */
   url: string;
@@ -189,9 +189,9 @@ export type WebhookOptions = {
   hooks: Hook[];
 };
 
-export type GraphqlOptions = {
+export type GraphQLOptions = {
   /**
-   * Enables graphql.
+   * Enables graphQL.
    */
   enabled: boolean;
 };
@@ -248,9 +248,9 @@ export type ConfigOptions = {
 
   /**
    * GraphQL configuration.
-   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/graphql|GraphQL Documentation}
+   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/graphQL|GraphQL Documentation}
    */
-  graphql?: GraphqlOptions;
+  graphQL?: GraphQLOptions;
 };
 
 export type UserConfig = {

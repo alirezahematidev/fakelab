@@ -18,6 +18,6 @@ export default defineConfig({
     ],
   },
   database: { enabled: true },
-  graphql: { enabled: true },
+  graphQL: { enabled: true },
   network: { delay: [500, 1500] },
 });

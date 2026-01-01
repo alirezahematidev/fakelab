@@ -118,11 +118,11 @@ export class Config {
   public async files(_sourcePath?: string) {
     const inputSourcePath = _sourcePath || this.configOptions.sourcePath;
 
-    if (!inputSourcePath || !this.enabled()) return [];
+    if (!this.enabled()) return [];
 
     const sourcePaths = this.resolveSourcePath(inputSourcePath);
 
-    const resolvedFiles = Array.from(new Set((await Promise.all(sourcePaths.map((src) => this.resolveTSFiles(src)))).flat()));
+    const resolvedFiles = sourcePaths.length > 0 ? Array.from(new Set((await Promise.all(sourcePaths.map((src) => this.resolveTSFiles(src)))).flat())) : [];
 
     if (this._serverOptions().includeSnapshots) {
       const snapshots = await this.getSnapshotSourceFiles();

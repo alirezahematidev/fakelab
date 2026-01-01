@@ -44,6 +44,10 @@ export class Config {
     };
   }
 
+  isOffline() {
+    return this.configOptions.offline ?? false;
+  }
+
   private _serverOptions(prefix?: string, port?: number): Required<ServerOptions> {
     return {
       pathPrefix: prefix || this.configOptions.server?.pathPrefix || FAKELABE_DEFAULT_PREFIX,

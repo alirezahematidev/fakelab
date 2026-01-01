@@ -11,10 +11,10 @@ type ParserTypeDeclaration = InterfaceDeclaration | TypeAliasDeclaration;
 class ParserEngine {
   private __targets: ParserTypeDeclaration[];
 
-  constructor(readonly files: string[], private readonly database: Database) {
+  constructor(private readonly files: string[], private readonly database: Database) {
     const project = new Project({ tsConfigFilePath: "tsconfig.json" });
 
-    const sources = project.addSourceFilesAtPaths(files);
+    const sources = project.addSourceFilesAtPaths(this.files);
 
     this.__targets = sources.flatMap((source) => {
       const interfaces = source.getInterfaces();
@@ -29,6 +29,22 @@ class ParserEngine {
 
   async run(factory: () => Promise<unknown>) {
     return await factory();
+  }
+
+  public sync() {
+    const declarations = [
+      ...new Set(
+        this.__targets.map((target) => {
+          const name = target.getName();
+          const filepath = target.getSourceFile().getFilePath();
+
+          return `${name.toLowerCase()}: import("${filepath}").${name}`;
+        })
+      ),
+    ];
+    const raw2 = `\ninterface Offline$ {\n${declarations.join("\n")}\n}`;
+
+    fs.appendFile(path.resolve(DIRNAME, "offline.d.ts"), raw2);
   }
 
   private normalizePath(p: string) {
@@ -46,7 +62,6 @@ class ParserEngine {
         })
       ),
     ];
-
     const raw = `\ninterface Runtime$ {\n${declarations.join("\n")}\n}`;
 
     fs.appendFile(path.resolve(DIRNAME, "runtime.d.ts"), raw);

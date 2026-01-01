@@ -14,6 +14,7 @@ import { Database } from "./database";
 import { Webhook } from "./webhook";
 import { ServerEventSubscriber } from "./events/subscribers";
 import type { ServerEvent, ServerEventArgs } from "./events/types";
+import { OfflineGenerator } from "./offline";
 
 export class Server {
   private webhook: Webhook<ServerEvent, ServerEventArgs> | undefined;
@@ -58,7 +59,17 @@ export class Server {
     return server;
   }
 
-  public async start() {
+  public async start(sp?: string, offline?: boolean) {
+    const database = Database.register(this.config);
+
+    if (offline) {
+      if (this.config.isOffline()) {
+        const offlineGenerator = new OfflineGenerator(this.config, database);
+        await offlineGenerator.generate(sp);
+      }
+      return;
+    }
+
     const app = express();
 
     const router = express.Router();
@@ -66,8 +77,6 @@ export class Server {
     const server = http.createServer(app);
 
     const network = Network.initHandlers(this.config);
-
-    const database = Database.register(this.config);
 
     this.setupApplication(app, network);
 

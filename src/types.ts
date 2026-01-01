@@ -225,6 +225,8 @@ export type ConfigOptions = {
    * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/webhook|Webhook Documentation}
    */
   webhook?: WebhookOptions;
+
+  offline?: boolean;
 };
 
 export type UserConfig = {

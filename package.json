@@ -16,6 +16,11 @@
       "types": "./lib/runtime.d.ts",
       "node": "./lib/runtime.js",
       "default": "./lib/runtime.js"
+    },
+    "./offline": {
+      "types": "./lib/offline.d.ts",
+      "node": "./lib/offline.js",
+      "default": "./lib/offline.js"
     }
   },
   "engines": {

@@ -12,15 +12,14 @@
       "types": "./lib/main.d.ts",
       "default": "./lib/main.js"
     },
-    "./browser": {
+    "./runtime": {
       "types": "./lib/runtime.d.ts",
       "node": "./lib/runtime.js",
       "default": "./lib/runtime.js"
     },
-    "./offline": {
-      "types": "./lib/offline.d.ts",
-      "node": "./lib/offline.js",
-      "default": "./lib/offline.js"
+    "./headless": {
+      "types": "./lib/headless.d.ts",
+      "default": "./lib/headless.js"
     }
   },
   "engines": {

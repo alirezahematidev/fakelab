@@ -19,4 +19,15 @@ export interface User {
    * @faker number.int({min:10,max:80})
    */
   age: number;
+
+  /**
+   * @faker person.fullName
+   */
+  tags: string[];
+
+  profile: Profile;
+}
+
+export interface Profile {
+  name: string;
 }

@@ -7,14 +7,14 @@ import type { Config } from "./config/conf";
 
 export class Database {
   private options: Required<DatabaseOptions>;
-  readonly DATABASE_DIR = path.resolve(CWD, ".fakelab/db");
+  static readonly DATABASE_DIR = path.resolve(CWD, ".fakelab/db");
 
   private constructor(private readonly config: Config) {
     this.enabled = this.enabled.bind(this);
 
     this.options = this.config.options.database();
 
-    if (!this.options.enabled) fs.rmSync(this.DATABASE_DIR, { force: true, recursive: true });
+    if (!this.options.enabled) fs.rmSync(Database.DATABASE_DIR, { force: true, recursive: true });
   }
 
   static register(config: Config) {
@@ -28,7 +28,7 @@ export class Database {
   async initialize() {
     if (this.enabled()) {
       try {
-        await fs.ensureDir(this.DATABASE_DIR);
+        await fs.ensureDir(Database.DATABASE_DIR);
 
         await this.modifyGitignoreFile(".fakelab/*");
       } catch (error) {

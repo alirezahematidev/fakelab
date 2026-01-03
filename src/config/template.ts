@@ -1,8 +1,17 @@
 export const SOURCE = `let fl = {};
 let db = {};
 fl.url = () => "http://localhost:PORT/PREFIX/";
-fl.fetch = async function (name, count) {
-  const search = count ? "?count=" + count : "";
+
+function _count(opts = {}) {
+  if ("count" in opts && typeof opts["count"] === "number") return opts.count;
+
+  return null;
+}
+
+fl.fetch = async function (name, options) {
+  const count = _count(options);
+
+  const search = count !== null ? "?count=" + count : "";
 
   const response = await fetch(fl.url() + name + search);
 

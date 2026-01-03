@@ -1,12 +1,12 @@
-import { fakelab, type Typeof } from "fakelab/browser";
+import { fakelab, type Typeof, type Keyof } from "fakelab/runtime";
 import { useEffect, useState } from "react";
 import "./index.css";
 
 function App() {
-  const [users, setUsers] = useState<Typeof<"User">[]>([]);
+  const [users, setUsers] = useState<Typeof<"user">[]>([]);
 
   useEffect(() => {
-    fakelab.fetch("User", 10).then(setUsers);
+    fakelab.fetch("user", { count: 10 }).then(setUsers);
   }, []);
 
   if (users.length === 0) {
@@ -16,7 +16,7 @@ function App() {
       </main>
     );
   }
-  const columns = Object.keys(users.reduce((_, curr) => curr)) as (keyof Typeof<"User">)[];
+  const columns = Object.keys(users.reduce((_, curr) => curr)) as Keyof<"user">[];
 
   return (
     <main id="main">

@@ -18,12 +18,12 @@ program
   .option("-x, --pathPrefix <char>", "server url path prefix")
   .option("-p, --port <number>", "server port number", parseInt)
   .option("-l, --locale <char>", "faker custom locale")
-  .option("-o, --offline", "serve fake data locally")
+  .option("-h, --headless", "headless mode")
   .option("-f, --fresh-snapshots", "capture or refresh all snapshots")
   .action(async (options) => {
     const snapshot = await Snapshot.prepare(options);
 
-    Server.init(options, snapshot.config).start(options.source, options.offline);
+    Server.init(options, snapshot.config).start();
   });
 program
   .command("snapshot")

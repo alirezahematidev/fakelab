@@ -44,8 +44,8 @@ export class Config {
     };
   }
 
-  isOffline() {
-    return this.configOptions.offline ?? false;
+  isHeadless() {
+    return this.configOptions.headless ?? false;
   }
 
   private _serverOptions(prefix?: string, port?: number): Required<ServerOptions> {

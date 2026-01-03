@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-declare function fetch<T extends keyof Runtime$, C extends number | undefined = undefined>(name: T, count?: C): Promise<Result$<Runtime$[T], C>>;
+
+// Auto-generated runtime data type declarations
+
+declare function fetch<T extends keyof Runtime$>(name: T): Promise<Runtime$[T]>;
+declare function fetch<T extends keyof Runtime$>(name: T, options: FetchOptions): Promise<Runtime$[T][]>;
 declare function type$<T extends keyof Runtime$>(): Runtime$[T];
 declare function get<T extends keyof Runtime$>(name: T): Promise<Array<Runtime$[T]>>;
 declare function get<T extends keyof Runtime$>(name: T, predicate: (value: Runtime$[T]) => boolean): Promise<Runtime$[T] | null>;
@@ -19,6 +23,8 @@ declare const database: {
   flush: typeof flush;
   enabled: typeof enabled;
 };
+
+type FetchOptions = { count: number };
 type SeedOptions = {
   /**
    * Number of records to generate.
@@ -34,11 +40,11 @@ type SeedOptions = {
    */
   strategy?: "reset" | "once" | "merge";
 };
-type Result$<T, CT> = CT extends number ? (CT extends 0 ? T : T[]) : T;
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface Runtime$ {}
 
 type Typeof<T extends keyof Runtime$> = ReturnType<typeof type$<T>>;
+type Keyof<T extends keyof Runtime$> = keyof Typeof<T>;
 
-export type { Typeof };
+export type { Typeof, Keyof };
 export { fakelab, database };

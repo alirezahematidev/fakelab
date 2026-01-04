@@ -1,5 +1,4 @@
-export const SOURCE = `import { faker } from "@faker-js/faker/locale/LOCALE";
-
+export const HEADLESS_SOURCE = `import { faker } from "@faker-js/faker/locale/LOCALE";
 function _count(opts = {}) {
   if ("count" in opts && typeof opts["count"] === "number") return opts.count;
 
@@ -11,18 +10,12 @@ const functions = {
 };
 
 function generate(name, options) {
-  const proxy = new Proxy(functions, {
-    get(target, property) {
-      const count = _count(options);
+  const count = _count(options);
 
-      if (count === null) return target[property]();
+  if(count === null) return functions[name]();
 
-      return Array.from({ length: count }, () => target[property]());
-    },
-  });
-
-  return proxy[name]
+  return Array.from({length:count},() => functions[name]())
 }
 
-export { generate }
+export {generate};
 `;

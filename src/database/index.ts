@@ -1,9 +1,9 @@
 import fs from "fs-extra";
 import path from "node:path";
-import type { DatabaseOptions } from "./types";
-import { CWD } from "./file";
-import { Logger } from "./logger";
-import type { Config } from "./config/conf";
+import type { DatabaseOptions } from "../types";
+import { CWD } from "../file";
+import type { Config } from "../config/conf";
+import { Logger } from "../logger";
 
 export class Database {
   private options: Required<DatabaseOptions>;

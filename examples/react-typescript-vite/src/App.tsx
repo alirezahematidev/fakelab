@@ -1,4 +1,5 @@
-import { fakelab, type Typeof, type Keyof } from "fakelab/runtime";
+import { fakelab } from "fakelab/runtime";
+import type { Keyof, Typeof } from "fakelab/type-utils";
 import { useEffect, useState } from "react";
 import "./index.css";
 

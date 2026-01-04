@@ -10,11 +10,11 @@ import { DIRNAME } from "./file";
 import { Network } from "./network";
 import type { Config } from "./config/conf";
 import type { ServerCLIOptions, ServerOptions } from "./types";
-import { Database } from "./database";
 import { Webhook } from "./webhook";
-import { Headless } from "./headless";
 import { ServerEventSubscriber } from "./events/subscribers";
 import type { ServerEvent, ServerEventArgs } from "./events/types";
+import { Headless } from "./headless";
+import { Database } from "./database";
 
 export class Server {
   private webhook: Webhook<ServerEvent, ServerEventArgs> | undefined;

@@ -3,11 +3,10 @@ import fs from "fs-extra";
 import { Type, Symbol } from "ts-morph";
 import { ParserEngine } from "../parserEngine";
 import { DIRNAME } from "../file";
-
 import { transform } from "esbuild";
 import type { Config } from "../config/conf";
 import { Logger } from "../logger";
-import { SOURCE } from "./template";
+import { HEADLESS_SOURCE } from "./template";
 
 export class Headless {
   private readonly HEADLESS_FILENAME = "headless.js";
@@ -56,7 +55,7 @@ export class Headless {
     }
   }
 
-  private replacer(input: string, vars: Record<Uppercase<string>, string | number>) {
+  private replacer(input: string, vars: Record<Uppercase<string>, string | number | boolean>) {
     let result = input;
 
     for (const variable in vars) {
@@ -67,7 +66,10 @@ export class Headless {
   }
 
   private generateSource(functions: string[], locale: string): string {
-    return this.replacer(SOURCE, { LOCALE: locale, FUNCTIONS: functions.join(",\n") });
+    return this.replacer(HEADLESS_SOURCE, {
+      LOCALE: locale,
+      FUNCTIONS: functions.join(",\n"),
+    });
   }
 
   private generateFunction(type: Type, name: string, entityNames: Map<string, string>): string {

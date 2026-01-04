@@ -25,6 +25,8 @@ class ParserEngine {
     });
 
     this.generateInFileEntitiyMap("runtime");
+
+    this.generateTypeUtils();
   }
 
   async run(factory: () => Promise<unknown>) {
@@ -43,6 +45,22 @@ class ParserEngine {
     const result = `${directory}/${basename}`;
 
     return result;
+  }
+
+  generateTypeUtils() {
+    const declarations = [
+      ...new Set(
+        this.__targets.map((target) => {
+          const name = target.getName();
+          const filepath = target.getSourceFile().getFilePath();
+
+          return `${name.toLowerCase()}: import("${filepath}").${name}`;
+        })
+      ),
+    ];
+    const raw = `\ninterface Fake$ {\n${declarations.join("\n")}\n}`;
+
+    fs.appendFile(path.resolve(DIRNAME, "type-utils.d.ts"), raw);
   }
 
   generateInFileEntitiyMap(filename: string, _interface = filename.charAt(0).toUpperCase() + filename.slice(1)) {

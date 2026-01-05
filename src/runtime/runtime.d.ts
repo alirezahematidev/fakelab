@@ -1,18 +1,16 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-// Auto-generated runtime data type declarations
-
-declare function fetch<T extends keyof Runtime$>(name: T): Promise<Runtime$[T]>;
-declare function fetch<T extends keyof Runtime$>(name: T, options: FetchOptions): Promise<Runtime$[T][]>;
+declare function gen<T extends keyof Runtime$>(name: T): Promise<Runtime$[T]>;
+declare function gen<T extends keyof Runtime$>(name: T, options: GenerateOptions): Promise<Runtime$[T][]>;
+declare function genSync<T extends keyof Runtime$>(name: T): Runtime$[T];
+declare function genSync<T extends keyof Runtime$>(name: T, options: GenerateOptions): Runtime$[T][];
 declare function url(): string;
 declare const fakelab: {
-  fetch: typeof fetch;
+  gen: typeof gen;
+  genSync: typeof genSync;
   url: typeof url;
 };
 
-type FetchOptions = { count: number };
+type GenerateOptions = { count: number };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface Runtime$ {}
 
 export { fakelab };

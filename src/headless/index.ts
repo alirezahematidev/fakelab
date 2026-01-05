@@ -9,7 +9,7 @@ import { Logger } from "../logger";
 import { HEADLESS_SOURCE } from "./template";
 
 export class Headless {
-  private readonly HEADLESS_FILENAME = "headless.js";
+  private readonly HEADLESS_FILENAME = "runtime.js";
 
   private JSDOC_FAKER_FIELD = "faker";
   private FAKER_TAG_REGEX = /^([a-zA-Z0-9._]+)(?:\((.*)\))?$/;
@@ -46,8 +46,6 @@ export class Headless {
 
       await Promise.all([fs.writeFile(headlessPath, code)]);
 
-      parser.generateInFileEntitiyMap("headless");
-
       return true;
     } catch (error) {
       Logger.error(error instanceof Error ? error.message : (error as string));
@@ -66,7 +64,11 @@ export class Headless {
   }
 
   private generateSource(functions: string[], locale: string): string {
+    const { pathPrefix, port } = this.config.options.server();
+
     return this.replacer(HEADLESS_SOURCE, {
+      PORT: port,
+      PREFIX: pathPrefix,
       LOCALE: locale,
       FUNCTIONS: functions.join(",\n"),
     });

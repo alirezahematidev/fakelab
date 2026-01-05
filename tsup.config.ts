@@ -8,7 +8,6 @@ export default defineConfig({
     entry: {
       main: path.resolve(__dirname, "src/main.ts"),
       runtime: path.resolve(__dirname, "src/runtime/runtime.d.ts"),
-      headless: path.resolve(__dirname, "src/headless/headless.d.ts"),
       database: path.resolve(__dirname, "src/database/database.d.ts"),
       "type-utils": path.resolve(__dirname, "src/type-utils.d.ts"),
     },

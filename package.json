@@ -21,10 +21,6 @@
       "types": "./lib/database.d.ts",
       "default": "./lib/database.js"
     },
-    "./headless": {
-      "types": "./lib/headless.d.ts",
-      "default": "./lib/headless.js"
-    },
     "./type-utils": {
       "types": "./lib/type-utils.d.ts"
     }

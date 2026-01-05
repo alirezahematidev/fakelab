@@ -24,7 +24,7 @@ class ParserEngine {
       return [...interfaces, ...typeAliases, ...(exportDeclarations as ParserTypeDeclaration[])];
     });
 
-    this.generateInFileEntitiyMap("runtime");
+    this.generateInFileEntitiyMap();
 
     this.generateTypeUtils();
   }
@@ -58,12 +58,12 @@ class ParserEngine {
         })
       ),
     ];
-    const raw = `\ninterface Fake$ {\n${declarations.join("\n")}\n}`;
+    const raw = `\ninterface $$ {\n${declarations.join("\n")}\n}`;
 
     fs.appendFile(path.resolve(DIRNAME, "type-utils.d.ts"), raw);
   }
 
-  generateInFileEntitiyMap(filename: string, _interface = filename.charAt(0).toUpperCase() + filename.slice(1)) {
+  generateInFileEntitiyMap() {
     const declarations = [
       ...new Set(
         this.__targets.map((target) => {
@@ -74,9 +74,10 @@ class ParserEngine {
         })
       ),
     ];
-    const raw = `\ninterface ${_interface}$ {\n${declarations.join("\n")}\n}`;
 
-    fs.appendFile(path.resolve(DIRNAME, filename + ".d.ts"), raw);
+    const data = `\ninterface Runtime$ {\n${declarations.join("\n")}\n}`;
+
+    fs.appendFile(path.resolve(DIRNAME, "runtime.d.ts"), data);
   }
 
   public async entities() {

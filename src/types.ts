@@ -21,7 +21,7 @@ export type ServerOptions = {
   pathPrefix?: string;
 
   /**
-   * Includes the snapshot typescript sources if exists.
+   * Includes snapshot sources if exists.
    * @default true
    */
   includeSnapshots?: boolean;
@@ -31,7 +31,7 @@ export type FakerEngineOptions = {
   /**
    * Locale used by the faker engine when generating mock data.
    * Controls language-specific values such as names, addresses, etc.
-   * @example "fa"
+   * @example "en"
    */
   locale?: FakerLocale;
 };
@@ -98,7 +98,7 @@ export type NetworkOptions = NetworkBehaviourOptions & {
 
 export type SnapshotDataSource = {
   /**
-   * http url
+   * Target http or https URL
    * @example "https://api.example.com/users"
    */
   url: string;
@@ -189,11 +189,30 @@ export type WebhookOptions = {
   hooks: Hook[];
 };
 
+export type GraphQLOptions = {
+  /**
+   * Enables graphQL.
+   */
+  enabled: boolean;
+};
+
 export type ConfigOptions = {
   /**
    * Path or paths to the source files that define the typescript types.
    */
   sourcePath: string | string[];
+  /**
+   * Enables or disables Fakelab.
+   *
+   * When set to `false`, Fakelab will not initialize or start any services,
+   * regardless of other configuration options.
+   *
+   * This is useful for conditionally enabling Fakelab based on the current
+   * runtime environment (for example, `process.env.NODE_ENV === "development"`).
+   *
+   * @default true
+   */
+  enabled?: boolean;
   /**
    * Enables headless mode.
    *
@@ -207,7 +226,7 @@ export type ConfigOptions = {
    */
   headless?: boolean;
 
-  tsConfigPath?: string;
+  tsConfigFilePath?: string;
 
   /**
    * Server-related configuration.
@@ -231,6 +250,7 @@ export type ConfigOptions = {
   network?: NetworkOptions;
   /**
    * Snapshot configuration.
+   *
    * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/snapshot|Snapshot Documentation}
    */
   snapshot?: SnapshotOptions;
@@ -240,6 +260,12 @@ export type ConfigOptions = {
    * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/webhook|Webhook Documentation}
    */
   webhook?: WebhookOptions;
+
+  /**
+   * GraphQL configuration.
+   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/graphQL|GraphQL Documentation}
+   */
+  graphQL?: GraphQLOptions;
 };
 
 export type UserConfig = {
@@ -273,7 +299,7 @@ export type ServerCLIOptions = {
   port?: number;
   locale?: string;
   freshSnapshots?: boolean;
-  tsConfig?: string;
+  tsConfigFilePath?: string;
   headless?: boolean;
 };
 

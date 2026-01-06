@@ -16,11 +16,11 @@ export class Headless {
 
   constructor(private readonly config: Config) {}
 
-  async generate(source?: string) {
+  async generate(source?: string, tsConfigFilePath?: string) {
     try {
       const files = await this.config.files(source);
 
-      const parser = new ParserEngine(files, this.config.tsConfig());
+      const parser = new ParserEngine(files, tsConfigFilePath || this.config.tsConfigFilePath());
 
       const entities = await parser.entities();
 

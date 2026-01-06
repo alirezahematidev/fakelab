@@ -5,11 +5,16 @@
         <span class="address_method">GET</span>
         <span id="request_address_url" class="address_url"><%= address %><%= prefix %>/<%= name %><%= search %></span>
       </div>
-      <img id="copy_btn" onclick="copyAddressUrl()" class="icon pointer_auto" src="/icons/copy.svg" width="16px" height="16px" />
+      <img id="copy_btn" title="Copy the URL" onclick="copyAddressUrl()" class="icon pointer_auto" src="/icons/copy.svg" width="16px" height="16px" />
     </div>
-    <div id="overlay_trigger" class="toolbar_setting_option" onclick="openSettings()">
+    <div id="overlay_trigger" title="Open Settings" class="toolbar_setting_option" onclick="openSettings()">
       <img class="icon" src="/icons/settings.svg" width="18px" height="18px" />
     </div>
+    <% if(isGraphqlEnabled) { %>
+    <a href="/graphql/<%= name %>" class="toolbar_setting_option" title="Open GraphQL Playground">
+      <img class="icon" src="/icons/graphql-logo.png" width="18px" height="18px" />
+    </a>
+    <% } %>
     <div id="setting_overlay" data-visible="false" class="toolbar_setting_overlay">
       <span class="setting_title">Generator settings</span>
       <form class="setting_form" onsubmit="submitForm(event)">
@@ -27,11 +32,11 @@
   </div>
 
   <div class="toolbar_actions">
-    <div class="toolbar_action_item" onclick="copyJsonCode()">
+    <div class="toolbar_action_item" title="Copy" onclick="copyJsonCode()">
       <img class="icon" src="/icons/copy.svg" width="18px" height="18px" />
     </div>
     <div class="divider"></div>
-    <a class="toolbar_action_item" data-source-name="<%= name %>" onclick="downloadJsonCode(this)">
+    <a class="toolbar_action_item" title="Download" data-source-name="<%= name %>" onclick="downloadJsonCode(this)">
       <img class="icon" src="/icons/download.svg" width="18px" height="18px" />
     </a>
   </div>

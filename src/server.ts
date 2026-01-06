@@ -41,6 +41,10 @@ export class Server {
     const opts = this.config.options.webhook();
 
     if (opts.enabled) {
+      if (!this.config.enabled()) {
+        Logger.warn("Fakelab is disabled. Skipped webhook initialization.");
+        return;
+      }
       this.subscriber = new ServerEventSubscriber();
 
       Logger.warn("Initializating webhook...");
@@ -62,7 +66,7 @@ export class Server {
   private async shouldRunHeadlessMode() {
     if (this.options.headless || this.config.isHeadless()) {
       const headless = new Headless(this.config);
-      const canGenerate = await headless.generate(this.options.source);
+      const canGenerate = await headless.generate(this.options.source, this.options.tsConfigFilePath);
 
       if (!canGenerate) {
         Logger.error("Headless mode failed. Falling back to standard server mode.");
@@ -111,7 +115,7 @@ export class Server {
   private setupApplication(app: express.Express, network: Network) {
     app.disable("x-powered-by");
     app.use(express.json());
-    app.use(cors({ methods: "GET" }));
+    app.use(cors({ methods: ["GET", "POST", "OPTIONS"] }));
     app.use(express.static(DIRNAME + "/public"));
     app.use(this.xPoweredMiddleware);
     app.use(network.middleware);
@@ -128,11 +132,13 @@ export class Server {
   private listen(database: Database, opts: Required<ServerOptions>) {
     this.subscriber?.started(opts);
 
-    if (database.enabled()) Logger.info(`database: %s`, Database.DATABASE_DIR);
+    if (database.enabled() && this.config.enabled()) Logger.info(`database: %s`, Database.DATABASE_DIR);
 
-    Logger.info(`Server listening to http://localhost:%d`, opts.port);
+    Logger.info(`Server%s listening at http://localhost:%d`, !this.config.enabled() ? "(disabled)" : "", opts.port);
 
-    console.log(figlet.textSync("FAKELAB"));
+    if (this.config.enabled()) {
+      console.log(figlet.textSync("FAKELAB"));
+    }
   }
 
   private run(server: http.Server, database: Database, options: ServerCLIOptions) {

@@ -2,13 +2,27 @@ import express from "express";
 import qs from "qs";
 import type { Builder } from "../types";
 import type { Database } from "../database";
+import type { Config } from "../config/conf";
+import type { GraphQLBuilder } from "../graphql/builder";
 
 interface PackageJson {
   version: string;
 }
 
 class RouteRenderer {
-  constructor(private readonly builder: Builder, private readonly database: Database, private readonly pkg: PackageJson) {}
+  private isFakelabEnabled: boolean;
+  private isDatabaseEnabled: boolean;
+
+  constructor(
+    private readonly builder: Builder,
+    private readonly database: Database,
+    private readonly config: Config,
+    private readonly graphqlBuilder: GraphQLBuilder,
+    private readonly pkg: PackageJson
+  ) {
+    this.isFakelabEnabled = this.config.enabled();
+    this.isDatabaseEnabled = this.database.enabled();
+  }
 
   private async handleQueries(request: express.Request) {
     const count = request.query.count;
@@ -20,12 +34,20 @@ class RouteRenderer {
 
   index() {
     return (_: express.Request, res: express.Response) => {
-      res.render("index", { name: null, entities: this.builder.entities, version: this.pkg.version, enabled: this.database.enabled() });
+      res.render("index", {
+        name: null,
+        entities: this.builder.entities,
+        version: this.pkg.version,
+        isFakelabEnabled: this.isFakelabEnabled,
+        isDatabaseEnabled: this.isDatabaseEnabled,
+      });
     };
   }
 
   preview(prefix: string) {
     return async (req: express.Request, res: express.Response) => {
+      if (!this.isFakelabEnabled) return res.redirect("/");
+
       const address = `${req.protocol}://${req.host}/`;
 
       const name = req.params.name;
@@ -40,6 +62,8 @@ class RouteRenderer {
         const { json } = await this.builder.build(entity.type, queries);
         const filepath = entity.filepath;
 
+        const graphqlOptions = this.config.options.graphQL();
+
         res.render("preview", {
           name,
           suffix: entity.snapshot ? "(snapshot)" : "",
@@ -50,7 +74,9 @@ class RouteRenderer {
           prefix,
           entities: this.builder.entities,
           version: this.pkg.version,
-          enabled: this.database.enabled(),
+          isDatabaseEnabled: this.isDatabaseEnabled,
+          isFakelabEnabled: this.isFakelabEnabled,
+          isGraphqlEnabled: graphqlOptions.enabled,
         });
       } else res.redirect("/");
     };
@@ -58,7 +84,9 @@ class RouteRenderer {
 
   db() {
     return (_: express.Request, res: express.Response) => {
-      const enabled = this.database.enabled();
+      if (!this.isFakelabEnabled) return res.redirect("/");
+
+      const enabled = this.isDatabaseEnabled;
 
       if (!enabled) res.redirect("/");
       else res.render("database", { name: null, entities: this.builder.entities, version: this.pkg.version });
@@ -67,13 +95,15 @@ class RouteRenderer {
 
   table(prefix: string) {
     return async (req: express.Request, res: express.Response) => {
+      if (!this.isFakelabEnabled) return res.redirect("/");
+
       const address = `${req.protocol}://${req.host}/`;
 
       const name = req.params.name;
 
       const entity = this.builder.entities.get(name.toLowerCase());
 
-      const enabled = this.database.enabled();
+      const enabled = this.isDatabaseEnabled;
 
       if (!enabled) res.redirect("/");
       else {
@@ -95,8 +125,61 @@ class RouteRenderer {
             hasData,
             entities: this.builder.entities,
             version: this.pkg.version,
+            isFakelabEnabled: this.isFakelabEnabled,
           });
         } else res.redirect("/database");
+      }
+    };
+  }
+
+  graphql(prefix: string) {
+    return (_: express.Request, res: express.Response) => {
+      if (!this.isFakelabEnabled) return res.redirect("/");
+
+      const { enabled } = this.config.options.graphQL();
+
+      if (!enabled) res.redirect("/");
+      else
+        res.render("graphql", {
+          name: null,
+          address: "",
+          prefix,
+          query: "",
+          entities: this.builder.entities,
+          version: this.pkg.version,
+          isDatabaseEnabled: this.isDatabaseEnabled,
+          isFakelabEnabled: this.isFakelabEnabled,
+        });
+    };
+  }
+
+  graphqlEntity(prefix: string) {
+    return (req: express.Request, res: express.Response) => {
+      if (!this.isFakelabEnabled) return res.redirect("/");
+
+      const address = `${req.protocol}://${req.host}/`;
+      const name = req.params.name;
+
+      const entity = this.builder.entities.get(name.toLowerCase());
+
+      const { enabled } = this.config.options.graphQL();
+
+      if (!enabled) res.redirect("/");
+      else {
+        if (entity) {
+          const graphqlQuery = this.graphqlBuilder.buildQuery(name.toLowerCase(), entity.type);
+
+          res.render("graphql", {
+            name,
+            address,
+            prefix,
+            query: graphqlQuery,
+            entities: this.builder.entities,
+            version: this.pkg.version,
+            isDatabaseEnabled: this.isDatabaseEnabled,
+            isFakelabEnabled: this.isFakelabEnabled,
+          });
+        } else res.redirect("/graphql");
       }
     };
   }

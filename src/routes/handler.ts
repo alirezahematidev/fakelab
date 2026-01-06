@@ -2,11 +2,12 @@ import express from "express";
 import type { Builder } from "../types";
 import type { Network } from "../network";
 import type { Database } from "../database";
+import type { Config } from "../config/conf";
 
 class RouteHandler {
   private readonly SEED_MERGE_THRESHOLD = 1000;
 
-  constructor(private readonly builder: Builder, private readonly network: Network, private readonly database: Database) {}
+  constructor(private readonly builder: Builder, private readonly network: Network, private readonly database: Database, private readonly config: Config) {}
 
   private async handleQueries(request: express.Request) {
     const count = request.query.count;
@@ -41,6 +42,10 @@ class RouteHandler {
 
   entity() {
     return async (req: express.Request, res: express.Response) => {
+      if (!this.config.enabled()) {
+        return res.status(500).json({ error: "Fakelab is disabled." });
+      }
+
       try {
         if (await this.applyNetworkHandlers(res)) return;
 
@@ -65,6 +70,10 @@ class RouteHandler {
 
   getTable() {
     return async (req: express.Request, res: express.Response) => {
+      if (!this.config.enabled()) {
+        return res.status(500).json({ error: "Fakelab is disabled." });
+      }
+
       try {
         if (!this.database.enabled()) return res.status(403).json({ message: "database is not enabled or initialized." });
 
@@ -88,6 +97,10 @@ class RouteHandler {
 
   updateTable() {
     return async (req: express.Request, res: express.Response) => {
+      if (!this.config.enabled()) {
+        return res.status(500).json({ error: "Fakelab is disabled." });
+      }
+
       try {
         if (!this.database.enabled()) return res.status(403).json({ message: "database is not enabled or initialized." });
 
@@ -115,6 +128,10 @@ class RouteHandler {
 
   insert() {
     return async (req: express.Request, res: express.Response) => {
+      if (!this.config.enabled()) {
+        return res.status(500).json({ error: "Fakelab is disabled." });
+      }
+
       try {
         if (!this.database.enabled()) return res.status(403).json({ message: "database is not enabled or initialized." });
 
@@ -158,6 +175,10 @@ class RouteHandler {
 
   flush() {
     return async (req: express.Request, res: express.Response) => {
+      if (!this.config.enabled()) {
+        return res.status(500).json({ error: "Fakelab is disabled." });
+      }
+
       try {
         if (!this.database.enabled()) return res.status(403).json({ message: "database is not enabled or initialized." });
 
@@ -181,6 +202,10 @@ class RouteHandler {
   // private
   _update() {
     return async (req: express.Request, res: express.Response) => {
+      if (!this.config.enabled()) {
+        return res.status(500).json({ error: "Fakelab is disabled." });
+      }
+
       try {
         if (!this.database.enabled()) return res.status(403).json({ message: "database is not enabled or initialized." });
 
@@ -207,6 +232,10 @@ class RouteHandler {
 
   _clear() {
     return async (req: express.Request, res: express.Response) => {
+      if (!this.config.enabled()) {
+        return res.status(500).json({ error: "Fakelab is disabled." });
+      }
+
       try {
         if (!this.database.enabled()) return res.status(403).json({ message: "database is not enabled or initialized." });
 

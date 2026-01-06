@@ -4,7 +4,17 @@ import fs from "fs-extra";
 import { access, constants, stat } from "node:fs/promises";
 import isGlob from "is-glob";
 import { Logger } from "../logger";
-import type { ConfigOptions, DatabaseOptions, FakerEngineOptions, NetworkOptions, ServerCLIOptions, ServerOptions, SnapshotOptions, WebhookOptions } from "../types";
+import type {
+  ConfigOptions,
+  DatabaseOptions,
+  FakerEngineOptions,
+  GraphQLOptions,
+  NetworkOptions,
+  ServerCLIOptions,
+  ServerOptions,
+  SnapshotOptions,
+  WebhookOptions,
+} from "../types";
 import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, type FakerLocale } from "../constants";
 import { CWD } from "../file";
 import { RuntimeSource } from "../runtime/source";
@@ -23,6 +33,7 @@ export class Config {
     this._snapshotOptions = this._snapshotOptions.bind(this);
     this._fakerOptions = this._fakerOptions.bind(this);
     this._webhookOptions = this._webhookOptions.bind(this);
+    this._graphQLOptions = this._graphQLOptions.bind(this);
 
     this.NETWORK_DEFAULT_OPTIONS = Object.freeze({
       delay: this.configOptions.network?.delay || 0,
@@ -40,11 +51,12 @@ export class Config {
       snapshot: this._snapshotOptions,
       faker: this._fakerOptions,
       webhook: this._webhookOptions,
+      graphQL: this._graphQLOptions,
     };
   }
 
-  tsConfig() {
-    return this.configOptions.tsConfigPath || "tsconfig.json";
+  tsConfigFilePath() {
+    return this.configOptions.tsConfigFilePath || "tsconfig.json";
   }
 
   isHeadless() {
@@ -84,6 +96,12 @@ export class Config {
     };
   }
 
+  private _graphQLOptions(): Required<GraphQLOptions> {
+    return {
+      enabled: this.configOptions.graphQL?.enabled ?? false,
+    };
+  }
+
   private _fakerOptions(locale?: FakerLocale): Required<FakerEngineOptions> {
     const lang = (locale || this.configOptions.faker?.locale)?.toLowerCase();
 
@@ -99,10 +117,19 @@ export class Config {
       hooks: this.configOptions.webhook?.hooks ?? [],
     };
   }
-  public async files(_sourcePath?: string) {
-    const sourcePaths = this.resolveSourcePath(_sourcePath || this.configOptions.sourcePath);
 
-    const resolvedFiles = Array.from(new Set((await Promise.all(sourcePaths.map((src) => this.resolveTSFiles(src)))).flat()));
+  public enabled() {
+    return this.configOptions.enabled ?? true;
+  }
+
+  public async files(_sourcePath?: string) {
+    const inputSourcePath = _sourcePath || this.configOptions.sourcePath;
+
+    if (!this.enabled()) return [];
+
+    const sourcePaths = this.resolveSourcePath(inputSourcePath);
+
+    const resolvedFiles = sourcePaths.length > 0 ? Array.from(new Set((await Promise.all(sourcePaths.map((src) => this.resolveTSFiles(src)))).flat())) : [];
 
     if (this._serverOptions().includeSnapshots) {
       const snapshots = await this.getSnapshotSourceFiles();
@@ -124,6 +151,11 @@ export class Config {
   }
 
   async initializeRuntimeConfig(dirname: string, options: ServerCLIOptions) {
+    if (!this.enabled()) {
+      Logger.warn("Fakelab is disabled. Skipping runtime initialization.");
+      return;
+    }
+
     const { port, pathPrefix } = this._serverOptions(options.pathPrefix, options.port);
 
     const runtimeSource = RuntimeSource.init(dirname, port, pathPrefix);

@@ -46,7 +46,7 @@ export class Webhook<E extends string, Arg> {
         continue;
       }
 
-      if (this.history.has(hook.name)) return;
+      if (this.history.has(hook.name)) continue;
 
       const subscriptionController = new AbortController();
 

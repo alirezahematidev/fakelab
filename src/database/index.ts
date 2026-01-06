@@ -27,6 +27,10 @@ export class Database {
 
   async initialize() {
     if (this.enabled()) {
+      if (!this.config.enabled()) {
+        Logger.warn("Fakelab is disabled. Skipping database initialization.");
+        return;
+      }
       try {
         await fs.ensureDir(Database.DATABASE_DIR);
 

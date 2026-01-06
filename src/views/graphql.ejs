@@ -1,0 +1,53 @@
+<%- include("components/graphql/sidebar", {entities, name, version }) %> <% title = "GraphQL" %>
+<main class="main">
+  <header class="header">
+    <span class="interface_name">GraphQL Playground</span>
+  </header>
+  <div class="preview">
+    <% if (!name) { %>
+    <div class="nodata">
+      <span>Select an entity to get the corresponding GraphQL query.</span>
+    </div>
+    <% } else { %>
+    <div class="graphql-container">
+      <div class="graphql-editor-section">
+        <div class="graphql-toolbar">
+          <div class="graphql-endpoint">
+            <span class="endpoint-method">POST</span>
+            <span id="graphql-endpoint-url" class="endpoint-url"><%= address %><%= prefix %>/graphql</span>
+            <img id="graphql-copy-btn" title="Copy the URL" onclick="copyGraphQLEndpoint()" class="icon pointer_auto" src="/icons/copy.svg" width="16px" height="16px" />
+          </div>
+          <button class="graphql-execute-btn" onclick="executeGraphQLQuery()">
+            <span>Execute Query</span>
+          </button>
+        </div>
+        <div class="graphql-editor-wrapper">
+          <textarea id="graphql-query-editor" class="graphql-query-editor" placeholder="Enter your GraphQL query here..."><%= query || "" %></textarea>
+        </div>
+      </div>
+      <div class="graphql-result-section">
+        <div class="graphql-result-header">
+          <span>Response</span>
+          <div class="graphql-result-actions">
+            <div class="graphql-action-item" title="Copy" onclick="copyGraphQLResult()">
+              <img class="icon" src="/icons/copy.svg" width="18px" height="18px" />
+            </div>
+            <div class="graphql-action-item" title="Clear" onclick="clearGraphQLResult()">
+              <img class="icon" src="/icons/eraser.svg" width="18px" height="18px" />
+            </div>
+          </div>
+        </div>
+        <div id="graphql-result" class="graphql-result-content">
+          <div class="graphql-result-placeholder">
+            <span>Execute a query to see results here</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</main>
+
+<% if (name) { %>
+<script id="gql-script" data-address="<%= address %>" data-prefix="<%= prefix %>" src="/js/fakelab-gql.min.js"></script>
+<% } %>

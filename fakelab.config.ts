@@ -5,4 +5,5 @@ export default defineConfig({
   server: { port: 50001, includeSnapshots: true },
   database: { enabled: true },
   headless: false,
+  graphQL: { enabled: true },
 });

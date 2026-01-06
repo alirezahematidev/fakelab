@@ -115,6 +115,7 @@
     "vitest": "^4.0.16"
   },
   "dependencies": {
+    "@dotenvx/dotenvx": "^1.51.4",
     "@faker-js/faker": "^10.1.0",
     "bundle-require": "^5.1.0",
     "commander": "^14.0.2",
@@ -126,6 +127,8 @@
     "fast-glob": "^3.3.3",
     "figlet": "^1.9.4",
     "fs-extra": "^11.3.2",
+    "graphql": "^16.9.0",
+    "graphql-http": "^1.21.0",
     "is-glob": "^4.0.3",
     "joycon": "^3.1.1",
     "lowdb": "^7.0.1",

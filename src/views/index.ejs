@@ -1,9 +1,13 @@
-<%- include("components/sidebar", { entities, version, enabled, name }) %> <% title = "Fakelab" %>
+<%- include("components/sidebar", { entities, version, isDatabaseEnabled, isFakelabEnabled, name }) %> <% title = `Fakelab ${!isFakelabEnabled ? "(disabled)" : ""}` %>
 <main class="main">
   <header class="header"></header>
   <div class="preview">
     <div class="nodata">
+      <% if(isFakelabEnabled) { %>
       <span>Select a entity to load the data.</span>
+      <% } else { %>
+      <span>Fakelab is disabled. No entity can be loaded.</span>
+      <% } %>
     </div>
   </div>
 </main>

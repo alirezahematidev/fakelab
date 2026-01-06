@@ -70,10 +70,10 @@ class GraphQLBuilder {
 
   buildQuery(entityName: string, entityType: Type): string {
     const fields = this.extractFields(entityType, new Set(), 1);
-    return `query {\n  ${entityName}(count: 1) {\n${fields.join("\n")}\n  }\n}`;
+    return `query {\n${entityName}(count: 1) {\n${fields.join("\n")}\n  }\n}`;
   }
 
-  private extractFields(type: Type, visited: Set<string> = new Set(), indent: number = 0): string[] {
+  private extractFields(type: Type, visited: Set<string> = new Set(), indent: number = 1): string[] {
     const fields: string[] = [];
     const typeName = type.getSymbol()?.getName();
 
@@ -86,7 +86,7 @@ class GraphQLBuilder {
     }
 
     const props = type.getProperties();
-    const indentStr = "  ".repeat(indent);
+    const gap = "  ".repeat(indent);
 
     for (const prop of props) {
       const propType = prop.getTypeAtLocation(prop.getValueDeclarationOrThrow());
@@ -97,22 +97,22 @@ class GraphQLBuilder {
         if (elementType.isObject() && !visited.has(elementType.getSymbol()?.getName() || "")) {
           const nestedFields = this.extractFields(elementType, visited, indent + 1);
           if (nestedFields.length > 0) {
-            fields.push(`${propName} {\n${nestedFields.join("\n")}\n${indentStr}}`);
+            fields.push(`${gap}${gap}${propName} {\n${nestedFields.join("\n")}\n${gap}}`);
           } else {
-            fields.push(`${indentStr}${propName}`);
+            fields.push(`${gap}${gap}${propName}`);
           }
         } else {
-          fields.push(`${indentStr}${propName}`);
+          fields.push(`${gap}${gap}${propName}`);
         }
       } else if (propType.isObject() && !visited.has(propType.getSymbol()?.getName() || "")) {
         const nestedFields = this.extractFields(propType, visited, indent + 1);
         if (nestedFields.length > 0) {
-          fields.push(`${propName} {\n${nestedFields.join("\n")}\n${indentStr}}`);
+          fields.push(`${gap}${gap}${propName} {\n${nestedFields.join("\n")}\n${gap}${gap}}`);
         } else {
-          fields.push(`${indentStr}${indentStr}${propName}`);
+          fields.push(`${gap}${gap}${propName}`);
         }
       } else {
-        fields.push(`${indentStr}${indentStr}${propName}`);
+        fields.push(`${gap}${gap}${propName}`);
       }
     }
 

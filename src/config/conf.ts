@@ -55,8 +55,8 @@ export class Config {
     };
   }
 
-  tsConfigFilePath() {
-    return this.configOptions.tsConfigFilePath || "tsconfig.json";
+  getTSConfigFilePath(tsConfigFilePath?: string) {
+    return tsConfigFilePath || this.configOptions.tsConfigFilePath || "tsconfig.json";
   }
 
   isHeadless() {
@@ -158,7 +158,7 @@ export class Config {
 
     const { port, pathPrefix } = this._serverOptions(options.pathPrefix, options.port);
 
-    const runtimeSource = RuntimeSource.init(dirname, port, pathPrefix);
+    const runtimeSource = RuntimeSource.init(dirname, port, pathPrefix, this.enabled());
 
     const databaseSource = DatabaseSource.init(dirname, port, pathPrefix, this.options.database().enabled);
 

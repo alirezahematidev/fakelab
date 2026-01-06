@@ -5,13 +5,14 @@ import { type InterfaceDeclaration, type TypeAliasDeclaration, Project } from "t
 import { CWD, DIRNAME } from "./file";
 import type { Entity, UserConfig } from "./types";
 import { Database } from "./database";
+import { HEADLESS_DTS_SOURCE } from "./headless/template";
 
 type ParserTypeDeclaration = InterfaceDeclaration | TypeAliasDeclaration;
 
 class ParserEngine {
   private __targets: ParserTypeDeclaration[];
 
-  constructor(private readonly files: string[], private readonly tsConfigFilePath: string) {
+  private constructor(private readonly files: string[], private readonly tsConfigFilePath: string, private readonly headless = false) {
     const project = new Project({ tsConfigFilePath: this.tsConfigFilePath });
 
     const sources = project.addSourceFilesAtPaths(this.files);
@@ -24,13 +25,15 @@ class ParserEngine {
       return [...interfaces, ...typeAliases, ...(exportDeclarations as ParserTypeDeclaration[])];
     });
 
-    this.generateInFileEntitiyMap();
-
     this.generateTypeUtils();
   }
 
-  async run(factory: () => Promise<unknown>) {
-    return await factory();
+  static async init(files: string[], tsConfigFilePath: string, headless = false) {
+    const instance = new ParserEngine(files, tsConfigFilePath, headless);
+
+    await instance.generateInFileEntitiyMap();
+
+    return instance;
   }
 
   private normalizePath(p: string) {
@@ -47,8 +50,8 @@ class ParserEngine {
     return result;
   }
 
-  generateTypeUtils() {
-    const declarations = [
+  private getDeclarationsMap() {
+    return [
       ...new Set(
         this.__targets.map((target) => {
           const name = target.getName();
@@ -58,26 +61,30 @@ class ParserEngine {
         })
       ),
     ];
-    const raw = `\ninterface $$ {\n${declarations.join("\n")}\n}`;
+  }
+
+  private generateTypeUtils() {
+    const decl = this.getDeclarationsMap();
+
+    if (decl.length === 0) return;
+
+    const raw = `\ninterface $$ {\n${decl.join("\n")}\n}`;
 
     fs.appendFile(path.resolve(DIRNAME, "type-utils.d.ts"), raw);
   }
 
-  generateInFileEntitiyMap() {
-    const declarations = [
-      ...new Set(
-        this.__targets.map((target) => {
-          const name = target.getName();
-          const filepath = target.getSourceFile().getFilePath();
+  async generateInFileEntitiyMap() {
+    if (this.headless) {
+      await fs.writeFile(path.resolve(DIRNAME, "runtime.d.ts"), HEADLESS_DTS_SOURCE);
+    }
 
-          return `${name.toLowerCase()}: import("${filepath}").${name}`;
-        })
-      ),
-    ];
+    const decl = this.getDeclarationsMap();
 
-    const data = `\ninterface Runtime$ {\n${declarations.join("\n")}\n}`;
+    if (decl.length === 0) return;
 
-    fs.appendFile(path.resolve(DIRNAME, "runtime.d.ts"), data);
+    const data = `\ninterface Runtime$ {\n${decl.join("\n")}\n}`;
+
+    await fs.appendFile(path.resolve(DIRNAME, "runtime.d.ts"), data);
   }
 
   public async entities() {

@@ -48,7 +48,7 @@ function resolveBatch<T>({ each }: { each: () => Promise<T> }) {
 export async function prepareBuilder(config: Config, options: ServerCLIOptions): Promise<Builder> {
   const files = await config.files(options.source);
 
-  const parser = new ParserEngine(files, options.tsConfigFilePath || config.tsConfigFilePath());
+  const parser = await ParserEngine.init(files, config.getTSConfigFilePath(options.tsConfigFilePath));
 
   const entities = await parser.entities();
 

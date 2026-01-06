@@ -20,7 +20,7 @@ export class Headless {
     try {
       const files = await this.config.files(source);
 
-      const parser = new ParserEngine(files, tsConfigFilePath || this.config.tsConfigFilePath());
+      const parser = await ParserEngine.init(files, this.config.getTSConfigFilePath(tsConfigFilePath), true);
 
       const entities = await parser.entities();
 
@@ -67,6 +67,7 @@ export class Headless {
     const { pathPrefix, port } = this.config.options.server();
 
     return this.replacer(HEADLESS_SOURCE, {
+      FAKELAB_ENABLED: this.config.enabled(),
       PORT: port,
       PREFIX: pathPrefix,
       LOCALE: locale,

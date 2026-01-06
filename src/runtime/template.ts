@@ -7,7 +7,9 @@ function _count(opts = {}) {
   return null;
 }
 
-_fakelab.gen = async function (name, options) {
+_fakelab.enabled = () => FAKELAB_ENABLED;
+
+_fakelab.fetch = async function (name, options) {
   const count = _count(options);
   const search = count !== null ? "?count=" + count : "";
 
@@ -18,14 +20,18 @@ _fakelab.gen = async function (name, options) {
   return res.json();
 };
 
-_fakelab.genSync = function (_name, _options) {
-  console.warn("[fakelab] genSync() is only available in headless mode.");
-  return {};
-};
+_fakelab.gen = function (name, options) {
+  const count = _count(options);
 
+  if(count === null) return functions[name]();
+
+  return Array.from({length:count},() => functions[name]())
+}
+
+_fakelab.enabled = _fakelab.enabled.bind(_fakelab);
 _fakelab.url = _fakelab.url.bind(_fakelab);
+_fakelab.fetch = _fakelab.fetch.bind(_fakelab);
 _fakelab.gen = _fakelab.gen.bind(_fakelab);
-_fakelab.genSync = _fakelab.genSync.bind(_fakelab);
 
 const fakelab = Object.freeze(_fakelab);
 

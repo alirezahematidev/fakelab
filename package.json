@@ -7,22 +7,37 @@
   "main": "lib/main.js",
   "module": "lib/main.js",
   "types": "lib/main.d.ts",
+  "sideEffects": false,
+  "typesVersions": {
+    "*": {
+      "runtime": [
+        "./runtime.d.ts"
+      ],
+      "database": [
+        "./database.d.ts"
+      ],
+      "type-utils": [
+        "./type-utils.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "types": "./lib/main.d.ts",
       "default": "./lib/main.js"
     },
     "./runtime": {
-      "types": "./lib/runtime.d.ts",
-      "node": "./lib/runtime.js",
-      "default": "./lib/runtime.js"
+      "types": "./runtime.d.ts",
+      "node": "./runtime.js",
+      "default": "./runtime.js"
     },
     "./database": {
-      "types": "./lib/database.d.ts",
-      "default": "./lib/database.js"
+      "types": "./database.d.ts",
+      "node": "./database.js",
+      "default": "./database.js"
     },
     "./type-utils": {
-      "types": "./lib/type-utils.d.ts"
+      "types": "./type-utils.d.ts"
     }
   },
   "engines": {
@@ -41,7 +56,8 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsup",
+    "compat": "node --import=tsx scripts/copy-compat.ts",
+    "build": "tsup && yarn compat",
     "prepack": "yarn build",
     "release": "release-it --ci",
     "serve": "yarn build && node --import=tsx lib/cli.js serve",
@@ -57,7 +73,14 @@
   "files": [
     "bin",
     "lib",
-    "package.json"
+    "runtime.js",
+    "runtime.d.ts",
+    "database.js",
+    "database.d.ts",
+    "type-utils.d.ts",
+    "package.json",
+    "README.md",
+    "LICENSE"
   ],
   "keywords": [
     "typescript",

@@ -16,12 +16,11 @@ import type {
   WebhookOptions,
 } from "../types";
 import { defaultFakerLocale, FAKELAB_DEFAULT_PORT, FAKELABE_DEFAULT_PREFIX, FAKER_LOCALES, type FakerLocale } from "../constants";
-import { RuntimeTemplate } from "./browser";
 import { CWD } from "../file";
+import { RuntimeSource } from "../runtime/source";
+import { DatabaseSource } from "../database/source";
 
 export class Config {
-  readonly RUNTIME_SOURCE_FILENAME = "runtime.js";
-
   readonly FAKELAB_PERSIST_DIR = ".fakelab";
 
   NETWORK_DEFAULT_OPTIONS: Readonly<NetworkOptions>;
@@ -54,6 +53,14 @@ export class Config {
       webhook: this._webhookOptions,
       graphQL: this._graphQLOptions,
     };
+  }
+
+  tsConfig() {
+    return this.configOptions.tsConfigPath || "tsconfig.json";
+  }
+
+  isHeadless() {
+    return this.configOptions.headless ?? false;
   }
 
   private _serverOptions(prefix?: string, port?: number): Required<ServerOptions> {
@@ -151,13 +158,13 @@ export class Config {
 
     const { port, pathPrefix } = this._serverOptions(options.pathPrefix, options.port);
 
-    const sourcePath = path.resolve(dirname, this.RUNTIME_SOURCE_FILENAME);
+    const runtimeSource = RuntimeSource.init(dirname, port, pathPrefix);
 
-    const browser = RuntimeTemplate.init(port, pathPrefix, this.configOptions.database);
+    const databaseSource = DatabaseSource.init(dirname, port, pathPrefix, this.options.database().enabled);
 
-    const source = await browser.prepareSource();
+    const sources = await Promise.all([runtimeSource.prepare(), databaseSource.prepare()]);
 
-    await fs.writeFile(sourcePath, source);
+    await Promise.all(sources.map(({ filepath, code }) => fs.writeFile(filepath, code)));
   }
 
   private async getSnapshotSourceFiles() {

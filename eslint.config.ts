@@ -11,5 +11,5 @@ export default defineConfig([
     languageOptions: { globals: globals.node },
   },
   tseslint.configs.recommended,
-  globalIgnores(["website/", "lib/", "node_modules/", "coverage/", "tests/", "temp/", "src/public/"]),
+  globalIgnores(["website/", "lib/", "node_modules/", "coverage/", "tests/", "temp/", "src/public/", "examples/", "**/*.d.ts"]),
 ]);

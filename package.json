@@ -1,21 +1,43 @@
 {
   "name": "fakelab",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "type": "module",
   "license": "MIT",
   "description": "A fast, easy-config mock server for frontend developers.",
   "main": "lib/main.js",
   "module": "lib/main.js",
   "types": "lib/main.d.ts",
+  "sideEffects": false,
+  "typesVersions": {
+    "*": {
+      "runtime": [
+        "./runtime.d.ts"
+      ],
+      "database": [
+        "./database.d.ts"
+      ],
+      "type-utils": [
+        "./type-utils.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "types": "./lib/main.d.ts",
       "default": "./lib/main.js"
     },
-    "./browser": {
-      "types": "./lib/runtime.d.ts",
-      "node": "./lib/runtime.js",
-      "default": "./lib/runtime.js"
+    "./runtime": {
+      "types": "./runtime.d.ts",
+      "node": "./runtime.js",
+      "default": "./runtime.js"
+    },
+    "./database": {
+      "types": "./database.d.ts",
+      "node": "./database.js",
+      "default": "./database.js"
+    },
+    "./type-utils": {
+      "types": "./type-utils.d.ts"
     }
   },
   "engines": {
@@ -34,12 +56,12 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsup",
+    "compat": "node --import=tsx scripts/copy-compat.ts",
+    "build": "tsup && yarn compat",
     "prepack": "yarn build",
     "release": "release-it --ci",
-    "serve": "yarn build && node lib/cli.js serve",
-    "dev": "yarn build && node --import=tsx src/cli.ts serve",
-    "lint": "yarn eslint",
+    "serve": "yarn build && node --import=tsx lib/cli.js serve",
+    "lint": "yarn eslint --config eslint.config.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -51,7 +73,14 @@
   "files": [
     "bin",
     "lib",
-    "package.json"
+    "runtime.js",
+    "runtime.d.ts",
+    "database.js",
+    "database.d.ts",
+    "type-utils.d.ts",
+    "package.json",
+    "README.md",
+    "LICENSE"
   ],
   "keywords": [
     "typescript",

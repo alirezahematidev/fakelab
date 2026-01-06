@@ -21,14 +21,14 @@ class RouteRegistry {
     private readonly config: Config,
     private readonly network: Network,
     private readonly database: Database,
-    private readonly serverCLIOptions: ServerCLIOptions
+    private readonly options: ServerCLIOptions
   ) {
-    const { pathPrefix } = this.config.options.server(this.serverCLIOptions.pathPrefix, this.serverCLIOptions.port);
+    const { pathPrefix } = this.config.options.server(this.options.pathPrefix, this.options.port);
     this.prefix = pathPrefix;
   }
 
   async register() {
-    const builder = await prepareBuilder(this.config, this.serverCLIOptions, this.database);
+    const builder = await prepareBuilder(this.config, this.options);
 
     const graphqlBuilder = new GraphQLBuilder(builder, this.network, this.database, this.config);
 

@@ -12,7 +12,7 @@ import type { SnapshotEvent, SnapshotEventArgs } from "./events/types";
 export class Snapshot {
   readonly TARGET_LANGUAGE = "typescript";
   readonly DEFAULT_TYPE_NAME = "Fakelab";
-  readonly SNAPSHOT_DIR = path.resolve(CWD, ".fakelab/snapshots");
+  static readonly SNAPSHOT_DIR = path.resolve(CWD, ".fakelab/snapshots");
 
   private static _instance: Snapshot;
 
@@ -79,8 +79,8 @@ export class Snapshot {
       return;
     }
 
-    await fs.ensureDir(this.SNAPSHOT_DIR);
-    await fs.ensureFile(path.resolve(this.SNAPSHOT_DIR, "__schema.json"));
+    await fs.ensureDir(Snapshot.SNAPSHOT_DIR);
+    await fs.ensureFile(path.resolve(Snapshot.SNAPSHOT_DIR, "__schema.json"));
 
     const schema = await this.readSnapshotSchema();
 
@@ -160,7 +160,7 @@ export class Snapshot {
 
     Logger.info("Refreshing %s snapshot source...", Logger.blue(source.name));
 
-    const filepath = path.resolve(this.SNAPSHOT_DIR, this.snapshotName(source.url));
+    const filepath = path.resolve(Snapshot.SNAPSHOT_DIR, this.snapshotName(source.url));
 
     const exists = await fs.exists(filepath);
 
@@ -191,7 +191,7 @@ export class Snapshot {
 
     Logger.info("Deleting %s snapshot source...", Logger.blue(source.name));
 
-    const filepath = path.resolve(this.SNAPSHOT_DIR, this.snapshotName(source.url));
+    const filepath = path.resolve(Snapshot.SNAPSHOT_DIR, this.snapshotName(source.url));
 
     await fs.rm(filepath, { force: true });
     await this.updateSnapshotSchema({ url: source.url, delete: true });
@@ -209,7 +209,7 @@ export class Snapshot {
     try {
       await Promise.all(
         sources.map(async (source) => {
-          const filepath = path.resolve(this.SNAPSHOT_DIR, this.snapshotName(source.url));
+          const filepath = path.resolve(Snapshot.SNAPSHOT_DIR, this.snapshotName(source.url));
 
           const exists = await fs.exists(filepath);
 
@@ -269,7 +269,7 @@ export class Snapshot {
   }
 
   private async write(url: string, content: string, name?: string, headers?: SnapshotDataSource["headers"]) {
-    await fs.writeFile(path.resolve(this.SNAPSHOT_DIR, this.snapshotName(url)), content);
+    await fs.writeFile(path.resolve(Snapshot.SNAPSHOT_DIR, this.snapshotName(url)), content);
     await this.updateSnapshotSchema({ url, name, headers });
   }
 
@@ -277,7 +277,7 @@ export class Snapshot {
     let schema: SnapshotSchema = { sources: [] };
 
     try {
-      schema = await fs.readJSON(path.resolve(this.SNAPSHOT_DIR, "__schema.json"));
+      schema = await fs.readJSON(path.resolve(Snapshot.SNAPSHOT_DIR, "__schema.json"));
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       //
@@ -308,7 +308,7 @@ export class Snapshot {
 
     schema.sources = sources;
 
-    await fs.writeJSON(path.resolve(this.SNAPSHOT_DIR, "__schema.json"), schema);
+    await fs.writeJSON(path.resolve(Snapshot.SNAPSHOT_DIR, "__schema.json"), schema);
   }
 
   private initWebhook() {

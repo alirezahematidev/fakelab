@@ -214,6 +214,21 @@ export type ConfigOptions = {
    */
   enabled?: boolean;
   /**
+   * Enables headless mode.
+   *
+   * When enabled, Fakelab runs without starting the HTTP server and only
+   * performs non-interactive tasks such as generating snapshots, mocks,
+   * or database files.
+   *
+   * This is useful for CI pipelines, build-time generation, or offline usage.
+   *
+   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/headless|Headless Documentation}
+   */
+  headless?: boolean;
+
+  tsConfigPath?: string;
+
+  /**
    * Server-related configuration.
    * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/server-command|Server Documentation}
    */
@@ -284,6 +299,8 @@ export type ServerCLIOptions = {
   port?: number;
   locale?: string;
   freshSnapshots?: boolean;
+  tsConfig?: string;
+  headless?: boolean;
 };
 
 export type SnapshotCLIOptions = {

@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.0.3](https://github.com/alirezahematidev/fakelab/compare/v1.0.2...v1.0.3) (2026-01-06)
+
+## [1.0.2](https://github.com/alirezahematidev/fakelab/compare/v1.0.1...v1.0.2) (2026-01-06)
+
+### Bug Fixes
+
+* type error ([44fb70a](https://github.com/alirezahematidev/fakelab/commit/44fb70a6b2b98640369c9dcec165d4a06599e2d4))
+
+## [1.0.1](https://github.com/alirezahematidev/fakelab/compare/v1.0.0...v1.0.1) (2026-01-06)
+
+### Features
+
+* add tsconfig option ([c4f50d3](https://github.com/alirezahematidev/fakelab/commit/c4f50d3789cebfef69b7f6f52fc903010ebe3373))
+* headless exposable ([da3906f](https://github.com/alirezahematidev/fakelab/commit/da3906f3b340cf3aafab11f013571ca06d038e37))
+* offline mode ([de80755](https://github.com/alirezahematidev/fakelab/commit/de80755b59caf05d279abc70fb242bd6ee636a85))
+* supported headless mode ([a2b4d69](https://github.com/alirezahematidev/fakelab/commit/a2b4d698613ebe0a70ec2826ca802cf59365161a))
+
+### Bug Fixes
+
+* merged headless in runtime api ([4106d3a](https://github.com/alirezahematidev/fakelab/commit/4106d3a7781e9cb725555ff50961cfff4239493c))
+* tests ([597519c](https://github.com/alirezahematidev/fakelab/commit/597519c395bd823f9662bbc9dcf106578645d80a))
+
 ## [1.0.0](https://github.com/alirezahematidev/fakelab/compare/v0.0.34...v1.0.0) (2025-12-29)
 
 ### Features

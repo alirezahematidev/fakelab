@@ -1,7 +1,7 @@
 import path from "node:path";
 import fs from "fs-extra";
 import { JSONFilePreset } from "lowdb/node";
-import { type InterfaceDeclaration, type TypeAliasDeclaration, Project } from "ts-morph";
+import { type InterfaceDeclaration, type TypeAliasDeclaration, Node, Project, Type } from "ts-morph";
 import { CWD, DIRNAME } from "./file";
 import type { Entity, UserConfig } from "./types";
 import { Database } from "./database";
@@ -50,6 +50,24 @@ class ParserEngine {
     return result;
   }
 
+  private getDeclarationTextFromType(type: Type): string | null {
+    const sym = type.getSymbol() ?? type.getAliasSymbol();
+
+    if (!sym) return null;
+
+    const declarations = sym.getDeclarations();
+
+    const isInterface = declarations.find(Node.isInterfaceDeclaration);
+    const isType = declarations.find(Node.isTypeAliasDeclaration);
+    const isExport = declarations.find(Node.isExportDeclaration);
+
+    const decl = isInterface ?? isType ?? isExport;
+
+    if (!decl) return null;
+
+    return decl.getText().replace(/export|interface|type|;|\s+/g, "");
+  }
+
   private getDeclarationsMap() {
     return [
       ...new Set(
@@ -71,6 +89,24 @@ class ParserEngine {
     const raw = `\ninterface $$ {\n${decl.join("\n")}\n}`;
 
     fs.appendFile(path.resolve(DIRNAME, "type-utils.d.ts"), raw);
+  }
+
+  private argsToString<T extends Record<string, unknown>>(obj: T) {
+    const entries = Object.entries(obj ?? {}).filter(([, v]) => v != null);
+
+    if (entries.length === 0) return null;
+
+    return entries.map((entry) => entry.join("_")).join("_");
+  }
+
+  async typeToString(type: Type, args: Record<string, unknown>) {
+    const truthyArgs = this.argsToString(args);
+
+    let key = this.getDeclarationTextFromType(type);
+
+    if (truthyArgs) key += `(${truthyArgs})`;
+
+    return key;
   }
 
   async generateInFileEntitiyMap() {

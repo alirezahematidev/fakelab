@@ -7,6 +7,7 @@ import { transform } from "esbuild";
 import type { Config } from "../config/conf";
 import { Logger } from "../logger";
 import { HEADLESS_SOURCE } from "./template";
+import type { ServerCLIOptions } from "../types";
 
 export class Headless {
   private readonly HEADLESS_FILENAME = "runtime.js";
@@ -16,11 +17,11 @@ export class Headless {
 
   constructor(private readonly config: Config) {}
 
-  async generate(source?: string, tsConfigFilePath?: string) {
+  async generate(options: ServerCLIOptions) {
     try {
-      const files = await this.config.files(source);
+      const files = await this.config.files(options.source);
 
-      const parser = await ParserEngine.init(files, this.config.getTSConfigFilePath(tsConfigFilePath), true);
+      const parser = await ParserEngine.init(files, this.config.getTSConfigFilePath(options.tsConfigPath), true);
 
       const entities = await parser.entities();
 

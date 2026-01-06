@@ -196,6 +196,24 @@ export type GraphQLOptions = {
   enabled: boolean;
 };
 
+export type CacheOptions = {
+  /**
+   * Enables the file-based cache.
+   *
+   * @default true
+   */
+  enabled: boolean;
+  /**
+   * Time-to-live (TTL) for cache entries in milliseconds.
+   *
+   * When set, cached files older than this value are considered expired
+   * and will be ignored or regenerated on the next request.
+   *
+   * @default 15 * 60 * 1000 // 15 minutes
+   */
+  ttl?: number;
+};
+
 export type ConfigOptions = {
   /**
    * Path or paths to the source files that define the typescript types.
@@ -226,7 +244,20 @@ export type ConfigOptions = {
    */
   headless?: boolean;
 
+  /**
+   * Path to a custom typescript config file.
+   *
+   * If not specified, Fakelab attempts to resolve the nearest `tsconfig.json`
+   * automatically.
+   */
   tsConfigFilePath?: string;
+
+  /**
+   * Cache configuration.
+   *
+   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/cache|Cache Documentation}
+   */
+  cache?: CacheOptions;
 
   /**
    * Server-related configuration.
@@ -290,7 +321,7 @@ export type Entity = {
 
 export interface Builder {
   readonly entities: Map<string, Entity>;
-  build: (type: Type, options: ForgeOptions) => Promise<BuilderResult>;
+  build: (name: string, type: Type, options: ForgeOptions) => Promise<BuilderResult>;
 }
 
 export type ServerCLIOptions = {
@@ -299,7 +330,7 @@ export type ServerCLIOptions = {
   port?: number;
   locale?: string;
   freshSnapshots?: boolean;
-  tsConfigFilePath?: string;
+  tsConfigPath?: string;
   headless?: boolean;
 };
 

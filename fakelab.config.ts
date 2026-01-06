@@ -6,4 +6,6 @@ export default defineConfig({
   database: { enabled: true },
   headless: false,
   graphQL: { enabled: true },
+  cache: { enabled: true },
+  faker: { locale: "fa" },
 });

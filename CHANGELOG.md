@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.2](https://github.com/alirezahematidev/fakelab/compare/v1.0.1...v1.0.2) (2026-01-06)
+
+### Bug Fixes
+
+* type error ([44fb70a](https://github.com/alirezahematidev/fakelab/commit/44fb70a6b2b98640369c9dcec165d4a06599e2d4))
+
 ## [1.0.1](https://github.com/alirezahematidev/fakelab/compare/v1.0.0...v1.0.1) (2026-01-06)
 
 ### Features

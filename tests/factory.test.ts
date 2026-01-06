@@ -22,7 +22,7 @@ describe("Factory", () => {
     const database = Database.register(config);
     await database.initialize();
 
-    return await prepareBuilder(config, {}, database);
+    return await prepareBuilder(config, {});
   }
 
   test("should generate data for simple interface", async () => {

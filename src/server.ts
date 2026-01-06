@@ -10,16 +10,17 @@ import { DIRNAME } from "./file";
 import { Network } from "./network";
 import type { Config } from "./config/conf";
 import type { ServerCLIOptions, ServerOptions } from "./types";
-import { Database } from "./database";
 import { Webhook } from "./webhook";
 import { ServerEventSubscriber } from "./events/subscribers";
 import type { ServerEvent, ServerEventArgs } from "./events/types";
+import { Headless } from "./headless";
+import { Database } from "./database";
 
 export class Server {
   private webhook: Webhook<ServerEvent, ServerEventArgs> | undefined;
   private subscriber: ServerEventSubscriber | undefined;
 
-  private constructor(private readonly serverCLIOptions: ServerCLIOptions, private readonly config: Config) {
+  private constructor(private readonly options: ServerCLIOptions, private readonly config: Config) {
     this.start = this.start.bind(this);
     this.xPoweredMiddleware = this.xPoweredMiddleware.bind(this);
     this.setupApplication = this.setupApplication.bind(this);
@@ -30,7 +31,7 @@ export class Server {
     this.initWebhook();
 
     process.on("SIGINT", () => {
-      const opts = this.config.options.server(this.serverCLIOptions.pathPrefix, this.serverCLIOptions.port);
+      const opts = this.config.options.server(this.options.pathPrefix, this.options.port);
       this.subscriber?.shutdown(opts);
       process.exit(0);
     });
@@ -58,7 +59,28 @@ export class Server {
     return server;
   }
 
+  private async shouldRunHeadlessMode() {
+    if (this.options.headless || this.config.isHeadless()) {
+      const headless = new Headless(this.config);
+      const canGenerate = await headless.generate(this.options.source);
+
+      if (!canGenerate) {
+        Logger.error("Headless mode failed. Falling back to standard server mode.");
+      }
+
+      return canGenerate;
+    }
+
+    return false;
+  }
+
   public async start() {
+    if (await this.shouldRunHeadlessMode()) {
+      Logger.info("Headless mode enabled. Server startup skipped.");
+
+      return;
+    }
+
     const app = express();
 
     const router = express.Router();
@@ -67,23 +89,23 @@ export class Server {
 
     const network = Network.initHandlers(this.config);
 
-    const database = Database.register(this.config);
-
     this.setupApplication(app, network);
 
     this.setupTemplateEngine(app);
 
-    await this.config.initializeRuntimeConfig(DIRNAME, this.serverCLIOptions);
+    await this.config.initializeRuntimeConfig(DIRNAME, this.options);
+
+    const database = Database.register(this.config);
 
     await database.initialize();
 
-    const registry = new RouteRegistry(router, this.config, network, database, this.serverCLIOptions);
+    const registry = new RouteRegistry(router, this.config, network, database, this.options);
 
     await registry.register();
 
     app.use(router);
 
-    this.run(server, database, this.serverCLIOptions);
+    this.run(server, database, this.options);
   }
 
   private setupApplication(app: express.Express, network: Network) {
@@ -106,7 +128,7 @@ export class Server {
   private listen(database: Database, opts: Required<ServerOptions>) {
     this.subscriber?.started(opts);
 
-    if (database.enabled()) Logger.info(`database: %s`, database.DATABASE_DIR);
+    if (database.enabled()) Logger.info(`database: %s`, Database.DATABASE_DIR);
 
     Logger.info(`Server listening to http://localhost:%d`, opts.port);
 

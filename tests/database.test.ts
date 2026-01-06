@@ -25,7 +25,7 @@ describe("Database", () => {
     expect(database).toBeDefined();
     expect(database.enabled()).toBe(false);
 
-    expect(fs.existsSync(database.DATABASE_DIR)).toBe(false);
+    expect(fs.existsSync(Database.DATABASE_DIR)).toBe(false);
   });
 
   test("should initialize database directory when enabled", async () => {
@@ -37,7 +37,7 @@ describe("Database", () => {
 
     expect(database.enabled()).toBe(true);
 
-    expect(fs.existsSync(database.DATABASE_DIR)).toBe(true);
+    expect(fs.existsSync(Database.DATABASE_DIR)).toBe(true);
   });
 
   test("should not initialize database directory when disabled", async () => {
@@ -49,6 +49,6 @@ describe("Database", () => {
 
     expect(database.enabled()).toBe(false);
 
-    expect(fs.existsSync(database.DATABASE_DIR)).toBe(false);
+    expect(fs.existsSync(Database.DATABASE_DIR)).toBe(false);
   });
 });

@@ -12,10 +12,17 @@
       "types": "./lib/main.d.ts",
       "default": "./lib/main.js"
     },
-    "./browser": {
+    "./runtime": {
       "types": "./lib/runtime.d.ts",
       "node": "./lib/runtime.js",
       "default": "./lib/runtime.js"
+    },
+    "./database": {
+      "types": "./lib/database.d.ts",
+      "default": "./lib/database.js"
+    },
+    "./type-utils": {
+      "types": "./lib/type-utils.d.ts"
     }
   },
   "engines": {
@@ -38,7 +45,7 @@
     "prepack": "yarn build",
     "release": "release-it --ci",
     "serve": "yarn build && node --import=tsx lib/cli.js serve",
-    "lint": "yarn eslint",
+    "lint": "yarn eslint --config eslint.config.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

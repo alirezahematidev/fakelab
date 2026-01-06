@@ -4,17 +4,17 @@ import { JSONFilePreset } from "lowdb/node";
 import { type InterfaceDeclaration, type TypeAliasDeclaration, Project } from "ts-morph";
 import { CWD, DIRNAME } from "./file";
 import type { Entity, UserConfig } from "./types";
-import type { Database } from "./database";
+import { Database } from "./database";
 
 type ParserTypeDeclaration = InterfaceDeclaration | TypeAliasDeclaration;
 
 class ParserEngine {
   private __targets: ParserTypeDeclaration[];
 
-  constructor(readonly files: string[], private readonly database: Database) {
-    const project = new Project({ tsConfigFilePath: "tsconfig.json" });
+  constructor(private readonly files: string[], private readonly tsConfigFilePath: string) {
+    const project = new Project({ tsConfigFilePath: this.tsConfigFilePath });
 
-    const sources = project.addSourceFilesAtPaths(files);
+    const sources = project.addSourceFilesAtPaths(this.files);
 
     this.__targets = sources.flatMap((source) => {
       const interfaces = source.getInterfaces();
@@ -24,7 +24,9 @@ class ParserEngine {
       return [...interfaces, ...typeAliases, ...(exportDeclarations as ParserTypeDeclaration[])];
     });
 
-    this.generateInFileEntitiyMap(this.__targets);
+    this.generateInFileEntitiyMap();
+
+    this.generateTypeUtils();
   }
 
   async run(factory: () => Promise<unknown>) {
@@ -33,23 +35,6 @@ class ParserEngine {
 
   private normalizePath(p: string) {
     return p.split(path.sep).join(path.posix.sep);
-  }
-
-  private generateInFileEntitiyMap(targets: ParserTypeDeclaration[]) {
-    const declarations = [
-      ...new Set(
-        targets.map((target) => {
-          const name = target.getName();
-          const filepath = target.getSourceFile().getFilePath();
-
-          return `${name}: import("${filepath}").${name}`;
-        })
-      ),
-    ];
-
-    const raw = `\ninterface Runtime$ {\n${declarations.join("\n")}\n}`;
-
-    fs.appendFile(path.resolve(DIRNAME, "runtime.d.ts"), raw);
   }
 
   private address(directoryPath: string, basename: string) {
@@ -62,6 +47,39 @@ class ParserEngine {
     return result;
   }
 
+  generateTypeUtils() {
+    const declarations = [
+      ...new Set(
+        this.__targets.map((target) => {
+          const name = target.getName();
+          const filepath = target.getSourceFile().getFilePath();
+
+          return `${name.toLowerCase()}: import("${filepath}").${name}`;
+        })
+      ),
+    ];
+    const raw = `\ninterface $$ {\n${declarations.join("\n")}\n}`;
+
+    fs.appendFile(path.resolve(DIRNAME, "type-utils.d.ts"), raw);
+  }
+
+  generateInFileEntitiyMap() {
+    const declarations = [
+      ...new Set(
+        this.__targets.map((target) => {
+          const name = target.getName();
+          const filepath = target.getSourceFile().getFilePath();
+
+          return `${name.toLowerCase()}: import("${filepath}").${name}`;
+        })
+      ),
+    ];
+
+    const data = `\ninterface Runtime$ {\n${declarations.join("\n")}\n}`;
+
+    fs.appendFile(path.resolve(DIRNAME, "runtime.d.ts"), data);
+  }
+
   public async entities() {
     const mapping = (await Promise.all(
       this.__targets.map(async (face) => {
@@ -72,9 +90,9 @@ class ParserEngine {
 
         const filepath = this.address(directoryPath, basename);
 
-        const tablePath = path.resolve(this.database.DATABASE_DIR, `${name}.json`);
+        const tablePath = path.resolve(Database.DATABASE_DIR, `${name}.json`);
 
-        const redactedTablePath = this.address(this.normalizePath(this.database.DATABASE_DIR), path.basename(tablePath));
+        const redactedTablePath = this.address(this.normalizePath(Database.DATABASE_DIR), path.basename(tablePath));
 
         const snapshot = directoryPath.includes("/.fakelab/snapshots");
 

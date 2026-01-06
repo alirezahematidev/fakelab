@@ -7,6 +7,7 @@
     "dev": "vite --port 50000 --open --mode production",
     "build": "tsc -b && vite build",
     "serve": "npx fakelab serve",
+    "headless": "npx fakelab serve --headless",
     "snapshot": "npx fakelab snapshot"
   },
   "dependencies": {

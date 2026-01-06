@@ -62,7 +62,7 @@ class RouteRenderer {
         const { json } = await this.builder.build(entity.type, queries);
         const filepath = entity.filepath;
 
-        const graphqlOptions = this.config.options.graphql();
+        const graphqlOptions = this.config.options.graphQL();
 
         res.render("preview", {
           name,
@@ -136,7 +136,7 @@ class RouteRenderer {
     return (_: express.Request, res: express.Response) => {
       if (!this.isFakelabEnabled) return res.redirect("/");
 
-      const { enabled } = this.config.options.graphql();
+      const { enabled } = this.config.options.graphQL();
 
       if (!enabled) res.redirect("/");
       else
@@ -162,7 +162,7 @@ class RouteRenderer {
 
       const entity = this.builder.entities.get(name.toLowerCase());
 
-      const { enabled } = this.config.options.graphql();
+      const { enabled } = this.config.options.graphQL();
 
       if (!enabled) res.redirect("/");
       else {

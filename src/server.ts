@@ -66,7 +66,7 @@ export class Server {
   private async shouldRunHeadlessMode() {
     if (this.options.headless || this.config.isHeadless()) {
       const headless = new Headless(this.config);
-      const canGenerate = await headless.generate(this.options.source);
+      const canGenerate = await headless.generate(this.options.source, this.options.tsConfigFilePath);
 
       if (!canGenerate) {
         Logger.error("Headless mode failed. Falling back to standard server mode.");

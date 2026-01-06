@@ -55,8 +55,8 @@ export class Config {
     };
   }
 
-  tsConfig() {
-    return this.configOptions.tsConfigPath || "tsconfig.json";
+  tsConfigFilePath() {
+    return this.configOptions.tsConfigFilePath || "tsconfig.json";
   }
 
   isHeadless() {

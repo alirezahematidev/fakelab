@@ -226,7 +226,7 @@ export type ConfigOptions = {
    */
   headless?: boolean;
 
-  tsConfigPath?: string;
+  tsConfigFilePath?: string;
 
   /**
    * Server-related configuration.
@@ -299,7 +299,7 @@ export type ServerCLIOptions = {
   port?: number;
   locale?: string;
   freshSnapshots?: boolean;
-  tsConfig?: string;
+  tsConfigFilePath?: string;
   headless?: boolean;
 };
 

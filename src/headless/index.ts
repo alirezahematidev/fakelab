@@ -20,7 +20,7 @@ export class Headless {
     try {
       const files = await this.config.files(source);
 
-      const parser = new ParserEngine(files);
+      const parser = new ParserEngine(files, this.config.tsConfig());
 
       const entities = await parser.entities();
 

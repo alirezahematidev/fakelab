@@ -11,8 +11,8 @@ type ParserTypeDeclaration = InterfaceDeclaration | TypeAliasDeclaration;
 class ParserEngine {
   private __targets: ParserTypeDeclaration[];
 
-  constructor(private readonly files: string[]) {
-    const project = new Project({ tsConfigFilePath: "tsconfig.json" });
+  constructor(private readonly files: string[], private readonly tsConfigFilePath: string) {
+    const project = new Project({ tsConfigFilePath: this.tsConfigFilePath });
 
     const sources = project.addSourceFilesAtPaths(this.files);
 

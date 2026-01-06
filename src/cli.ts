@@ -19,6 +19,7 @@ program
   .option("-p, --port <number>", "server port number", parseInt)
   .option("-l, --locale <char>", "faker custom locale")
   .option("-h, --headless", "headless mode")
+  .option("-c, --ts-config <char>", "ts config path")
   .option("-f, --fresh-snapshots", "capture or refresh all snapshots")
   .action(async (options) => {
     const snapshot = await Snapshot.prepare(options);

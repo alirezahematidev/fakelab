@@ -206,6 +206,9 @@ export type ConfigOptions = {
    * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/headless|Headless Documentation}
    */
   headless?: boolean;
+
+  tsConfigPath?: string;
+
   /**
    * Server-related configuration.
    * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/server-command|Server Documentation}
@@ -270,6 +273,7 @@ export type ServerCLIOptions = {
   port?: number;
   locale?: string;
   freshSnapshots?: boolean;
+  tsConfig?: string;
   headless?: boolean;
 };
 

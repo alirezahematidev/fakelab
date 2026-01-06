@@ -43,6 +43,10 @@ export class Config {
     };
   }
 
+  tsConfig() {
+    return this.configOptions.tsConfigPath || "tsconfig.json";
+  }
+
   isHeadless() {
     return this.configOptions.headless ?? false;
   }

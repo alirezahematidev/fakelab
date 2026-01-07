@@ -59,7 +59,7 @@ class RouteRenderer {
       const entity = this.builder.entities.get(name.toLowerCase());
 
       if (entity) {
-        const { json } = await this.builder.build(entity.type, queries);
+        const { json } = await this.builder.build(name.toLowerCase(), entity.type, queries);
         const filepath = entity.filepath;
 
         const graphqlOptions = this.config.options.graphQL();

@@ -5,6 +5,7 @@ import { access, constants, stat } from "node:fs/promises";
 import isGlob from "is-glob";
 import { Logger } from "../logger";
 import type {
+  CacheOptions,
   ConfigOptions,
   DatabaseOptions,
   FakerEngineOptions,
@@ -34,6 +35,7 @@ export class Config {
     this._fakerOptions = this._fakerOptions.bind(this);
     this._webhookOptions = this._webhookOptions.bind(this);
     this._graphQLOptions = this._graphQLOptions.bind(this);
+    this._cacheOptions = this._cacheOptions.bind(this);
 
     this.NETWORK_DEFAULT_OPTIONS = Object.freeze({
       delay: this.configOptions.network?.delay || 0,
@@ -52,6 +54,7 @@ export class Config {
       faker: this._fakerOptions,
       webhook: this._webhookOptions,
       graphQL: this._graphQLOptions,
+      cache: this._cacheOptions,
     };
   }
 
@@ -61,6 +64,13 @@ export class Config {
 
   isHeadless() {
     return this.configOptions.headless ?? false;
+  }
+
+  private _cacheOptions(): Required<CacheOptions> {
+    return {
+      enabled: this.configOptions.cache?.enabled ?? true,
+      ttl: this.configOptions.cache?.ttl || 15 * 60 * 1000,
+    };
   }
 
   private _serverOptions(prefix?: string, port?: number): Required<ServerOptions> {

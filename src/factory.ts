@@ -4,6 +4,7 @@ import type { EvaluatedFakerArgs, ForgeOptions, Builder, ServerCLIOptions } from
 import { ParserEngine } from "./parserEngine";
 import type { Config } from "./config/conf";
 import type { FakerLocale } from "./constants";
+import { createFileCache } from "./cache";
 
 async function factory(type: Type, generator: Generator, data: (EvaluatedFakerArgs | undefined)[] = [], index = 0): Promise<unknown> {
   if (type.isString()) return generator.string(data[index]);
@@ -48,7 +49,7 @@ function resolveBatch<T>({ each }: { each: () => Promise<T> }) {
 export async function prepareBuilder(config: Config, options: ServerCLIOptions): Promise<Builder> {
   const files = await config.files(options.source);
 
-  const parser = await ParserEngine.init(files, config.getTSConfigFilePath(options.tsConfigFilePath));
+  const parser = await ParserEngine.init(files, config.getTSConfigFilePath(options.tsConfigPath));
 
   const entities = await parser.entities();
 
@@ -56,12 +57,22 @@ export async function prepareBuilder(config: Config, options: ServerCLIOptions):
 
   const generator = new Generator(faker);
 
-  async function build(type: Type, options: ForgeOptions) {
+  const cache = createFileCache(config);
+
+  async function build(name: string, type: Type, options: ForgeOptions) {
+    const key = await parser.typeToString(type, { ...options, ...config.options.faker() });
+
+    const cached = await cache.get(name, key);
+
+    if (cached) return cached;
+
     const resolver = resolveBatch({ each: () => factory(type, generator) });
 
     const data = await (options.count ? resolver.resolve(parseInt(String(options.count))) : factory(type, generator));
 
     const json = JSON.stringify(data, null, 2);
+
+    cache.set(name, key, json);
 
     return { data, json };
   }

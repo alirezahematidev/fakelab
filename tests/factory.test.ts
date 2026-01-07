@@ -35,7 +35,7 @@ describe("Factory", () => {
     const userEntity = builder.entities.get("user");
     expect(userEntity).toBeDefined();
 
-    const result = await builder.build(userEntity!.type, {});
+    const result = await builder.build("user", userEntity!.type, {});
 
     expect(result.data).toBeDefined();
     expect(result.json).toBeDefined();
@@ -57,7 +57,7 @@ describe("Factory", () => {
     const userEntity = builder.entities.get("user");
     expect(userEntity).toBeDefined();
 
-    const result = await builder.build(userEntity!.type, { count: 10 });
+    const result = await builder.build("user", userEntity!.type, { count: 10 });
 
     expect(result.data).toBeDefined();
     expect(result.json).toBeDefined();
@@ -80,7 +80,7 @@ describe("Factory", () => {
     const userEntity = builder.entities.get("user");
     expect(userEntity).toBeDefined();
 
-    const result = await builder.build(userEntity!.type, { count: 0 });
+    const result = await builder.build("user", userEntity!.type, { count: 0 });
 
     expect(result.data).toBeDefined();
     expect(result.json).toBeDefined();
@@ -102,7 +102,7 @@ describe("Factory", () => {
     const userEntity = builder.entities.get("user");
     expect(userEntity).toBeDefined();
 
-    const result = await builder.build(userEntity!.type, { count: -1 });
+    const result = await builder.build("user", userEntity!.type, { count: -1 });
 
     expect(result.data).toBeDefined();
     expect(result.json).toBeDefined();
@@ -124,7 +124,7 @@ describe("Factory", () => {
     const profileEntity = builder.entities.get("profile");
     expect(profileEntity).toBeDefined();
 
-    const result = await builder.build(profileEntity!.type, {});
+    const result = await builder.build("profile", profileEntity!.type, {});
 
     expect(result.data).toBeDefined();
     expect(result.json).toBeDefined();
@@ -147,7 +147,7 @@ describe("Factory", () => {
     const profileEntity = builder.entities.get("profile");
     expect(profileEntity).toBeDefined();
 
-    const result = await builder.build(profileEntity!.type, {});
+    const result = await builder.build("profile", profileEntity!.type, {});
 
     expect(result.data).toBeDefined();
     expect(result.json).toBeDefined();
@@ -170,7 +170,7 @@ describe("Factory", () => {
     const productEntity = builder.entities.get("product");
     expect(productEntity).toBeDefined();
 
-    const result = await builder.build(productEntity!.type, {});
+    const result = await builder.build("product", productEntity!.type, {});
 
     expect(result.data).toBeDefined();
     expect(result.json).toBeDefined();
@@ -191,7 +191,7 @@ describe("Factory", () => {
     const productEntity = builder.entities.get("product");
     expect(productEntity).toBeDefined();
 
-    const result = await builder.build(productEntity!.type, {});
+    const result = await builder.build("product", productEntity!.type, {});
 
     expect(result.data).toBeDefined();
     expect(result.json).toBeDefined();

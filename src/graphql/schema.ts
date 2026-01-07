@@ -111,7 +111,7 @@ class GraphQLSchemaGenerator {
             count: { type: GraphQLInt },
           },
           resolve: async (_, args: { count?: number }) => {
-            const { data } = await this.builder.build(entity.type, { count: args.count || 1 });
+            const { data } = await this.builder.build(entityName.toLowerCase(), entity.type, { count: args.count || 1 });
             return Array.isArray(data) ? data : [data];
           },
         };

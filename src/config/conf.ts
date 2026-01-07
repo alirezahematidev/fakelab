@@ -106,9 +106,9 @@ export class Config {
     const lang = (locale || this.configOptions.faker?.locale)?.toLowerCase();
 
     if (lang && FAKER_LOCALES.includes(lang as FakerLocale)) {
-      return { locale: lang as FakerLocale };
+      return { locale: lang as FakerLocale, seed: this.configOptions.faker?.seed || [] };
     }
-    return { locale: defaultFakerLocale() };
+    return { locale: defaultFakerLocale(), seed: this.configOptions.faker?.seed || [] };
   }
 
   private _webhookOptions(): Required<WebhookOptions> {

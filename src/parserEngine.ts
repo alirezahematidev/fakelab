@@ -115,6 +115,16 @@ class ParserEngine {
   public async initFakerLibrary(fakerOptions: UserConfig["fakerOptions"]): Promise<import("@faker-js/faker").Faker> {
     const { faker } = await import(`@faker-js/faker/locale/${fakerOptions.locale}`);
 
+    let seed = fakerOptions.seed;
+
+    if (seed != null && "seed" in faker) {
+      if (Array.isArray(seed)) {
+        seed = [...new Set(seed)];
+      }
+
+      faker.seed(seed);
+    }
+
     return faker;
   }
 }

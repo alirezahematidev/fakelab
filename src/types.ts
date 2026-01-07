@@ -34,6 +34,19 @@ export type FakerEngineOptions = {
    * @example "en"
    */
   locale?: FakerLocale;
+
+  /**
+   * Seed value used to make faker data generation deterministic.
+   *
+   * When provided, Faker will generate the same mock data for the same
+   * input and schema across runs, ensuring stable and reproducible results.
+   *
+   * This is especially useful for testing, snapshots, and CI environments
+   * where consistent output is required.
+   *
+   *  @see {@link https://fakerjs.dev/api/faker#seed|Fakerjs seed Documentation}
+   */
+  seed?: number | number[];
 };
 
 export type DatabaseOptions = {

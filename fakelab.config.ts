@@ -6,4 +6,5 @@ export default defineConfig({
   database: { enabled: true },
   headless: false,
   graphQL: { enabled: true },
+  faker: { seed: 40 },
 });

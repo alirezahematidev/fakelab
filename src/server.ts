@@ -3,6 +3,7 @@ import cors from "cors";
 import path from "node:path";
 import http from "http";
 import ejsLayouts from "express-ejs-layouts";
+import swagger from "swagger-ui-express";
 import { RouteRegistry } from "./registry";
 import figlet from "figlet";
 import { Logger } from "./logger";
@@ -107,9 +108,18 @@ export class Server {
 
     await registry.register();
 
+    this.openapi(router, this.config);
+
     app.use(router);
 
     this.run(server, database, this.options);
+  }
+
+  private openapi(router: express.Router, config: Config) {
+    if (config.options.server().openapi) {
+      router.use("/docs", swagger.serve);
+      router.get("/docs", swagger.setup(null, { explorer: true, customSiteTitle: "Fakelab" }));
+    }
   }
 
   private setupApplication(app: express.Express, network: Network) {
@@ -134,7 +144,11 @@ export class Server {
 
     if (database.enabled() && this.config.enabled()) Logger.info(`database: %s`, Database.DATABASE_DIR);
 
-    Logger.info(`Server%s listening at http://localhost:%d`, !this.config.enabled() ? "(disabled)" : "", opts.port);
+    Logger.info(`Server%s: http://localhost:%d`, !this.config.enabled() ? "(disabled)" : "", opts.port);
+
+    if (opts.openapi) {
+      Logger.info("Docs: http://localhost:%d/docs", opts.port);
+    }
 
     if (this.config.enabled()) {
       console.log(figlet.textSync("FAKELAB"));

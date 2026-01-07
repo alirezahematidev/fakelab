@@ -25,6 +25,8 @@ export type ServerOptions = {
    * @default true
    */
   includeSnapshots?: boolean;
+
+  openapi?: boolean;
 };
 
 export type FakerEngineOptions = {

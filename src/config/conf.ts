@@ -78,6 +78,7 @@ export class Config {
       pathPrefix: prefix || this.configOptions.server?.pathPrefix || FAKELABE_DEFAULT_PREFIX,
       port: port || this.configOptions.server?.port || FAKELAB_DEFAULT_PORT,
       includeSnapshots: this.configOptions.server?.includeSnapshots ?? true,
+      openapi: this.configOptions.server?.openapi ?? false,
     };
   }
 

@@ -25,6 +25,11 @@ async function factory(type: Type, generator: Generator, data: (EvaluatedFakerAr
     return await generator.intersection(intersectionTypes.map((u, index) => factory(u, generator, data, index)));
   }
 
+  if (type.isTuple()) {
+    const tupleTypes = type.getTupleElements();
+    return tupleTypes.map((u, index) => factory(u, generator, data, index));
+  }
+
   if (type.isArray()) {
     const element = type.getArrayElementTypeOrThrow();
     return [await factory(element, generator, data, index)];

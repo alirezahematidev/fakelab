@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.4](https://github.com/alirezahematidev/fakelab/compare/v1.0.3...v1.0.4) (2026-01-08)
+
+### Features
+
+* graphql alpha edition ([4c6c535](https://github.com/alirezahematidev/fakelab/commit/4c6c53561f3acc587c66a2874147a6106ad08257))
+* handle fakelab enable/disable mode ([8167782](https://github.com/alirezahematidev/fakelab/commit/816778266cb096f6550910963aa5fbe602184683))
+* hot reloading ([42b761b](https://github.com/alirezahematidev/fakelab/commit/42b761b547f48b0567ee588a9eba782e43043251))
+* implement graphql query builder ([290bff7](https://github.com/alirezahematidev/fakelab/commit/290bff770ab34010198a77e13dff9b957ebd4837))
+* support server cache ([cbebf9d](https://github.com/alirezahematidev/fakelab/commit/cbebf9ddb833c82bdfef0827c3ad1f9da1224782))
+
+### Bug Fixes
+
+* improve jsdoc comments ([10f1f0d](https://github.com/alirezahematidev/fakelab/commit/10f1f0d7b4f29286d97e1faf73e09cb4988023e2))
+* make fakelab compatible with `node` moduleResolution ([a7445d7](https://github.com/alirezahematidev/fakelab/commit/a7445d756b85c506350bc985f373595c157d8acd))
+* manual test hot reloading ([6c17efc](https://github.com/alirezahematidev/fakelab/commit/6c17efce06b297ce14e2c1abd0f81e7af200e586))
+* runtime api improvements ([a58708e](https://github.com/alirezahematidev/fakelab/commit/a58708eaab6195d0afa811ce2616f4274f9ae134))
+* sync ([73335bb](https://github.com/alirezahematidev/fakelab/commit/73335bbb887bac19a2729c96245dc26fcce30007))
+* webhook condition ([15c3850](https://github.com/alirezahematidev/fakelab/commit/15c3850a680f26659800f2c5e898502ddee72532))
+
 ## [1.0.3](https://github.com/alirezahematidev/fakelab/compare/v1.0.2...v1.0.3) (2026-01-06)
 
 ## [1.0.2](https://github.com/alirezahematidev/fakelab/compare/v1.0.1...v1.0.2) (2026-01-06)

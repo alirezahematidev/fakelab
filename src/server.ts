@@ -6,7 +6,7 @@ import ejsLayouts from "express-ejs-layouts";
 import { RouteRegistry } from "./registry";
 import figlet from "figlet";
 import { Logger } from "./logger";
-import { DIRNAME } from "./file";
+import { CWD, DIRNAME } from "./file";
 import { Network } from "./network";
 import type { Config } from "./config/conf";
 import type { ServerCLIOptions, ServerOptions } from "./types";
@@ -15,6 +15,7 @@ import { ServerEventSubscriber } from "./events/subscribers";
 import type { ServerEvent, ServerEventArgs } from "./events/types";
 import { Headless } from "./headless";
 import { Database } from "./database";
+import { HotReloader } from "./hot-reload";
 
 export class Server {
   private webhook: Webhook<ServerEvent, ServerEventArgs> | undefined;
@@ -103,11 +104,73 @@ export class Server {
 
     await database.initialize();
 
-    const registry = new RouteRegistry(router, this.config, network, database, this.options);
+    const hotReloader = new HotReloader(router);
 
-    await registry.register();
+    app.use(hotReloader.middleware);
 
-    app.use(router);
+    app.get("/__reload", (_, res) => hotReloader.subscribe(res));
+
+    const buildAndSwapRoutes = async () => {
+      const nextRouter = express.Router();
+
+      await this.config.initializeRuntimeConfig(DIRNAME, this.options);
+
+      const registry = new RouteRegistry(nextRouter, this.config, network, database, this.options);
+
+      await registry.register();
+
+      hotReloader.set(nextRouter);
+    };
+
+    await buildAndSwapRoutes();
+
+    const dispose = hotReloader.start({
+      paths: [...this.config.getSourceFiles(this.options.source), path.resolve(CWD, "fakelab.config.ts")],
+      async onChange() {
+        Logger.info("Change detected. hot reloading...");
+        try {
+          await buildAndSwapRoutes();
+          hotReloader.broadcast();
+          Logger.success("Hot reload: routes updated ✅");
+        } catch (error) {
+          Logger.error("Hot reload failed ❌. error: %s", error);
+        }
+      },
+
+      onError(error) {
+        Logger.error("Hot reload failed ❌. error: %s", error);
+      },
+    });
+
+    // const stopWatching = startHotReload({
+    //   paths: [
+    //     ...this.ensureArray(this.config.getSourceFiles()), // implement ensureArray
+    //     path.resolve(CWD, "fakelab.config.ts"),
+    //   ],
+    //   debounceMs: 250,
+    //   ignore: (filename) => {
+    //     return filename.includes("node_modules") || filename.includes(".git") || filename.includes(".fakelab");
+    //   },
+    //   onChange: async () => {
+    //     Logger.info("Hot reload: change detected. Rebuilding routes...");
+
+    //     try {
+    //       await buildAndSwapRoutes();
+    //       reloadChannel.broadcast();
+    //       Logger.success("Hot reload: routes updated ✅");
+    //     } catch (e) {
+    //       Logger.error("Hot reload failed ❌ (keeping previous routes). error: %s", e);
+    //     }
+    //   },
+    //   onError: (e) => Logger.error("Hot reload watcher error: %s", e),
+    // });
+
+    // const registry = new RouteRegistry(router, this.config, network, database, this.options);
+
+    // await registry.register();
+
+    process.on("SIGINT", () => dispose());
+    // app.use(router);
 
     this.run(server, database, this.options);
   }
@@ -124,7 +187,7 @@ export class Server {
   private setupTemplateEngine(app: express.Express) {
     app.set("views", path.join(DIRNAME, "views"));
     app.set("view engine", "ejs");
-
+    app.set("view cache", false);
     app.use(ejsLayouts);
     app.set("layout", "layouts/main");
   }

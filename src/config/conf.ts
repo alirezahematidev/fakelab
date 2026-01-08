@@ -132,6 +132,12 @@ export class Config {
     return this.configOptions.enabled ?? true;
   }
 
+  public getSourceFiles(_sourcePath?: string) {
+    const inputSourcePath = _sourcePath || this.configOptions.sourcePath;
+
+    return this.resolveSourcePath(inputSourcePath);
+  }
+
   public async files(_sourcePath?: string) {
     const inputSourcePath = _sourcePath || this.configOptions.sourcePath;
 

@@ -52,6 +52,10 @@ class Generator {
     return result[Math.floor(Math.random() * result.length)];
   }
 
+  async tuple(tuples: Promise<unknown>[]) {
+    return await Promise.all(tuples);
+  }
+
   private evalArgs<T>(args: string): T | undefined {
     if (!args || !args.trim()) return undefined;
     return Function(`"use strict"; return (${args});`)();

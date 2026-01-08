@@ -14,3 +14,12 @@
     <div class="root"><%- body %></div>
   </body>
 </html>
+<script>
+  if (typeof EventSource !== "undefined") {
+    const source = new EventSource("/__reload");
+    source.addEventListener("reload", () => {
+      console.log("[fakelab] Reloading preview…");
+      window.location.reload();
+    });
+  }
+</script>

@@ -285,6 +285,13 @@ pre {
   overflow-y: auto;
 }
 
+.preview .cache-hint {
+  padding-inline: 16px;
+  font-size: 12px;
+  font-style: italic;
+  color: oklch(98.463% 0.00181 249.248 / 0.65);
+}
+
 .preview::-webkit-scrollbar {
   width: 10px;
   height: 10px;

@@ -4,22 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preload" href="/fonts/Inter-Regular.ttf" as="font" crossorigin="anonymous" />
+    <link rel="preload" href="/icons/logo.svg" as="image" fetchpriority="high" />
     <link href="/css/style.css" rel="stylesheet" type="text/css" />
     <link href="/css/vs2015.min.css" rel="stylesheet" type="text/css" />
     <script src="/js/highlight.min.js"></script>
     <script src="/js/reset.min.js"></script>
-    <title><%= title %></title>
   </head>
   <body>
     <div class="root"><%- body %></div>
   </body>
 </html>
-<script>
-  if (typeof EventSource !== "undefined") {
-    const source = new EventSource("/__reload");
-    source.addEventListener("reload", () => {
-      console.log("[fakelab] Reloading preview…");
-      window.location.reload();
-    });
-  }
-</script>

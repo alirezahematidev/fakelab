@@ -113,10 +113,10 @@ export class Config {
   }
 
   private _fakerOptions(locale?: FakerLocale): Required<FakerEngineOptions> {
-    const lang = (locale || this.configOptions.faker?.locale)?.toLowerCase();
+    const lang = locale || this.configOptions.faker?.locale;
 
-    if (lang && FAKER_LOCALES.includes(lang as FakerLocale)) {
-      return { locale: lang as FakerLocale };
+    if (lang && FAKER_LOCALES.includes(lang)) {
+      return { locale: lang };
     }
     return { locale: defaultFakerLocale() };
   }
@@ -138,14 +138,14 @@ export class Config {
     return this.resolveSourcePath(inputSourcePath);
   }
 
-  public async files(_sourcePath?: string) {
+  public async files(_sourcePath: string | undefined, fresh: boolean) {
     const inputSourcePath = _sourcePath || this.configOptions.sourcePath;
 
     if (!this.enabled()) return [];
 
     const sourcePaths = this.resolveSourcePath(inputSourcePath);
 
-    const resolvedFiles = sourcePaths.length > 0 ? Array.from(new Set((await Promise.all(sourcePaths.map((src) => this.resolveTSFiles(src)))).flat())) : [];
+    const resolvedFiles = sourcePaths.length > 0 ? Array.from(new Set((await Promise.all(sourcePaths.map((src) => this.resolveTSFiles(src, fresh)))).flat())) : [];
 
     if (this._serverOptions().includeSnapshots) {
       const snapshots = await this.getSnapshotSourceFiles();
@@ -218,10 +218,10 @@ export class Config {
     });
   }
 
-  private async resolveTSFiles(sourcePath: string): Promise<string[]> {
+  private async resolveTSFiles(sourcePath: string, fresh: boolean): Promise<string[]> {
     // is glob pattern
     if (isGlob(sourcePath, { strict: true })) {
-      Logger.info(`Source: %s`, sourcePath);
+      if (!fresh) Logger.info(`Source: %s`, sourcePath);
       return glob(sourcePath, {
         absolute: true,
         ignore: ["**/*.d.ts"],
@@ -238,14 +238,14 @@ export class Config {
         Logger.error("Cannot read file: %s", filePath);
         process.exit(1);
       }
-      Logger.info(`Source: %s`, filePath);
+      if (!fresh) Logger.info(`Source: %s`, filePath);
       return [filePath];
     }
 
     const dirStat = await this.tryStat(absPath);
 
     if (dirStat?.isDirectory()) {
-      Logger.info(`Source: %s`, absPath);
+      if (!fresh) Logger.info(`Source: %s`, absPath);
 
       return glob("**/*.ts", {
         cwd: absPath,
@@ -254,7 +254,7 @@ export class Config {
       });
     }
 
-    Logger.warn(`invalid source: [REDACTED]/%s`, path.basename(filePath));
+    if (!fresh) Logger.warn(`invalid source: [REDACTED]/%s`, path.basename(filePath));
     return [];
   }
 }

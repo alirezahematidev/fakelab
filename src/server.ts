@@ -6,7 +6,7 @@ import ejsLayouts from "express-ejs-layouts";
 import { RouteRegistry } from "./registry";
 import figlet from "figlet";
 import { Logger } from "./logger";
-import { CWD, DIRNAME } from "./file";
+import { DIRNAME } from "./file";
 import { Network } from "./network";
 import type { Config } from "./config/conf";
 import type { ServerCLIOptions, ServerOptions } from "./types";
@@ -92,102 +92,52 @@ export class Server {
 
     const server = http.createServer(app);
 
-    const network = Network.initHandlers(this.config);
-
-    this.setupApplication(app, network);
+    this.setupApplication(app);
 
     this.setupTemplateEngine(app);
 
     await this.config.initializeRuntimeConfig(DIRNAME, this.options);
 
-    const database = Database.register(this.config);
+    const reloader = HotReloader.register(app, router, this.config, this.options);
 
-    await database.initialize();
-
-    const hotReloader = new HotReloader(router);
-
-    app.use(hotReloader.middleware);
-
-    app.get("/__reload", (_, res) => hotReloader.subscribe(res));
-
-    const buildAndSwapRoutes = async () => {
-      const nextRouter = express.Router();
-
+    await reloader.onReady(async (_router, fresh) => {
       await this.config.initializeRuntimeConfig(DIRNAME, this.options);
 
-      const registry = new RouteRegistry(nextRouter, this.config, network, database, this.options);
+      const config = await reloader.prepareConfig(this.config, fresh);
 
-      await registry.register();
+      const network = Network.initHandlers(config);
 
-      hotReloader.set(nextRouter);
-    };
+      const database = Database.register(config);
 
-    await buildAndSwapRoutes();
+      await database.initialize();
 
-    const dispose = hotReloader.start({
-      paths: [...this.config.getSourceFiles(this.options.source), path.resolve(CWD, "fakelab.config.ts")],
-      async onChange() {
-        Logger.info("Change detected. hot reloading...");
-        try {
-          await buildAndSwapRoutes();
-          hotReloader.broadcast();
-          Logger.success("Hot reload: routes updated ✅");
-        } catch (error) {
-          Logger.error("Hot reload failed ❌. error: %s", error);
-        }
-      },
+      const registry = new RouteRegistry(_router, config, network, database, this.options);
 
-      onError(error) {
-        Logger.error("Hot reload failed ❌. error: %s", error);
-      },
+      await registry.register({ fresh });
+
+      return database;
     });
 
-    // const stopWatching = startHotReload({
-    //   paths: [
-    //     ...this.ensureArray(this.config.getSourceFiles()), // implement ensureArray
-    //     path.resolve(CWD, "fakelab.config.ts"),
-    //   ],
-    //   debounceMs: 250,
-    //   ignore: (filename) => {
-    //     return filename.includes("node_modules") || filename.includes(".git") || filename.includes(".fakelab");
-    //   },
-    //   onChange: async () => {
-    //     Logger.info("Hot reload: change detected. Rebuilding routes...");
+    const unwatch = reloader.watch();
 
-    //     try {
-    //       await buildAndSwapRoutes();
-    //       reloadChannel.broadcast();
-    //       Logger.success("Hot reload: routes updated ✅");
-    //     } catch (e) {
-    //       Logger.error("Hot reload failed ❌ (keeping previous routes). error: %s", e);
-    //     }
-    //   },
-    //   onError: (e) => Logger.error("Hot reload watcher error: %s", e),
-    // });
+    process.on("SIGINT", unwatch);
 
-    // const registry = new RouteRegistry(router, this.config, network, database, this.options);
-
-    // await registry.register();
-
-    process.on("SIGINT", () => dispose());
-    // app.use(router);
-
-    this.run(server, database, this.options);
+    if (reloader.database) {
+      this.run(server, reloader.database, this.options);
+    }
   }
 
-  private setupApplication(app: express.Express, network: Network) {
+  private setupApplication(app: express.Express) {
     app.disable("x-powered-by");
     app.use(express.json());
     app.use(cors({ methods: ["GET", "POST", "OPTIONS"] }));
     app.use(express.static(DIRNAME + "/public"));
     app.use(this.xPoweredMiddleware);
-    app.use(network.middleware);
   }
 
   private setupTemplateEngine(app: express.Express) {
     app.set("views", path.join(DIRNAME, "views"));
     app.set("view engine", "ejs");
-    app.set("view cache", false);
     app.use(ejsLayouts);
     app.set("layout", "layouts/main");
   }

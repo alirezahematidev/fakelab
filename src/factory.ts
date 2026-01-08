@@ -51,8 +51,8 @@ function resolveBatch<T>({ each }: { each: () => Promise<T> }) {
   return { resolve };
 }
 
-export async function prepareBuilder(config: Config, options: ServerCLIOptions): Promise<Builder> {
-  const files = await config.files(options.source);
+export async function prepareBuilder(config: Config, options: ServerCLIOptions, fresh: boolean): Promise<Builder> {
+  const files = await config.files(options.source, fresh);
 
   const parser = await ParserEngine.init(files, config.getTSConfigFilePath(options.tsConfigPath));
 
@@ -69,7 +69,9 @@ export async function prepareBuilder(config: Config, options: ServerCLIOptions):
 
     const cached = await cache.get(name, key);
 
-    if (cached) return cached;
+    if (cached) {
+      return { ...cached, fromCache: true };
+    }
 
     const resolver = resolveBatch({ each: () => factory(type, generator) });
 
@@ -79,7 +81,7 @@ export async function prepareBuilder(config: Config, options: ServerCLIOptions):
 
     cache.set(name, key, json);
 
-    return { data, json };
+    return { data, json, fromCache: false };
   }
 
   return { entities, build };

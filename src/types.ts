@@ -305,7 +305,7 @@ export type UserConfig = {
   fakerOptions: Required<FakerEngineOptions>;
 };
 
-type BuilderResult = { data: unknown; json: string };
+type BuilderResult = { data: unknown; json: string; fromCache: boolean };
 
 export type ForgeOptions = {
   count?: string | number;

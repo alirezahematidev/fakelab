@@ -19,7 +19,7 @@ export class Headless {
 
   async generate(options: ServerCLIOptions) {
     try {
-      const files = await this.config.files(options.source);
+      const files = await this.config.files(options.source, false);
 
       const parser = await ParserEngine.init(files, this.config.getTSConfigFilePath(options.tsConfigPath), true);
 

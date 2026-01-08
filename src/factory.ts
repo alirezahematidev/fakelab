@@ -20,9 +20,14 @@ async function factory(type: Type, generator: Generator, data: (EvaluatedFakerAr
     return await generator.union(unionTypes.map((u, index) => factory(u, generator, data, index)));
   }
 
+  if (type.isTuple()) {
+    const tupleTypes = type.getTupleElements();
+    return await generator.tuple(tupleTypes.map((u, index) => factory(u, generator, data, index)));
+  }
+
   if (type.isIntersection()) {
     const intersectionTypes = type.getIntersectionTypes();
-    return await generator.intersection(intersectionTypes.map((u, index) => factory(u, generator, data, index)));
+    return await generator.intersection(intersectionTypes.map((u) => factory(u, generator, data, index)));
   }
 
   if (type.isArray()) {
@@ -46,8 +51,8 @@ function resolveBatch<T>({ each }: { each: () => Promise<T> }) {
   return { resolve };
 }
 
-export async function prepareBuilder(config: Config, options: ServerCLIOptions): Promise<Builder> {
-  const files = await config.files(options.source);
+export async function prepareBuilder(config: Config, options: ServerCLIOptions, fresh: boolean): Promise<Builder> {
+  const files = await config.files(options.source, fresh);
 
   const parser = await ParserEngine.init(files, config.getTSConfigFilePath(options.tsConfigPath));
 
@@ -64,7 +69,9 @@ export async function prepareBuilder(config: Config, options: ServerCLIOptions):
 
     const cached = await cache.get(name, key);
 
-    if (cached) return cached;
+    if (cached) {
+      return { ...cached, fromCache: true };
+    }
 
     const resolver = resolveBatch({ each: () => factory(type, generator) });
 
@@ -74,7 +81,7 @@ export async function prepareBuilder(config: Config, options: ServerCLIOptions):
 
     cache.set(name, key, json);
 
-    return { data, json };
+    return { data, json, fromCache: false };
   }
 
   return { entities, build };

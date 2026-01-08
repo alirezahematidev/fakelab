@@ -9,56 +9,61 @@ import { RouteHandler } from "./routes/handler";
 import type { Network } from "./network";
 import type { Database } from "./database";
 import type { Config } from "./config/conf";
-import type { ServerCLIOptions } from "./types";
+import type { Builder, ServerCLIOptions } from "./types";
 
 const packageJson = fs.readJSONSync(path.join(DIRNAME, "../package.json"));
 
-class RouteRegistry {
-  private prefix: string;
+type RegisterOptions = { fresh: boolean };
 
+class RouteRegistry {
   constructor(
     private readonly router: express.Router,
     private readonly config: Config,
     private readonly network: Network,
     private readonly database: Database,
     private readonly options: ServerCLIOptions
-  ) {
-    const { pathPrefix } = this.config.options.server(this.options.pathPrefix, this.options.port);
-    this.prefix = pathPrefix;
+  ) {}
+
+  private instantiateRegistryHandlers(config: Config, builder: Builder) {
+    const gql = new GraphQLBuilder(builder, this.network, this.database, config);
+
+    const handler = new RouteHandler(builder, this.network, this.database, config);
+
+    const renderer = new RouteRenderer(builder, this.database, config, gql, packageJson);
+
+    return { gql, handler, renderer };
   }
 
-  async register() {
-    const builder = await prepareBuilder(this.config, this.options);
+  async register({ fresh }: RegisterOptions) {
+    const builder = await prepareBuilder(this.config, this.options, fresh);
 
-    const graphqlBuilder = new GraphQLBuilder(builder, this.network, this.database, this.config);
+    const { gql, handler, renderer } = this.instantiateRegistryHandlers(this.config, builder);
 
-    const handler = new RouteHandler(builder, this.network, this.database, this.config);
-
-    const renderer = new RouteRenderer(builder, this.database, this.config, graphqlBuilder, packageJson);
+    const { pathPrefix } = this.config.options.server(this.options.pathPrefix, this.options.port);
 
     // template renderers
     this.router.get("/", renderer.index());
 
-    this.router.get("/graphql", renderer.graphql(this.prefix));
-    this.router.get("/graphql/:name", renderer.graphqlEntity(this.prefix));
+    this.router.get("/graphql", renderer.graphql(pathPrefix));
+    this.router.get("/graphql/:name", renderer.graphqlEntity(pathPrefix));
 
-    this.router.get("/entities/:name", renderer.preview(this.prefix));
+    this.router.get("/entities/:name", renderer.preview(pathPrefix));
 
     this.router.get("/database", renderer.db());
 
-    this.router.get("/database/:name", renderer.table(this.prefix));
+    this.router.get("/database/:name", renderer.table(pathPrefix));
 
-    this.router.all(`/${this.prefix}/graphql`, graphqlBuilder.createMiddleware());
+    this.router.all(`/${pathPrefix}/graphql`, gql.createMiddleware());
 
     // api handlers
-    this.router.get(`/${this.prefix}/:name`, handler.entity());
+    this.router.get(`/${pathPrefix}/:name`, handler.entity());
 
-    this.router.get(`/${this.prefix}/database/:name`, handler.getTable());
+    this.router.get(`/${pathPrefix}/database/:name`, handler.getTable());
 
-    this.router.post(`/${this.prefix}/database/:name`, handler.updateTable());
+    this.router.post(`/${pathPrefix}/database/:name`, handler.updateTable());
 
-    this.router.post(`/${this.prefix}/database/insert/:name`, handler.insert());
-    this.router.post(`/${this.prefix}/database/flush/:name`, handler.flush());
+    this.router.post(`/${pathPrefix}/database/insert/:name`, handler.insert());
+    this.router.post(`/${pathPrefix}/database/flush/:name`, handler.flush());
 
     // private
     this.router.post(`/__update/:name`, handler._update());

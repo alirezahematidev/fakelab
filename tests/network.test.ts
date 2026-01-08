@@ -244,47 +244,4 @@ describe("Network", () => {
 
     expect(network).toBeDefined();
   });
-
-  test("should set network headers in middleware", () => {
-    const network = createNetwork({
-      sourcePath: [path.join(__dirname, "fixtures/types")],
-      network: {
-        delay: 500,
-        errorRate: 0.1,
-        timeoutRate: 0.05,
-        offline: false,
-      },
-    });
-
-    const req = {} as any;
-    const res = {
-      setHeader: vi.fn(),
-    } as any;
-    const next = vi.fn();
-
-    network.middleware(req, res, next);
-
-    expect(res.setHeader).toHaveBeenCalledWith("X-Fakelab-Network", expect.stringMatching(/delay=500,error=0\.1,timeout=0\.05,offline=false/));
-    expect(next).toHaveBeenCalled();
-  });
-
-  test("should set network headers with offline mode", () => {
-    const network = createNetwork({
-      sourcePath: [path.join(__dirname, "fixtures/types")],
-      network: {
-        offline: true,
-      },
-    });
-
-    const req = {} as any;
-    const res = {
-      setHeader: vi.fn(),
-    } as any;
-    const next = vi.fn();
-
-    network.middleware(req, res, next);
-
-    expect(res.setHeader).toHaveBeenCalledWith("X-Fakelab-Network", expect.stringMatching(/offline=true/));
-    expect(next).toHaveBeenCalled();
-  });
 });

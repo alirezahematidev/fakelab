@@ -15,6 +15,7 @@ import { ServerEventSubscriber } from "./events/subscribers";
 import type { ServerEvent, ServerEventArgs } from "./events/types";
 import { Headless } from "./headless";
 import { Database } from "./database";
+import { HotReloader } from "./hot-reload";
 
 export class Server {
   private webhook: Webhook<ServerEvent, ServerEventArgs> | undefined;
@@ -91,40 +92,52 @@ export class Server {
 
     const server = http.createServer(app);
 
-    const network = Network.initHandlers(this.config);
-
-    this.setupApplication(app, network);
+    this.setupApplication(app);
 
     this.setupTemplateEngine(app);
 
     await this.config.initializeRuntimeConfig(DIRNAME, this.options);
 
-    const database = Database.register(this.config);
+    const reloader = HotReloader.register(app, router, this.config, this.options);
 
-    await database.initialize();
+    await reloader.onReady(async (_router, fresh) => {
+      await this.config.initializeRuntimeConfig(DIRNAME, this.options);
 
-    const registry = new RouteRegistry(router, this.config, network, database, this.options);
+      const config = await reloader.prepareConfig(this.config, fresh);
 
-    await registry.register();
+      const network = Network.initHandlers(config);
 
-    app.use(router);
+      const database = Database.register(config);
 
-    this.run(server, database, this.options);
+      await database.initialize();
+
+      const registry = new RouteRegistry(_router, config, network, database, this.options);
+
+      await registry.register({ fresh });
+
+      return database;
+    });
+
+    const unwatch = reloader.watch();
+
+    process.on("SIGINT", unwatch);
+
+    if (reloader.database) {
+      this.run(server, reloader.database, this.options);
+    }
   }
 
-  private setupApplication(app: express.Express, network: Network) {
+  private setupApplication(app: express.Express) {
     app.disable("x-powered-by");
     app.use(express.json());
     app.use(cors({ methods: ["GET", "POST", "OPTIONS"] }));
     app.use(express.static(DIRNAME + "/public"));
     app.use(this.xPoweredMiddleware);
-    app.use(network.middleware);
   }
 
   private setupTemplateEngine(app: express.Express) {
     app.set("views", path.join(DIRNAME, "views"));
     app.set("view engine", "ejs");
-
     app.use(ejsLayouts);
     app.set("layout", "layouts/main");
   }

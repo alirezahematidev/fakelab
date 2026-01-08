@@ -62,6 +62,7 @@
     "release": "release-it --ci",
     "serve": "yarn build && node --import=tsx lib/cli.js serve",
     "lint": "yarn eslint --config eslint.config.ts",
+    "minify": "node --import=tsx scripts/minify.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -116,8 +117,9 @@
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.51.4",
-    "@faker-js/faker": "^10.1.0",
+    "@faker-js/faker": "10.2.0",
     "bundle-require": "^5.1.0",
+    "chokidar": "^5.0.0",
     "commander": "^14.0.2",
     "cors": "^2.8.5",
     "ejs": "^3.1.10",

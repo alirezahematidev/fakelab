@@ -9,8 +9,9 @@ export interface User {
   name: string;
   /**
    * @faker location.streetAddress
+   * @faker location.streetAddress
    */
-  address: string;
+  address: [string, string];
   /**
    * @faker phone.number
    */
@@ -21,7 +22,7 @@ export interface User {
   age: number;
 
   /**
-   * @faker person.fullName
+   * @faker string.uuid
    */
   tags: string[];
 

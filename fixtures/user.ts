@@ -2,7 +2,7 @@ export interface User {
   /**
    * @faker string.ulid
    */
-  id3: string;
+  id: string;
   /**
    * @faker person.fullName
    */

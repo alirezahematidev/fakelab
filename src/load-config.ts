@@ -6,9 +6,8 @@ import path from "node:path";
 import fs from "fs-extra";
 import { CWD } from "./file";
 import { CONFIG_FILE_NAME } from "./constants";
-import type { LoadConfigOptions } from "./types";
 
-async function loadConfig(options?: LoadConfigOptions): Promise<Config> {
+async function loadConfig(): Promise<Config> {
   try {
     const joycon = new JoyCon();
 
@@ -32,11 +31,7 @@ async function loadConfig(options?: LoadConfigOptions): Promise<Config> {
       cwd: CWD,
     });
 
-    const config = configModule.mod.default as Config;
-
-    config.setShouldOnlyComputingFilepath(options);
-
-    return config;
+    return configModule.mod.default as Config;
   } catch (error) {
     if (error instanceof Error && error.stack) {
       Logger.debug("Stack trace: %s", error.stack);

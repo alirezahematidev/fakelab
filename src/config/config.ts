@@ -4,8 +4,7 @@ import fs from "fs-extra";
 import { access, constants, stat } from "node:fs/promises";
 import isGlob from "is-glob";
 import { Logger } from "../logger";
-import type { ConfigOptions, LoadConfigOptions, ServerCLIOptions } from "../types";
-import { CONFIG_FILE_NAME } from "../constants";
+import type { ConfigOptions, ServerCLIOptions } from "../types";
 import { CWD } from "../file";
 import { RuntimeSource } from "../runtime/source";
 import { DatabaseSource } from "../database/source";
@@ -13,8 +12,6 @@ import { ConfigOptHandler } from "./options";
 
 export class Config extends ConfigOptHandler {
   readonly FAKELAB_PERSIST_DIR = ".fakelab";
-
-  private shouldOnlyComutingFilepath: string | undefined;
 
   constructor(protected readonly opts: ConfigOptions) {
     super(opts);
@@ -24,12 +21,6 @@ export class Config extends ConfigOptHandler {
 
   getTSConfigFilePath(tsConfigFilePath?: string) {
     return tsConfigFilePath || this.opts.tsConfigFilePath || this.DEFAULT_TS_CONFIG_FILE;
-  }
-
-  setShouldOnlyComputingFilepath({ _filepath }: LoadConfigOptions = { _filepath: null }) {
-    if (_filepath && path.basename(_filepath) !== CONFIG_FILE_NAME && _filepath.endsWith(".ts")) {
-      this.shouldOnlyComutingFilepath = _filepath.trim();
-    }
   }
 
   isHeadless() {
@@ -50,10 +41,6 @@ export class Config extends ConfigOptHandler {
     if (!this.enabled()) return [];
 
     const sourcePaths = this.getSourceFiles(_sourcePath);
-
-    if (this.shouldOnlyComutingFilepath) {
-      return [this.shouldOnlyComutingFilepath];
-    }
 
     const resolvedFiles = sourcePaths.length > 0 ? Array.from(new Set((await Promise.all(sourcePaths.map((src) => this.resolveTSFiles(src)))).flat())) : [];
 

@@ -11,7 +11,6 @@ import type { Database } from "./database";
 import { CONFIG_FILE_NAME } from "./constants";
 
 type RefreshCallbackOptions = {
-  watchedPath: string | null;
   shouldRefresh: boolean;
 };
 
@@ -121,7 +120,7 @@ export class HotReloader {
 
     this._ref.current = callback;
 
-    this.database = await callback(nextRouter, { shouldRefresh: false, watchedPath: null });
+    this.database = await callback(nextRouter, { shouldRefresh: false });
 
     this.set(nextRouter);
   }
@@ -140,20 +139,20 @@ export class HotReloader {
     }, 25_000);
   }
 
-  private async reload(path: string | null) {
+  private async reload() {
     if (!this._ref.current) return;
 
     const nextRouter = express.Router();
 
-    const nextDatabase = await this._ref.current(nextRouter, { shouldRefresh: true, watchedPath: path });
+    const nextDatabase = await this._ref.current(nextRouter, { shouldRefresh: true });
 
     this.database = nextDatabase;
 
     this.set(nextRouter);
   }
 
-  static async prepareConfig(config: Config, { shouldRefresh, watchedPath }: RefreshCallbackOptions) {
-    if (shouldRefresh) return await loadConfig({ _filepath: watchedPath });
+  static async prepareConfig(config: Config, { shouldRefresh }: RefreshCallbackOptions) {
+    if (shouldRefresh) return await loadConfig();
 
     return config;
   }
@@ -188,7 +187,7 @@ export class HotReloader {
 
         try {
           Logger.dim("reloading routes...");
-          await this.reload(path);
+          await this.reload();
 
           this.broadcast();
 

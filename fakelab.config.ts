@@ -7,5 +7,5 @@ export default defineConfig({
   headless: false,
   graphQL: { enabled: true },
   cache: { enabled: true },
-  faker: { locale: "en" },
+  faker: { locale: "fa" },
 });

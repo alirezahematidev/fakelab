@@ -3,7 +3,7 @@ import fs from "fs-extra";
 import path from "node:path";
 import { CWD } from "./file";
 import { Logger } from "./logger";
-import type { Config } from "./config/conf";
+import type { Config } from "./config/config";
 
 class Cache {
   static readonly CACHE_DIR = path.resolve(CWD, ".fakelab/cache");

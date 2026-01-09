@@ -1,4 +1,4 @@
-import type { Config } from "./config/conf";
+import type { Config } from "./config/config";
 import type { NetworkOptions } from "./types";
 import { Logger } from "./logger";
 

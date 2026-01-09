@@ -5,7 +5,7 @@ import type { Network } from "../network";
 import type { Database } from "../database";
 import type express from "express";
 import type { Type } from "ts-morph";
-import type { Config } from "../config/conf";
+import type { Config } from "../config/config";
 
 class GraphQLBuilder {
   private schema: ReturnType<GraphQLSchemaGenerator["generateSchema"]> | null = null;

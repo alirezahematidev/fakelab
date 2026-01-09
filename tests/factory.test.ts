@@ -1,6 +1,6 @@
 import { describe, expect, test, beforeEach, afterEach, vi } from "vitest";
 import { prepareBuilder } from "../src/factory";
-import { Config } from "../src/config/conf";
+import { Config } from "../src/config/config";
 import { Database } from "../src/database";
 import type { ConfigOptions } from "../src/types";
 import path from "node:path";
@@ -22,7 +22,7 @@ describe("Factory", () => {
     const database = Database.register(config);
     await database.initialize();
 
-    return await prepareBuilder(config, {}, false);
+    return await prepareBuilder(config, {});
   }
 
   test("should generate data for simple interface", async () => {

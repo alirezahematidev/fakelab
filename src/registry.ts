@@ -8,12 +8,10 @@ import { RouteRenderer } from "./routes/renderer";
 import { RouteHandler } from "./routes/handler";
 import type { Network } from "./network";
 import type { Database } from "./database";
-import type { Config } from "./config/conf";
+import type { Config } from "./config/config";
 import type { Builder, ServerCLIOptions } from "./types";
 
 const packageJson = fs.readJSONSync(path.join(DIRNAME, "../package.json"));
-
-type RegisterOptions = { fresh: boolean };
 
 class RouteRegistry {
   constructor(
@@ -34,8 +32,8 @@ class RouteRegistry {
     return { gql, handler, renderer };
   }
 
-  async register({ fresh }: RegisterOptions) {
-    const builder = await prepareBuilder(this.config, this.options, fresh);
+  async register() {
+    const builder = await prepareBuilder(this.config, this.options);
 
     const { gql, handler, renderer } = this.instantiateRegistryHandlers(this.config, builder);
 

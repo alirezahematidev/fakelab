@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { Network } from "../src/network";
-import { Config } from "../src/config/conf";
+import { Config } from "../src/config/config";
 import type { ConfigOptions } from "../src/types";
 import path from "path";
 

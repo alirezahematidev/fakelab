@@ -4,7 +4,7 @@ import { Type, Symbol } from "ts-morph";
 import { ParserEngine } from "../parserEngine";
 import { DIRNAME } from "../file";
 import { transform } from "esbuild";
-import type { Config } from "../config/conf";
+import type { Config } from "../config/config";
 import { Logger } from "../logger";
 import { HEADLESS_SOURCE } from "./template";
 import type { ServerCLIOptions } from "../types";
@@ -19,7 +19,7 @@ export class Headless {
 
   async generate(options: ServerCLIOptions) {
     try {
-      const files = await this.config.files(options.source, false);
+      const files = await this.config.files(options.source);
 
       const parser = await ParserEngine.init(files, this.config.getTSConfigFilePath(options.tsConfigPath), true);
 

@@ -1,4 +1,4 @@
-import type { Config } from "./config/conf";
+import type { Config } from "./config/config";
 import type { BaseSubscriber } from "./events/subscribers/base";
 import type { TriggerEvent } from "./events/types";
 import { Logger } from "./logger";

@@ -2,7 +2,7 @@ import { Type } from "ts-morph";
 import { Generator } from "./generator";
 import type { EvaluatedFakerArgs, ForgeOptions, Builder, ServerCLIOptions } from "./types";
 import { ParserEngine } from "./parserEngine";
-import type { Config } from "./config/conf";
+import type { Config } from "./config/config";
 import type { FakerLocale } from "./constants";
 import { createFileCache } from "./cache";
 
@@ -51,8 +51,8 @@ function resolveBatch<T>({ each }: { each: () => Promise<T> }) {
   return { resolve };
 }
 
-export async function prepareBuilder(config: Config, options: ServerCLIOptions, fresh: boolean): Promise<Builder> {
-  const files = await config.files(options.source, fresh);
+export async function prepareBuilder(config: Config, options: ServerCLIOptions): Promise<Builder> {
+  const files = await config.files(options.source);
 
   const parser = await ParserEngine.init(files, config.getTSConfigFilePath(options.tsConfigPath));
 

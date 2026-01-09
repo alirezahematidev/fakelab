@@ -8,6 +8,10 @@ export type LazyFaker = typeof import("@faker-js/faker").faker;
 
 export type HttpHeaders = NonNullable<Parameters<typeof fetch>[1]>["headers"];
 
+export type LoadConfigOptions = {
+  readonly _filepath: string | null;
+};
+
 export type ServerOptions = {
   /**
    * Port number that the mock server will listen on.

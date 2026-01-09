@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { Database } from "../src/database";
-import { Config } from "../src/config/conf";
+import { Config } from "../src/config/config";
 import fs from "fs-extra";
 import path from "path";
 

@@ -1,15 +1,21 @@
 import express from "express";
 import chokidar from "chokidar";
 import type { OutgoingHttpHeaders } from "http";
-import type { Config } from "./config/conf";
+import type { Config } from "./config/config";
 import type { ServerCLIOptions } from "./types";
 import path from "path";
 import { CWD } from "./file";
 import { Logger } from "./logger";
 import { loadConfig } from "./load-config";
 import type { Database } from "./database";
+import { CONFIG_FILE_NAME } from "./constants";
 
-type ReloaderRefreshCallback = (router: express.Router, reloaded: boolean) => Promise<Database>;
+type RefreshCallbackOptions = {
+  watchedPath: string | null;
+  shouldRefresh: boolean;
+};
+
+type ReloaderRefreshCallback = (router: express.Router, options: RefreshCallbackOptions) => Promise<Database>;
 
 export class HotReloader {
   private router: express.Router;
@@ -70,7 +76,7 @@ export class HotReloader {
     }
   }
 
-  watch() {
+  watch(): () => void {
     const trigger = this.createTrigger();
 
     const watcher = chokidar.watch(this.watcherPaths(), {
@@ -80,12 +86,13 @@ export class HotReloader {
       ignored: ["**/*.js", "**/*.jsx", "**/*.json", "**/*.map", "**/*.d.ts", "**/node_modules/**"],
     });
 
-    watcher.on("add", trigger);
-    watcher.on("change", trigger);
-    watcher.on("unlink", trigger);
-    watcher.on("unlinkDir", trigger);
+    watcher.on("change", (path) => trigger(path));
+    watcher.on("add", () => trigger(null));
+    watcher.on("unlink", () => trigger(null));
+    watcher.on("unlinkDir", () => trigger(null));
+
     watcher.on("error", (err) => {
-      Logger.error("Hot reload: watcher error ❌. error: %s", err instanceof Error ? err.message : String(err));
+      Logger.error("Hot reloader error ❌. error: %s", err instanceof Error ? err.message : String(err));
     });
 
     return () => {
@@ -104,6 +111,8 @@ export class HotReloader {
 
       if (this._pingTimer) clearInterval(this._pingTimer);
       this._pingTimer = undefined;
+
+      process.exit(0);
     };
   }
 
@@ -112,7 +121,7 @@ export class HotReloader {
 
     this._ref.current = callback;
 
-    this.database = await callback(nextRouter, false);
+    this.database = await callback(nextRouter, { shouldRefresh: false, watchedPath: null });
 
     this.set(nextRouter);
   }
@@ -131,26 +140,26 @@ export class HotReloader {
     }, 25_000);
   }
 
-  private async reload() {
+  private async reload(path: string | null) {
     if (!this._ref.current) return;
 
     const nextRouter = express.Router();
 
-    const nextDatabase = await this._ref.current(nextRouter, true);
+    const nextDatabase = await this._ref.current(nextRouter, { shouldRefresh: true, watchedPath: path });
 
     this.database = nextDatabase;
 
     this.set(nextRouter);
   }
 
-  async prepareConfig(config: Config, fresh: boolean) {
-    if (fresh) return await loadConfig();
+  static async prepareConfig(config: Config, { shouldRefresh, watchedPath }: RefreshCallbackOptions) {
+    if (shouldRefresh) return await loadConfig({ _filepath: watchedPath });
 
     return config;
   }
 
   private watcherPaths() {
-    const configPath = path.resolve(CWD, "fakelab.config.ts");
+    const configPath = path.resolve(CWD, CONFIG_FILE_NAME);
 
     return [...this.config.getSourceFiles(this.options.source), configPath];
   }
@@ -164,7 +173,7 @@ export class HotReloader {
     let running = false;
     let queued = false;
 
-    const trigger = () => {
+    const trigger = (path: string | null) => {
       if (timer) clearTimeout(timer);
       timer = setTimeout(async () => {
         if (running) {
@@ -175,24 +184,24 @@ export class HotReloader {
         running = true;
         const start = Date.now();
 
-        Logger.info("Hot reload: change detected.");
+        if (path) Logger.info("Change detected in %s.", Logger.blue(path));
 
         try {
-          Logger.info("Hot reload: rebuilding routes...");
-          await this.reload();
+          Logger.dim("reloading routes...");
+          await this.reload(path);
 
           this.broadcast();
 
           const duration = Date.now() - start;
 
-          Logger.success("Hot reload: completed in %dms ✅", duration);
+          Logger.success("Reload completed in %dms ✅", duration);
         } catch (error) {
-          Logger.error("Hot reload: rebuild failed ❌. error: %s", error instanceof Error ? error.message : String(error));
+          Logger.error("Reload failed ❌. error: %s", error instanceof Error ? error.message : String(error));
         } finally {
           running = false;
           if (queued) {
             queued = false;
-            trigger();
+            trigger(path);
           }
         }
       }, 250);

@@ -4,7 +4,7 @@ import path from "node:path";
 import { loadConfig } from "./load-config";
 import type { SnapshotCLIOptions, SnapshotDataSource, SnapshotPrepareOptions, SnapshotSchema, SnapshotUpdateArgs } from "./types";
 import { CWD } from "./file";
-import type { Config } from "./config/conf";
+import type { Config } from "./config/config";
 import { Webhook } from "./webhook";
 import { SnapshotEventSubscriber } from "./events/subscribers";
 import type { SnapshotEvent, SnapshotEventArgs } from "./events/types";

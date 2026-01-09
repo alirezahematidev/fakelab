@@ -1,5 +1,5 @@
 import type { ConfigOptions } from "../types";
-import { Config } from "./conf";
+import { Config } from "./config";
 
 function defineConfig(options: ConfigOptions): Config {
   return new Config(options);

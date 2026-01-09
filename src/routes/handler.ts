@@ -2,7 +2,7 @@ import express from "express";
 import type { Builder } from "../types";
 import type { Network } from "../network";
 import type { Database } from "../database";
-import type { Config } from "../config/conf";
+import type { Config } from "../config/config";
 
 class RouteHandler {
   private readonly SEED_MERGE_THRESHOLD = 1000;

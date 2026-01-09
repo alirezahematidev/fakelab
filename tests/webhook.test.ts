@@ -1,7 +1,7 @@
 import { describe, expect, test, beforeEach, afterEach, vi } from "vitest";
 import { ServerEventSubscriber } from "../src/events/subscribers";
 import { Webhook } from "../src/webhook";
-import { Config } from "../src/config/conf";
+import { Config } from "../src/config/config";
 import path from "path";
 
 describe("Webhook", () => {

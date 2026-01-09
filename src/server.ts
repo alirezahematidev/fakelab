@@ -8,7 +8,8 @@ import figlet from "figlet";
 import { Logger } from "./logger";
 import { DIRNAME } from "./file";
 import { Network } from "./network";
-import type { Config } from "./config/conf";
+import os from "os";
+import type { Config } from "./config/config";
 import type { ServerCLIOptions, ServerOptions } from "./types";
 import { Webhook } from "./webhook";
 import { ServerEventSubscriber } from "./events/subscribers";
@@ -34,6 +35,13 @@ export class Server {
     process.on("SIGINT", () => {
       const opts = this.config.options.server(this.options.pathPrefix, this.options.port);
       this.subscriber?.shutdown(opts);
+
+      const hostname = os.hostname();
+
+      if (hostname) {
+        console.log("%s Goodbye, %s!", Logger.gray("[FAKELAB]"), os.hostname());
+      }
+
       process.exit(0);
     });
   }
@@ -100,10 +108,10 @@ export class Server {
 
     const reloader = HotReloader.register(app, router, this.config, this.options);
 
-    await reloader.onReady(async (_router, fresh) => {
+    await reloader.onReady(async (_router, args) => {
       await this.config.initializeRuntimeConfig(DIRNAME, this.options);
 
-      const config = await reloader.prepareConfig(this.config, fresh);
+      const config = await HotReloader.prepareConfig(this.config, args);
 
       const network = Network.initHandlers(config);
 
@@ -113,7 +121,7 @@ export class Server {
 
       const registry = new RouteRegistry(_router, config, network, database, this.options);
 
-      await registry.register({ fresh });
+      await registry.register();
 
       return database;
     });
@@ -125,6 +133,8 @@ export class Server {
     if (reloader.database) {
       this.run(server, reloader.database, this.options);
     }
+
+    server.once("close", unwatch);
   }
 
   private setupApplication(app: express.Express) {
@@ -145,9 +155,9 @@ export class Server {
   private listen(database: Database, opts: Required<ServerOptions>) {
     this.subscriber?.started(opts);
 
-    if (database.enabled() && this.config.enabled()) Logger.info(`database: %s`, Database.DATABASE_DIR);
+    if (database.enabled() && this.config.enabled()) Logger.info(`Database: %s`, Database.DATABASE_DIR);
 
-    Logger.info(`Server%s listening at http://localhost:%d`, !this.config.enabled() ? "(disabled)" : "", opts.port);
+    Logger.info(`Server%s: http://localhost:%d`, !this.config.enabled() ? "(disabled)" : "", opts.port);
 
     if (this.config.enabled()) {
       console.log(figlet.textSync("FAKELAB"));

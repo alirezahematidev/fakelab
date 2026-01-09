@@ -1,19 +1,19 @@
 import { bundleRequire } from "bundle-require";
 import JoyCon from "joycon";
 import { Logger } from "./logger";
-import type { Config } from "./config/conf";
+import type { Config } from "./config/config";
 import path from "node:path";
 import fs from "fs-extra";
 import { CWD } from "./file";
+import { CONFIG_FILE_NAME } from "./constants";
+import type { LoadConfigOptions } from "./types";
 
-const CONFIG_FILE = "fakelab.config.ts";
-
-async function loadConfig(): Promise<Config> {
+async function loadConfig(options?: LoadConfigOptions): Promise<Config> {
   try {
     const joycon = new JoyCon();
 
     const filepath = await joycon.resolve({
-      files: [CONFIG_FILE],
+      files: [CONFIG_FILE_NAME],
     });
 
     if (!filepath) {
@@ -27,12 +27,16 @@ async function loadConfig(): Promise<Config> {
       throw error;
     }
 
-    const config = await bundleRequire({
+    const configModule = await bundleRequire({
       filepath: normalizedPath,
       cwd: CWD,
     });
 
-    return config.mod.default as Config;
+    const config = configModule.mod.default as Config;
+
+    config.setShouldOnlyComputingFilepath(options);
+
+    return config;
   } catch (error) {
     if (error instanceof Error && error.stack) {
       Logger.debug("Stack trace: %s", error.stack);

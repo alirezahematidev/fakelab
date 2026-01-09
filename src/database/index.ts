@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import path from "node:path";
 import type { DatabaseOptions } from "../types";
 import { CWD } from "../file";
-import type { Config } from "../config/conf";
+import type { Config } from "../config/config";
 import { Logger } from "../logger";
 
 export class Database {

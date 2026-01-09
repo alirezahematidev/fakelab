@@ -28,6 +28,10 @@ export class Logger {
     return pico.blueBright(text);
   }
 
+  static gray(text: string) {
+    return pico.dim(text);
+  }
+
   static red(text: string) {
     return pico.redBright(text);
   }
@@ -38,6 +42,10 @@ export class Logger {
 
   static green(text: string) {
     return pico.greenBright(text);
+  }
+
+  static dim(message: string, ...params: unknown[]) {
+    console.log(pico.dim(`[${new Date().toISOString()}] ` + message), ...params);
   }
 
   static info(message: string, ...params: unknown[]) {

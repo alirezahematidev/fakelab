@@ -2,7 +2,7 @@ import express from "express";
 import qs from "qs";
 import type { Builder } from "../types";
 import type { Database } from "../database";
-import type { Config } from "../config/conf";
+import type { Config } from "../config/config";
 import type { GraphQLBuilder } from "../graphql/builder";
 
 interface PackageJson {

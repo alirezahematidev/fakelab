@@ -27,7 +27,7 @@ export class Config extends ConfigOptHandler {
   }
 
   setShouldOnlyComputingFilepath({ _filepath }: LoadConfigOptions = { _filepath: null }) {
-    if (_filepath && path.basename(_filepath) !== CONFIG_FILE_NAME) {
+    if (_filepath && path.basename(_filepath) !== CONFIG_FILE_NAME && _filepath.endsWith(".ts")) {
       this.shouldOnlyComutingFilepath = _filepath.trim();
     }
   }

@@ -10,7 +10,12 @@ import type { Config } from "../config/conf";
 class GraphQLBuilder {
   private schema: ReturnType<GraphQLSchemaGenerator["generateSchema"]> | null = null;
 
-  constructor(private readonly builder: Builder, private readonly network: Network, private readonly database: Database, private readonly config: Config) {}
+  constructor(
+    private readonly builder: Builder,
+    private readonly network: Network,
+    private readonly database: Database,
+    private readonly config: Config,
+  ) {}
 
   private async applyNetworkHandlers(res: express.Response): Promise<boolean> {
     if (this.network.offline()) {
@@ -73,6 +78,18 @@ class GraphQLBuilder {
     return `query {\n${entityName}(count: 1) {\n${fields.join("\n")}\n  }\n}`;
   }
 
+  private unwrapListElements(t: Type): Type | null {
+    if (t.isArray()) return t.getArrayElementTypeOrThrow();
+    if (t.isTuple()) {
+      const tupleElements = t.getTupleElements();
+
+      const objectElement = tupleElements.find((element) => element.isObject());
+
+      return objectElement ?? tupleElements[0] ?? null;
+    }
+    return null;
+  }
+
   private extractFields(type: Type, visited: Set<string> = new Set(), indent: number = 1): string[] {
     const fields: string[] = [];
     const typeName = type.getSymbol()?.getName();
@@ -92,10 +109,13 @@ class GraphQLBuilder {
       const propType = prop.getTypeAtLocation(prop.getValueDeclarationOrThrow());
       const propName = prop.getName();
 
-      if (propType.isArray()) {
-        const elementType = propType.getArrayElementTypeOrThrow();
-        if (elementType.isObject() && !visited.has(elementType.getSymbol()?.getName() || "")) {
-          const nestedFields = this.extractFields(elementType, visited, indent + 1);
+      const listElements = this.unwrapListElements(propType);
+
+      if (listElements) {
+        const elementName = listElements.getSymbol()?.getName() || "";
+
+        if (listElements.isObject() && !visited.has(elementName)) {
+          const nestedFields = this.extractFields(listElements, visited, indent + 1);
           if (nestedFields.length > 0) {
             fields.push(`${gap}${gap}${propName} {\n${nestedFields.join("\n")}\n${gap}}`);
           } else {
@@ -104,7 +124,11 @@ class GraphQLBuilder {
         } else {
           fields.push(`${gap}${gap}${propName}`);
         }
-      } else if (propType.isObject() && !visited.has(propType.getSymbol()?.getName() || "")) {
+        continue;
+      }
+      const symName = propType.getSymbol()?.getName() || "";
+
+      if (propType.isObject() && !visited.has(symName)) {
         const nestedFields = this.extractFields(propType, visited, indent + 1);
         if (nestedFields.length > 0) {
           fields.push(`${gap}${gap}${propName} {\n${nestedFields.join("\n")}\n${gap}${gap}}`);

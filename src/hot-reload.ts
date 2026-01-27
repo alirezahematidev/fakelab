@@ -8,6 +8,8 @@ import { CWD } from "./file";
 import { Logger } from "./logger";
 import { loadConfig } from "./load-config";
 import type { Database } from "./database";
+import glob from "fast-glob";
+import isGlob from "is-glob";
 
 type ReloaderRefreshCallback = (router: express.Router, reloaded: boolean) => Promise<Database>;
 
@@ -33,7 +35,7 @@ export class HotReloader {
     private readonly app: express.Express,
     private readonly initial: express.Router,
     private readonly config: Config,
-    private readonly options: ServerCLIOptions
+    private readonly options: ServerCLIOptions,
   ) {
     this.router = this.initial;
 
@@ -151,8 +153,14 @@ export class HotReloader {
 
   private watcherPaths() {
     const configPath = path.resolve(CWD, "fakelab.config.ts");
+    const fakelabPath = path.resolve(CWD, ".fakelab");
 
-    return [...this.config.getSourceFiles(this.options.source), configPath];
+    const files = this.config.getSourceFiles(this.options.source).flatMap((file) => {
+      if (isGlob(file, { strict: true })) return glob.sync(file, { ignore: ["**/*.d.ts"] });
+      return [file];
+    });
+
+    return [...files, configPath, fakelabPath].filter(Boolean);
   }
 
   private middleware(req: express.Request, res: express.Response, next: express.NextFunction) {

@@ -59,9 +59,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "prepare": "husky",
-    "minify": "node --import=tsx scripts/minify.ts",
-    "serve": "yarn build && node --import=tsx lib/cli.js serve",
-    "seed": "node --import=tsx src/api.ts"
+    "minify": "node --import=tsx scripts/minify.ts"
   },
   "directories": {
     "lib": "./lib"

@@ -7,7 +7,7 @@
     <div class="preview-loading loading">
       <span class="loader visible"></span><span class="error">Some libraries could not be loaded. check your internet connection and try again.</span>
     </div>
-    <%- include("components/toolbar", { address, prefix, name, search, isGraphqlEnabled }) %>
+    <%- include("components/toolbar", { address, prefix, name, search, isCacheEnabled, isGraphqlEnabled }) %>
     <span class="cache-hint"><%= fromCache ? "(from cache)" : "" %></span>
     <%- include("components/code", { lang: "json", code: json }) %>
   </div>

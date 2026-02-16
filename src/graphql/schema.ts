@@ -36,6 +36,7 @@ class GraphQLSchemaGenerator {
     if (type.isUnion()) {
       return GraphQLString;
     }
+    // TODO tuples
 
     if (type.isObject()) {
       const typeName = this.getTypeName(type);

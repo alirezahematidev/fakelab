@@ -3,7 +3,6 @@ import { Logger } from "./logger";
 import path from "node:path";
 import { loadConfig } from "./load-config";
 import type { SnapshotCLIOptions, SnapshotDataSource, SnapshotPrepareOptions, SnapshotSchema, SnapshotUpdateArgs } from "./types";
-import { CWD } from "./file";
 import type { Config } from "./config/config";
 import { Webhook } from "./webhook";
 import { SnapshotEventSubscriber } from "./events/subscribers";
@@ -12,7 +11,7 @@ import type { SnapshotEvent, SnapshotEventArgs } from "./events/types";
 export class Snapshot {
   readonly TARGET_LANGUAGE = "typescript";
   readonly DEFAULT_TYPE_NAME = "Fakelab";
-  static readonly SNAPSHOT_DIR = path.resolve(CWD, ".fakelab/snapshots");
+  static readonly SNAPSHOT_DIR = path.resolve(process.cwd(), ".fakelab/snapshots");
 
   private static _instance: Snapshot;
 
@@ -26,6 +25,22 @@ export class Snapshot {
     this.initWebhook();
   }
 
+  private initWebhook() {
+    if (!this.config.enabled) return;
+
+    const { enabled } = this.config.options.snapshot();
+
+    if (enabled) {
+      const opts = this.config.options.webhook();
+      if (opts.enabled) {
+        this.subscriber = new SnapshotEventSubscriber(opts.hooks);
+
+        Logger.warn("Initializating webhook...");
+        this.webhook = new Webhook(this.subscriber, this.config);
+      }
+    }
+  }
+
   static async init(options: SnapshotCLIOptions) {
     try {
       const config = await loadConfig();
@@ -37,8 +52,7 @@ export class Snapshot {
       }
 
       return this._instance;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+    } catch {
       process.exit(1);
     }
   }
@@ -55,19 +69,18 @@ export class Snapshot {
         instance.webhook.activate();
       }
 
-      if (enabled && instance.config.enabled() && options.freshSnapshots) {
+      if (enabled && instance.config.enabled && options.freshSnapshots) {
         await instance.updateAll(sources, true);
       }
 
       return instance;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+    } catch {
       process.exit(1);
     }
   }
 
   async capture(url: string | undefined) {
-    if (!this.config.enabled()) {
+    if (!this.config.enabled) {
       Logger.error("Fakelab is disabled. Capture Skipped.");
       return;
     }
@@ -127,7 +140,7 @@ export class Snapshot {
 
       const capturingName = this.snapshotName(source.url, false);
 
-      Logger.info("Capturing %s snapshot...", capturingName);
+      Logger.info("Capturing %s...", Logger.blue(source.url));
       if (!(source.name || this.options?.name)) {
         Logger.warn("Snapshot source name not found. Auto-generating a name.");
       }
@@ -136,11 +149,9 @@ export class Snapshot {
 
       this.subscriber?.captured({ url: source.url, name: source.name ?? this.options?.name, content });
 
-      Logger.success("Snapshot %s captured successfully.", Logger.blue(capturingName));
+      Logger.success("Snapshot %s stored successfully.", Logger.blue(capturingName));
     } catch (error) {
-      Logger.error("Cannot save the captured snapshot.");
-
-      if (error instanceof Error) Logger.debug(error.message);
+      Logger.error("Cannot save the captured snapshot. error: %s", error instanceof Error ? error.message : String(error));
 
       process.exit(1);
     }
@@ -185,7 +196,7 @@ export class Snapshot {
     }
 
     if (!source) {
-      Logger.warn("Snapshot source not found. Delete skipped.");
+      Logger.warn("Snapshot %s not found. Delete skipped.", Logger.blue(name));
       return;
     }
 
@@ -278,8 +289,7 @@ export class Snapshot {
 
     try {
       schema = await fs.readJSON(path.resolve(Snapshot.SNAPSHOT_DIR, "__schema.json"));
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+    } catch {
       //
     }
 
@@ -311,22 +321,6 @@ export class Snapshot {
     await fs.writeJSON(path.resolve(Snapshot.SNAPSHOT_DIR, "__schema.json"), schema);
   }
 
-  private initWebhook() {
-    if (!this.config.enabled()) return;
-
-    const { enabled } = this.config.options.snapshot();
-
-    if (enabled) {
-      const opts = this.config.options.webhook();
-      if (opts.enabled) {
-        this.subscriber = new SnapshotEventSubscriber(opts.hooks);
-
-        Logger.warn("Initializating webhook...");
-        this.webhook = new Webhook(this.subscriber, this.config);
-      }
-    }
-  }
-
   private snapshotName(url: string, ext = true) {
     return url.replace(/^https?:\/\//, "").replace(/[/:?.&=#]/g, "_") + (ext ? ".ts" : "");
   }
@@ -353,8 +347,7 @@ export class Snapshot {
     try {
       JSON.parse(input);
       return true;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -367,7 +360,7 @@ export class Snapshot {
 
   private async modifyGitignoreFile(name: string) {
     try {
-      const filepath = path.resolve(CWD, ".gitignore");
+      const filepath = path.resolve(process.cwd(), ".gitignore");
       const content = await fs.readFile(filepath, { encoding: "utf8" });
 
       if (content.split("\n").some((line) => line.trim() === name.trim())) return;

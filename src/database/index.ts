@@ -1,9 +1,10 @@
 import fs from "fs-extra";
 import path from "node:path";
 import type { DatabaseOptions } from "../types";
-import { CWD } from "../file";
 import type { Config } from "../config/config";
 import { Logger } from "../logger";
+
+const CWD = process.cwd();
 
 export class Database {
   private options: Required<DatabaseOptions>;
@@ -27,7 +28,7 @@ export class Database {
 
   async initialize() {
     if (this.enabled()) {
-      if (!this.config.enabled()) {
+      if (!this.config.enabled) {
         Logger.warn("Fakelab is disabled. Skipping database initialization.");
         return;
       }

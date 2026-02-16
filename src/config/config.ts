@@ -5,10 +5,10 @@ import { access, constants, stat } from "node:fs/promises";
 import isGlob from "is-glob";
 import { Logger } from "../logger";
 import type { ConfigOptions, ServerCLIOptions } from "../types";
-import { CWD } from "../file";
 import { RuntimeSource } from "../runtime/source";
 import { DatabaseSource } from "../database/source";
 import { ConfigOptHandler } from "./options";
+import type { FakerLocale } from "../constants";
 
 export class Config extends ConfigOptHandler {
   readonly FAKELAB_PERSIST_DIR = ".fakelab";
@@ -17,17 +17,14 @@ export class Config extends ConfigOptHandler {
     super(opts);
 
     this.files = this.files.bind(this);
+    this.writeSource = this.writeSource.bind(this);
   }
 
   getTSConfigFilePath(tsConfigFilePath?: string) {
     return tsConfigFilePath || this.opts.tsConfigFilePath || this.DEFAULT_TS_CONFIG_FILE;
   }
 
-  isHeadless() {
-    return this.opts.headless ?? false;
-  }
-
-  enabled() {
+  get enabled() {
     return this.opts.enabled ?? true;
   }
 
@@ -38,7 +35,7 @@ export class Config extends ConfigOptHandler {
   }
 
   async files(_sourcePath: string | undefined) {
-    if (!this.enabled()) return [];
+    if (!this.enabled) return [];
 
     const sourcePaths = this.getSourceFiles(_sourcePath);
 
@@ -63,29 +60,32 @@ export class Config extends ConfigOptHandler {
     return resolvedFiles;
   }
 
+  private writeSource({ code, filepath }: { code: string; filepath: string }) {
+    return fs.writeFile(filepath, code);
+  }
+
   async initializeRuntimeConfig(dirname: string, options: ServerCLIOptions) {
-    if (!this.enabled()) {
+    if (!this.enabled) {
       Logger.warn("Fakelab is disabled. Skipping runtime initialization.");
       return;
     }
 
     const { port, pathPrefix } = this.options.server(options.pathPrefix, options.port);
 
-    const runtimeSource = RuntimeSource.init(dirname, port, pathPrefix, this.enabled());
+    const { locale } = this.options.faker(options.locale as FakerLocale);
 
-    const databaseSource = DatabaseSource.init(dirname, port, pathPrefix, this.options.database().enabled);
+    const { headless } = this.options.runtime();
 
-    const sources = await Promise.all([runtimeSource.prepare(), databaseSource.prepare()]);
+    const runtimeSource = new RuntimeSource(dirname, port, pathPrefix, locale, this.enabled, headless);
 
-    await Promise.all(sources.map(({ filepath, code }) => fs.writeFile(filepath, code)));
+    const databaseSource = new DatabaseSource(dirname, port, pathPrefix, locale, this.options.database());
+
+    runtimeSource.prepare().then(this.writeSource);
+    databaseSource.prepare().then(this.writeSource);
   }
 
   private async getSnapshotSourceFiles() {
-    const snapshotFiles = await glob(".fakelab/snapshots/**/*.ts", { absolute: true, ignore: ["**/*.d.ts"], cwd: CWD });
-
-    if (snapshotFiles.length > 0) {
-      Logger.info("Snapshot(s): %s", Logger.list(snapshotFiles.map((file) => path.parse(file).name)));
-    }
+    const snapshotFiles = await glob(".fakelab/snapshots/**/*.ts", { absolute: true, ignore: ["**/*.d.ts"], cwd: process.cwd() });
 
     return snapshotFiles;
   }
@@ -117,7 +117,7 @@ export class Config extends ConfigOptHandler {
 
   private async resolveTSFiles(sourcePath: string): Promise<string[]> {
     if (isGlob(sourcePath, { strict: true })) {
-      Logger.info(`Source: %s`, sourcePath);
+      Logger.info(`Source %s`, sourcePath);
       return glob(sourcePath, {
         absolute: true,
         ignore: ["**/*.d.ts"],
@@ -134,14 +134,14 @@ export class Config extends ConfigOptHandler {
         Logger.error("Cannot read file: %s", filePath);
         process.exit(1);
       }
-      Logger.info(`Source: %s`, filePath);
+      Logger.info(`Source %s`, filePath);
       return [filePath];
     }
 
     const dirStat = await this.tryStat(absPath);
 
     if (dirStat?.isDirectory()) {
-      Logger.info(`Source: %s`, absPath);
+      Logger.info(`Source %s`, absPath);
 
       return glob("**/*.ts", {
         cwd: absPath,
@@ -150,7 +150,7 @@ export class Config extends ConfigOptHandler {
       });
     }
 
-    Logger.warn(`invalid source: [REDACTED]/%s`, path.basename(filePath));
+    Logger.warn(`Invalid source: [REDACTED]/%s`, path.basename(filePath));
     return [];
   }
 }

@@ -213,9 +213,26 @@ export type CacheOptions = {
    * When set, cached files older than this value are considered expired
    * and will be ignored or regenerated on the next request.
    *
-   * @default 15 * 60 * 1000 // 15 minutes
+   * @example 5 * 60 * 1000 // 5 minutes
    */
   ttl?: number;
+};
+
+export type RuntimeOptions = {
+  /**
+   * Enables headless mode.
+   *
+   * When enabled, Fakelab runs without starting the HTTP server and only
+   * performs non-interactive tasks such as generating snapshots, mocks,
+   * or database files.
+   *
+   * This is useful for CI pipelines, build-time generation, or offline usage.
+   *
+   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/headless|Headless Documentation}
+   */
+  headless?: boolean;
+
+  switchable?: boolean;
 };
 
 export type ConfigOptions = {
@@ -235,18 +252,8 @@ export type ConfigOptions = {
    * @default true
    */
   enabled?: boolean;
-  /**
-   * Enables headless mode.
-   *
-   * When enabled, Fakelab runs without starting the HTTP server and only
-   * performs non-interactive tasks such as generating snapshots, mocks,
-   * or database files.
-   *
-   * This is useful for CI pipelines, build-time generation, or offline usage.
-   *
-   * @see {@link https://alirezahematidev.github.io/fakelab/docs/guides/headless|Headless Documentation}
-   */
-  headless?: boolean;
+
+  runtime?: RuntimeOptions;
 
   /**
    * Path to a custom typescript config file.
@@ -324,6 +331,7 @@ export type Entity = {
 };
 
 export interface Builder {
+  faker: LazyFaker;
   readonly entities: Map<string, Entity>;
   build: (name: string, type: Type, options: ForgeOptions) => Promise<BuilderResult>;
 }

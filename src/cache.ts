@@ -1,12 +1,11 @@
 import { createHash } from "node:crypto";
 import fs from "fs-extra";
 import path from "node:path";
-import { CWD } from "./file";
 import { Logger } from "./logger";
 import type { Config } from "./config/config";
 
 class Cache {
-  static readonly CACHE_DIR = path.resolve(CWD, ".fakelab/cache");
+  static readonly CACHE_DIR = path.resolve(process.cwd(), ".fakelab/cache");
 
   constructor(private readonly config: Config) {
     if (!this.config.options.cache().enabled) {
@@ -94,4 +93,4 @@ function createFileCache(config: Config) {
   return new Cache(config);
 }
 
-export { createFileCache };
+export { Cache, createFileCache };

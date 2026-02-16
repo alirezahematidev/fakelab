@@ -9,7 +9,6 @@ export default defineConfig({
       main: path.resolve(__dirname, "src/main.ts"),
       runtime: path.resolve(__dirname, "src/runtime/runtime.d.ts"),
       database: path.resolve(__dirname, "src/database/database.d.ts"),
-      "type-utils": path.resolve(__dirname, "src/type-utils.d.ts"),
     },
   },
   target: "es2022",

@@ -7,11 +7,7 @@ export interface User {
    * @faker person.fullName
    */
   name: string;
-  /**
-   * @faker location.streetAddress
-   * @faker location.streetAddress
-   */
-  address: [string, string];
+  address: string;
   /**
    * @faker phone.number
    */

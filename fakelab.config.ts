@@ -1,11 +1,12 @@
 import { defineConfig } from "./src/main";
 
 export default defineConfig({
-  sourcePath: ["./fixtures"],
+  sourcePath: ["./fixtures/**/*.ts"],
   server: { port: 50001, includeSnapshots: true },
   database: { enabled: true },
-  headless: false,
+  snapshot: { enabled: true },
   graphQL: { enabled: true },
-  cache: { enabled: false },
-  faker: { locale: "fa" },
+  cache: { enabled: true },
+  faker: { locale: "en" },
+  runtime: { switchable: true, headless: false },
 });

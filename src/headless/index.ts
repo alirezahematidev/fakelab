@@ -2,12 +2,15 @@ import path from "node:path";
 import fs from "fs-extra";
 import { Type, Symbol } from "ts-morph";
 import { ParserEngine } from "../parserEngine";
-import { DIRNAME } from "../file";
 import { transform } from "esbuild";
 import type { Config } from "../config/config";
 import { Logger } from "../logger";
 import { HEADLESS_SOURCE } from "./template";
 import type { ServerCLIOptions } from "../types";
+import type { FakerLocale } from "../constants";
+import { fileURLToPath } from "node:url";
+
+const DIRNAME = path.dirname(fileURLToPath(import.meta.url));
 
 export class Headless {
   private readonly HEADLESS_FILENAME = "runtime.js";
@@ -21,7 +24,9 @@ export class Headless {
     try {
       const files = await this.config.files(options.source);
 
-      const parser = await ParserEngine.init(files, this.config.getTSConfigFilePath(options.tsConfigPath), true);
+      const { locale } = this.config.options.faker(options.locale as FakerLocale);
+
+      const parser = await ParserEngine.init(files, this.config.getTSConfigFilePath(options.tsConfigPath), locale, this.config.options.runtime());
 
       const entities = await parser.entities();
 
@@ -38,14 +43,13 @@ export class Headless {
         functions.push(functionCode);
       }
 
-      const { locale } = this.config.options.faker();
       const { code } = await transform(this.generateSource(functions, locale), { minify: true, platform: "browser", target: "es2022" });
 
       const headlessPath = path.resolve(DIRNAME, this.HEADLESS_FILENAME);
 
       await fs.ensureDir(path.dirname(headlessPath));
 
-      await Promise.all([fs.writeFile(headlessPath, code)]);
+      await fs.writeFile(headlessPath, code);
 
       return true;
     } catch (error) {
@@ -66,12 +70,15 @@ export class Headless {
 
   private generateSource(functions: string[], locale: string): string {
     const { pathPrefix, port } = this.config.options.server();
+    const { switchable } = this.config.options.runtime();
 
     return this.replacer(HEADLESS_SOURCE, {
-      FAKELAB_ENABLED: this.config.enabled(),
+      FAKELAB_ENABLED: this.config.enabled,
       PORT: port,
       PREFIX: pathPrefix,
       LOCALE: locale,
+      HEADLESS: true,
+      SWITCHABLE: switchable,
       FUNCTIONS: functions.join(",\n"),
     });
   }
@@ -121,6 +128,8 @@ export class Headless {
       if (array) return `${name}: [${fakerCall}]`;
       return `${name}: ${fakerCall}`;
     }
+
+    // TODO tuples
 
     if (type.isArray()) {
       const elementType = type.getArrayElementTypeOrThrow();

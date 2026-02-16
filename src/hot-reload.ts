@@ -4,7 +4,6 @@ import type { OutgoingHttpHeaders } from "http";
 import type { Config } from "./config/config";
 import type { ServerCLIOptions } from "./types";
 import path from "path";
-import { CWD } from "./file";
 import { Logger } from "./logger";
 import { loadConfig } from "./load-config";
 import type { Database } from "./database";
@@ -101,8 +100,8 @@ export class HotReloader {
       for (const res of this.clients) {
         try {
           res.end();
-        } catch {
-          //
+        } catch (error) {
+          Logger.warn(error instanceof Error ? error.message : String(error));
         }
       }
 
@@ -158,7 +157,7 @@ export class HotReloader {
   }
 
   private watcherPaths() {
-    const configPath = path.resolve(CWD, CONFIG_FILE_NAME);
+    const configPath = path.resolve(process.cwd(), CONFIG_FILE_NAME);
 
     return [...this.config.getSourceFiles(this.options.source), configPath];
   }

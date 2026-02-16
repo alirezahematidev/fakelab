@@ -15,9 +15,6 @@
       ],
       "database": [
         "./database.d.ts"
-      ],
-      "type-utils": [
-        "./type-utils.d.ts"
       ]
     }
   },
@@ -35,9 +32,6 @@
       "types": "./database.d.ts",
       "node": "./database.js",
       "default": "./database.js"
-    },
-    "./type-utils": {
-      "types": "./type-utils.d.ts"
     }
   },
   "engines": {
@@ -60,13 +54,14 @@
     "build": "tsup && yarn compat",
     "prepack": "yarn build",
     "release": "release-it --ci",
-    "serve": "yarn build && node --import=tsx lib/cli.js serve",
     "lint": "yarn eslint --config eslint.config.ts",
-    "minify": "node --import=tsx scripts/minify.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "prepare": "husky"
+    "prepare": "husky",
+    "minify": "node --import=tsx scripts/minify.ts",
+    "serve": "yarn build && node --import=tsx lib/cli.js serve",
+    "seed": "node --import=tsx src/api.ts"
   },
   "directories": {
     "lib": "./lib"
@@ -78,7 +73,6 @@
     "runtime.d.ts",
     "database.js",
     "database.d.ts",
-    "type-utils.d.ts",
     "package.json",
     "README.md",
     "LICENSE"

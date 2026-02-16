@@ -1,8 +1,12 @@
 import express from "express";
+import fs from "fs-extra";
 import type { Builder } from "../types";
 import type { Network } from "../network";
 import type { Database } from "../database";
 import type { Config } from "../config/config";
+import { Cache } from "../cache";
+import path from "node:path";
+import { Logger } from "../logger";
 
 class RouteHandler {
   private readonly SEED_MERGE_THRESHOLD = 1000;
@@ -12,7 +16,7 @@ class RouteHandler {
   private async handleQueries(request: express.Request) {
     const count = request.query.count;
 
-    if (count) return { count: count.toString() };
+    if (typeof count !== "undefined") return { count: count.toString() };
 
     return {};
   }
@@ -42,7 +46,7 @@ class RouteHandler {
 
   entity() {
     return async (req: express.Request, res: express.Response) => {
-      if (!this.config.enabled()) {
+      if (!this.config.enabled) {
         return res.status(500).json({ error: "Fakelab is disabled." });
       }
 
@@ -60,7 +64,7 @@ class RouteHandler {
 
           res.status(200).json(data);
         } else {
-          res.status(400).json({ message: "The entity is not exists" });
+          res.sendStatus(404);
         }
       } catch (error) {
         res.status(500).send(error);
@@ -68,9 +72,9 @@ class RouteHandler {
     };
   }
 
-  getTable() {
+  getData() {
     return async (req: express.Request, res: express.Response) => {
-      if (!this.config.enabled()) {
+      if (!this.config.enabled) {
         return res.status(500).json({ error: "Fakelab is disabled." });
       }
 
@@ -87,7 +91,7 @@ class RouteHandler {
           await entity.table.read();
           res.status(200).json(entity.table.data);
         } else {
-          res.status(400).json({ message: `${name} table is not exists` });
+          res.sendStatus(404);
         }
       } catch (error) {
         res.status(500).send(error);
@@ -95,9 +99,9 @@ class RouteHandler {
     };
   }
 
-  updateTable() {
+  setData() {
     return async (req: express.Request, res: express.Response) => {
-      if (!this.config.enabled()) {
+      if (!this.config.enabled) {
         return res.status(500).json({ error: "Fakelab is disabled." });
       }
 
@@ -116,9 +120,9 @@ class RouteHandler {
           const { data } = await this.builder.build(name.toLowerCase(), entity.type, queries);
 
           await entity.table.update((items) => items.push(...(Array.isArray(data) ? data : [data])));
-          res.status(200).json({ success: true });
+          res.sendStatus(200);
         } else {
-          res.status(400).json({ success: false, message: `${name} table is not exists` });
+          res.sendStatus(404);
         }
       } catch (error) {
         res.status(500).send(error);
@@ -128,7 +132,7 @@ class RouteHandler {
 
   insert() {
     return async (req: express.Request, res: express.Response) => {
-      if (!this.config.enabled()) {
+      if (!this.config.enabled) {
         return res.status(500).json({ error: "Fakelab is disabled." });
       }
 
@@ -160,12 +164,12 @@ class RouteHandler {
 
             if (items.length + insertee.length < this.SEED_MERGE_THRESHOLD) {
               items.push(...insertee);
-            }
+            } else Logger.error("Cannot seed items. Database capacity limited to %s.", Logger.blue(this.SEED_MERGE_THRESHOLD.toString()));
           });
 
-          res.status(200).json({ success: true });
+          res.sendStatus(200);
         } else {
-          res.status(400).json({ success: false, message: "The table is not exists" });
+          res.sendStatus(404);
         }
       } catch (error) {
         res.status(500).send(error);
@@ -175,7 +179,7 @@ class RouteHandler {
 
   flush() {
     return async (req: express.Request, res: express.Response) => {
-      if (!this.config.enabled()) {
+      if (!this.config.enabled) {
         return res.status(500).json({ error: "Fakelab is disabled." });
       }
 
@@ -189,10 +193,64 @@ class RouteHandler {
         if (entity) {
           await entity.table.update((items) => (items.length = 0));
 
-          res.status(200).json({ success: true });
+          res.sendStatus(200);
         } else {
-          res.status(400).json({ success: false, message: "The table is not exists" });
+          res.sendStatus(404);
         }
+      } catch (error) {
+        res.status(500).send(error);
+      }
+    };
+  }
+
+  reset() {
+    return async (req: express.Request, res: express.Response) => {
+      if (!this.config.enabled) {
+        return res.status(500).json({ error: "Fakelab is disabled." });
+      }
+
+      try {
+        const cachedFiles = await fs.readdir(Cache.CACHE_DIR);
+
+        const shouldClearFiles = cachedFiles.filter((file) => {
+          const [name] = file.split("_");
+
+          return name === req.params.name.toLowerCase();
+        });
+
+        await Promise.all(
+          shouldClearFiles.map(async (file) => {
+            await fs.rm(path.join(Cache.CACHE_DIR, file), { force: true });
+          })
+        );
+
+        res.sendStatus(200);
+      } catch (error) {
+        res.status(500).send(error);
+      }
+    };
+  }
+
+  __resetCache() {
+    return async (req: express.Request, res: express.Response) => {
+      if (!this.config.enabled) {
+        return res.status(500).json({ error: "Fakelab is disabled." });
+      }
+
+      try {
+        const cachedFiles = await fs.readdir(Cache.CACHE_DIR);
+
+        const shouldClearFiles = cachedFiles.filter((file) => {
+          const [name] = file.split("_");
+
+          return name === req.params.name.toLowerCase();
+        });
+        await Promise.all(
+          shouldClearFiles.map(async (file) => {
+            await fs.rm(path.join(Cache.CACHE_DIR, file), { force: true });
+          })
+        );
+        res.status(301).redirect(`/entities/${req.params.name.toLowerCase()}`);
       } catch (error) {
         res.status(500).send(error);
       }
@@ -202,7 +260,7 @@ class RouteHandler {
   // private
   _update() {
     return async (req: express.Request, res: express.Response) => {
-      if (!this.config.enabled()) {
+      if (!this.config.enabled) {
         return res.status(500).json({ error: "Fakelab is disabled." });
       }
 
@@ -232,7 +290,7 @@ class RouteHandler {
 
   _clear() {
     return async (req: express.Request, res: express.Response) => {
-      if (!this.config.enabled()) {
+      if (!this.config.enabled) {
         return res.status(500).json({ error: "Fakelab is disabled." });
       }
 

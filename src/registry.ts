@@ -2,7 +2,6 @@ import express from "express";
 import fs from "fs-extra";
 import path from "node:path";
 import { prepareBuilder } from "./factory";
-import { DIRNAME } from "./file";
 import { GraphQLBuilder } from "./graphql/builder";
 import { RouteRenderer } from "./routes/renderer";
 import { RouteHandler } from "./routes/handler";
@@ -10,6 +9,10 @@ import type { Network } from "./network";
 import type { Database } from "./database";
 import type { Config } from "./config/config";
 import type { Builder, ServerCLIOptions } from "./types";
+import { Logger } from "./logger";
+import { fileURLToPath } from "node:url";
+
+const DIRNAME = path.dirname(fileURLToPath(import.meta.url));
 
 const packageJson = fs.readJSONSync(path.join(DIRNAME, "../package.json"));
 
@@ -33,12 +36,12 @@ class RouteRegistry {
   }
 
   async register() {
+    Logger.info("Version %s", packageJson.version);
     const builder = await prepareBuilder(this.config, this.options);
 
     const { gql, handler, renderer } = this.instantiateRegistryHandlers(this.config, builder);
 
     const { pathPrefix } = this.config.options.server(this.options.pathPrefix, this.options.port);
-
     // template renderers
     this.router.get("/", renderer.index());
 
@@ -51,21 +54,27 @@ class RouteRegistry {
 
     this.router.get("/database/:name", renderer.table(pathPrefix));
 
+    this.router.get("/faker-cheatsheet", renderer.fakerDocs());
+
     this.router.all(`/${pathPrefix}/graphql`, gql.createMiddleware());
 
     // api handlers
     this.router.get(`/${pathPrefix}/:name`, handler.entity());
 
-    this.router.get(`/${pathPrefix}/database/:name`, handler.getTable());
+    this.router.get(`/${pathPrefix}/database/:name`, handler.getData());
 
-    this.router.post(`/${pathPrefix}/database/:name`, handler.updateTable());
+    this.router.post(`/${pathPrefix}/database/:name`, handler.setData());
 
     this.router.post(`/${pathPrefix}/database/insert/:name`, handler.insert());
+
     this.router.post(`/${pathPrefix}/database/flush/:name`, handler.flush());
+
+    this.router.post(`/${pathPrefix}/cache/reset/:name`, handler.reset());
 
     // private
     this.router.post(`/__update/:name`, handler._update());
     this.router.post(`/__delete/:name`, handler._clear());
+    this.router.post(`/__resetCache/:name`, handler.__resetCache());
   }
 }
 

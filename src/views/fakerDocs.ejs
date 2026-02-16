@@ -1,0 +1,32 @@
+<% title = "Fakelab cheatsheet" %>
+<div class="faker_cheatsheet_container">
+  <div class="faker_cheatsheet_header">
+    <div class="faker_header_title_container">
+      <img class="icon pointer_auto" src="/icons/arrow-left.svg" width="20px" height="20px" onclick="window.history.back()" />
+      <span class="header_title">FakerJS cheatsheet <span>(v<%= fakerVersion %>)</span></span>
+    </div>
+    <a title="Fakerjs docs" href="https://fakerjs.dev/" target="_blank" rel="noopener noreferrer">
+      <span>Documentation</span>
+    </a>
+  </div>
+  <div class="faker_cheatsheet_grid">
+    <% cheatsheet.forEach(([mod,funcs]) => { %>
+    <div class="faker_cheatsheet_list">
+      <span class="faker_cheatsheet_list_title"><%= mod %></span>
+      <% funcs.forEach((func,idx) => { %>
+      <div
+        onmousedown="onItemMouseDown(event,this,'<%= mod + idx %>','<%= func %>')"
+        oncontextmenu="openMenuPopup(event,this,'<%= func %>')"
+        id="faker_func"
+        class="faker_cheatsheet_list_item"
+      >
+        <%= func %>
+      </div>
+      <% }) %>
+    </div>
+    <% }) %>
+  </div>
+  <div id="copy_tooltip"></div>
+  <div id="open_menu_popup"></div>
+</div>
+<script src="/js/cheatsheet.min.js"></script>

@@ -1,0 +1,41 @@
+@font-face {
+  font-family: inter;
+  src: url(/fonts/Inter-Regular.ttf) format(woff);
+  width: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+body {
+  font-family: inter;
+  box-sizing: border-box;
+  margin: 0;
+  overflow: hidden;
+  height: 100vh;
+}
+
+.hljs {
+  background: none !important;
+}
+
+pre {
+  margin: 0;
+}
+
+.container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background: #1e2939;
+}
+
+.icon {
+  pointer-events: none;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 250ms ease-in-out;
+}
+
+.icon:hover {
+  opacity: 1;
+}

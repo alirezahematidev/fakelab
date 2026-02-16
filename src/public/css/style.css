@@ -368,6 +368,8 @@ pre {
   align-items: center;
   justify-content: center;
   border-radius: 4px;
+  border: none;
+  outline: none;
   background: oklch(27.8% 0.033 256.848);
   box-shadow: 0px 0px 2px hsl(220, 43%, 10%);
   height: 32px;
@@ -841,4 +843,129 @@ pre {
 
 .pointer_auto {
   cursor: pointer;
+}
+
+.faker_cheatsheet_container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.faker_cheatsheet_header {
+  flex: 1;
+  display: flex;
+  padding: 16px;
+  background-color: rgb(28, 36, 49);
+  box-shadow: 0px 1px 2px hsl(215, 28%, 10%);
+  display: flex;
+  align-items: center;
+  font-family: inter;
+  gap: 24px;
+
+  > a {
+    text-decoration: none;
+    color: #fff;
+    font-size: 14px;
+    color: oklch(98.5% 0.002 247.839 / 0.8);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 250ms ease-in-out;
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+.faker_header_title_container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  > .header_title {
+    color: oklch(98.5% 0.002 247.839 / 0.9);
+    font-size: 16px;
+
+    > span {
+      color: hsl(215, 28%, 60%);
+      font-size: 14px;
+    }
+  }
+}
+
+.faker_cheatsheet_grid {
+  overflow-y: auto;
+  padding: 24px;
+  display: grid;
+  gap: 32px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.faker_cheatsheet_list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.faker_cheatsheet_list .faker_cheatsheet_list_title {
+  color: oklch(98.463% 0.00181 249.248);
+  font-size: 14px;
+  margin-bottom: 8px;
+  text-transform: capitalize;
+  padding-inline: 8px;
+  border-left: 2px solid oklch(98.463% 0.00181 249.248);
+}
+
+.faker_cheatsheet_list .faker_cheatsheet_list_item {
+  font-size: 14px;
+  font-family: monospace;
+  color: hsl(215, 28%, 60%);
+  cursor: pointer;
+  padding: 4px;
+  width: fit-content;
+  border-radius: 2px;
+  transition: background-color 250ms ease-in-out;
+  user-select: none;
+
+  &:hover {
+    background-color: hsl(216, 29%, 21%);
+  }
+}
+
+.faker_cheatsheet_grid::-webkit-scrollbar {
+  width: 10px;
+}
+.faker_cheatsheet_grid::-webkit-scrollbar-track {
+  background: oklch(27.8% 0.033 256.848);
+}
+.faker_cheatsheet_grid::-webkit-scrollbar-thumb {
+  background: hsl(216, 31%, 24%);
+  border-radius: 99px;
+}
+
+#copy_tooltip {
+  background-color: rgb(39, 51, 70);
+  padding: 6px 8px;
+  border-radius: 2px;
+  color: #fff;
+  display: none;
+  position: fixed;
+  font-size: 12px;
+  box-shadow: 0px 1px 2px hsl(215, 28%, 15%);
+}
+
+#open_menu_popup {
+  background-color: rgb(39, 51, 70);
+  padding: 8px 12px;
+  border-radius: 2px;
+  color: #fff;
+  display: none;
+  position: fixed;
+  font-size: 12px;
+  box-shadow: 0px 1px 2px hsl(215, 28%, 15%);
+  cursor: pointer;
+  transition: background-color 250ms ease-in-out;
+  &:hover {
+    background-color: hsl(217, 28%, 23%);
+  }
 }

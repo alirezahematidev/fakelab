@@ -1,0 +1,247 @@
+/* ------ base styles ------ */
+@font-face {
+  font-family: inter;
+  src: url(/fonts/Inter-Regular.ttf) format(woff);
+  width: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+body {
+  font-family: inter;
+  box-sizing: border-box;
+  margin: 0;
+  overflow: hidden;
+  height: 100vh;
+}
+
+.hljs {
+  background: none !important;
+}
+
+pre {
+  margin: 0;
+}
+
+.root {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background: #1e2939;
+}
+
+.icon {
+  pointer-events: none;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 250ms ease-in-out;
+}
+
+.icon:hover {
+  opacity: 1;
+}
+/* ------ base styles ------ */
+
+/* ------ root styles ------ */
+.main {
+}
+.header {
+}
+
+.container {
+}
+
+.no-data {
+}
+
+.fakelab-logo {
+}
+
+.fakelab--logo-text {
+}
+
+/* ------ root styles ------ */
+
+/* ------ main sidebar styles ------ */
+.main--sidebar {
+}
+
+.main--sidebar-content {
+}
+
+.main--sidebar-database {
+}
+
+.main--database-button {
+}
+
+.main--sidebar-content-leading {
+}
+
+.main--sidebar-content-indicator-icon {
+}
+
+.main--sidebar-content-title {
+}
+
+.main--sidebar-content-menu-list {
+}
+
+.main--sidebar-content-menu-item {
+}
+
+.main--sidebar-content-menu-item.active {
+}
+
+.main--sidebar-content-menu-item-name {
+}
+
+.main--sidebar-content-menu-item-filepath {
+}
+
+.main--sidebar-notfound {
+}
+
+.main--sidebar-docs {
+}
+
+.main--sidebar-footer {
+}
+
+/* ------ main sidebar styles ------ */
+
+/* ------ preview styles ------ */
+.preview--entity-name {
+}
+
+.preview--container {
+}
+
+.preview--loading {
+}
+
+.preview--loading.loading {
+}
+
+.preview--spinner {
+}
+
+.preview--spinner.visible {
+}
+
+.preview--error {
+}
+
+.preview--cache-hint {
+}
+
+/* ------ preview styles ------ */
+
+/* ------ main toolbar styles ------ */
+.main-toolbar--toolbar {
+}
+
+.main-toolbar--toolbar.loading {
+}
+
+.main-toolbar--settings {
+}
+
+.main-toolbar--data-fetch-address {
+}
+
+.main-toolbar--address {
+}
+
+.main-toolbar--address-method {
+}
+
+.main-toolbar--request-address-url {
+}
+
+.main-toolbar--copy-button {
+}
+
+.main-toolbar--overlay-trigger {
+}
+
+.main-toolbar--toolbar-settings-option {
+}
+
+.main-toolbar--toolbar-settings-overlay {
+}
+
+.main-toolbar--settings-title {
+}
+
+.main-toolbar--settings-form {
+}
+
+.main-toolbar--form-input {
+}
+
+.main-toolbar--form-buttons {
+}
+
+.main-toolbar--form-reset-button {
+}
+
+.main-toolbar--form-apply-button {
+}
+
+.main-toolbar--toolbar-actions {
+}
+
+.main-toolbar--toolbar-action-item {
+}
+/* ------ main toolbar styles ------ */
+
+/* ------ graphQL styles ------ */
+.graphql--container {
+}
+
+.graphql--editor {
+}
+
+.graphql--toolbar {
+}
+
+.graphql--url-container {
+}
+
+.graphql--url-method {
+}
+
+.graphql--url-address {
+}
+
+.graphql--copy-button {
+}
+
+.graphql--execute-button {
+}
+
+.graphql--editor-container {
+}
+
+.graphql--query-editor {
+}
+
+.graphql--data-view {
+}
+
+.graphql--data-view-header {
+}
+
+.graphql--data-view-actions {
+}
+
+.graphql--action-item {
+}
+
+.graphql--data-view-content {
+}
+
+.graphql--data-view-placeholder {
+}
+/* ------ graphQL styles ------ */

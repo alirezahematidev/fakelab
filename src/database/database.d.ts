@@ -1,12 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-// Auto-generated runtime data type declarations
-
 declare function get<T extends keyof Runtime$>(name: T): Promise<Array<Runtime$[T]>>;
 declare function get<T extends keyof Runtime$>(name: T, predicate: (value: Runtime$[T]) => boolean): Promise<Runtime$[T] | null>;
 declare function post<T extends keyof Runtime$>(name: T): Promise<void>;
 declare function seed<T extends keyof Runtime$>(name: T, options?: SeedOptions): Promise<void>;
 declare function flush<T extends keyof Runtime$>(name: T): Promise<void>;
+declare function currentLocale(): Locale$["__locale"];
 declare function enabled(): boolean;
 declare const database: {
   get: typeof get;
@@ -14,6 +11,7 @@ declare const database: {
   seed: typeof seed;
   flush: typeof flush;
   enabled: typeof enabled;
+  currentLocale: typeof currentLocale;
 };
 
 type SeedOptions = {
@@ -31,7 +29,6 @@ type SeedOptions = {
    */
   strategy?: "reset" | "once" | "merge";
 };
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface Runtime$ {}
 
 export { database };

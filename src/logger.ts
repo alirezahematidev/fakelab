@@ -45,7 +45,7 @@ export class Logger {
   }
 
   static dim(message: string, ...params: unknown[]) {
-    console.log(pico.dim(`[${new Date().toISOString()}] ` + message), ...params);
+    console.log(this.log("info", pico.dim(message)), ...params);
   }
 
   static info(message: string, ...params: unknown[]) {
@@ -62,12 +62,6 @@ export class Logger {
 
   static success(message: string, ...params: unknown[]) {
     console.log(this.log("success", message), ...params);
-  }
-
-  static debug(message: string, ...params: unknown[]) {
-    if (typeof process === "undefined" || !process.env.DEBUG) return;
-
-    console.log(this.log("info", message), ...params);
   }
 
   static list(items: string[]) {

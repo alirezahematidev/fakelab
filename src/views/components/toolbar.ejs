@@ -14,6 +14,12 @@
     <a href="/graphql/<%= name %>" class="toolbar_setting_option" title="Open GraphQL Playground">
       <img class="icon" src="/icons/graphql-logo.png" width="18px" height="18px" />
     </a>
+    <% } %> <% if(isCacheEnabled) { %>
+    <form action="/__resetCache/<%= name %>" method="POST" title="Refresh Response">
+      <button type="submit" class="toolbar_setting_option">
+        <img class="icon" src="/icons/trash.svg" width="18px" height="18px" />
+      </button>
+    </form>
     <% } %>
     <div id="setting_overlay" data-visible="false" class="toolbar_setting_overlay">
       <span class="setting_title">Generator settings</span>

@@ -1,15 +1,19 @@
+import type { FakerLocale } from "../constants";
 import { BaseSourceConfig } from "../source";
 import { RUNTIME_SOURCE } from "./template";
 
 export class RuntimeSource extends BaseSourceConfig {
   private readonly SOURCE_FILENAME = "runtime.js";
 
-  private constructor(protected readonly dirname: string, protected readonly port: number, protected readonly prefix: string, protected readonly enabled: boolean) {
-    super(dirname, { PORT: port, PREFIX: prefix, FAKELAB_ENABLED: enabled });
-  }
-
-  static init(dirname: string, port: number, prefix: string, enabled: boolean) {
-    return new RuntimeSource(dirname, port, prefix, enabled);
+  constructor(
+    protected readonly dirname: string,
+    protected readonly PORT: number,
+    protected readonly PREFIX: string,
+    protected readonly LOCALE: FakerLocale,
+    protected readonly FAKELAB_ENABLED: boolean,
+    protected readonly HEADLESS: boolean
+  ) {
+    super(dirname, { PORT, PREFIX, LOCALE, FAKELAB_ENABLED, HEADLESS });
   }
 
   override prepare() {

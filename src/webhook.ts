@@ -33,7 +33,7 @@ export class Webhook<E extends string, Arg> {
     }
 
     if (this.options.hooks.length === 0) {
-      Logger.debug?.("Webhook enabled but no hooks configured. Skipping activation.");
+      Logger.warn("Webhook enabled but no hooks configured. Skipping activation.");
       return;
     }
 

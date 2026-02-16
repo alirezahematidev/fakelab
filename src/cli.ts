@@ -2,25 +2,27 @@ import path from "node:path";
 import fs from "fs-extra";
 import { Command } from "commander";
 import { Server } from "./server";
-import { DIRNAME } from "./file";
 import { Snapshot } from "./snapshot";
+import { fileURLToPath } from "node:url";
 
 const program = new Command();
 
-const pkg = fs.readJSONSync(path.join(DIRNAME, "../package.json"));
+const dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const pkg = fs.readJSONSync(path.join(dirname, "../package.json"));
 
 program.name(pkg.name).description(pkg.description).version(pkg.version);
 
 program
   .command("serve")
-  .description("start server")
-  .option("-s, --source <char>", "config source path")
-  .option("-x, --pathPrefix <char>", "server url path prefix")
-  .option("-p, --port <number>", "server port number", parseInt)
-  .option("-l, --locale <char>", "faker custom locale")
-  .option("-h, --headless", "headless mode")
-  .option("-t, --ts-config-path <char>", "typescript config file path", "tsconfig.json")
-  .option("-f, --fresh-snapshots", "capture or refresh all snapshots")
+  .description("Start mock server")
+  .option("-s, --source <char>", "Config source path")
+  .option("-x, --pathPrefix <char>", "Server url path prefix")
+  .option("-p, --port <number>", "Server port number", parseInt)
+  .option("-l, --locale <char>", "Faker custom locale")
+  .option("-h, --headless", "Headless mode")
+  .option("-t, --ts-config-path <char>", "Typescript config file path", "tsconfig.json")
+  .option("-f, --fresh-snapshots", "Capture or refresh all snapshots")
   .action(async (options) => {
     const snapshot = await Snapshot.prepare(options);
 
@@ -28,11 +30,11 @@ program
   });
 program
   .command("snapshot")
-  .description("capture a url response to a fakelab entity")
-  .argument("[string]", "url to capture")
-  .option("-s, --name <string>", "specify snapshot source name")
-  .option("-r, --refresh <string>", "refresh the specified snapshot")
-  .option("-d, --delete <string>", "delete the specified snapshot")
+  .description("Capture a url response to a fakelab entity")
+  .argument("[string]", "Url to capture")
+  .option("-s, --name <string>", "Specify snapshot source name")
+  .option("-r, --refresh <string>", "Refresh the specified snapshot")
+  .option("-d, --delete <string>", "Delete the specified snapshot")
   .action(async (url, options) => {
     const snapshot = await Snapshot.init(options);
 

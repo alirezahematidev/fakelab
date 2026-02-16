@@ -1,12 +1,13 @@
 import express from "express";
 import qs from "qs";
-import type { Builder } from "../types";
+import type { Builder, LazyFaker } from "../types";
 import type { Database } from "../database";
 import type { Config } from "../config/config";
 import type { GraphQLBuilder } from "../graphql/builder";
 
 interface PackageJson {
   version: string;
+  dependencies: { "@faker-js/faker": string };
 }
 
 class RouteRenderer {
@@ -20,7 +21,7 @@ class RouteRenderer {
     private readonly graphqlBuilder: GraphQLBuilder,
     private readonly pkg: PackageJson
   ) {
-    this.isFakelabEnabled = this.config.enabled();
+    this.isFakelabEnabled = this.config.enabled;
     this.isDatabaseEnabled = this.database.enabled();
   }
 
@@ -63,6 +64,7 @@ class RouteRenderer {
         const filepath = entity.filepath;
 
         const graphqlOptions = this.config.options.graphQL();
+        const cacheOptions = this.config.options.cache();
 
         res.render("preview", {
           name,
@@ -78,6 +80,7 @@ class RouteRenderer {
           isDatabaseEnabled: this.isDatabaseEnabled,
           isFakelabEnabled: this.isFakelabEnabled,
           isGraphqlEnabled: graphqlOptions.enabled,
+          isCacheEnabled: cacheOptions.enabled,
         });
       } else res.redirect("/");
     };
@@ -165,6 +168,8 @@ class RouteRenderer {
 
       const { enabled } = this.config.options.graphQL();
 
+      const backPath = req.path.replace("graphql", "entities");
+
       if (!enabled) res.redirect("/");
       else {
         if (entity) {
@@ -174,6 +179,7 @@ class RouteRenderer {
             name,
             address,
             prefix,
+            backPath,
             query: graphqlQuery,
             entities: this.builder.entities,
             version: this.pkg.version,
@@ -182,6 +188,37 @@ class RouteRenderer {
           });
         } else res.redirect("/graphql");
       }
+    };
+  }
+
+  fakerDocs() {
+    const faker = this.builder.faker;
+    const EXCLUDES = ["definitions", "rawDefinitions", "helpers", "_randomizer"];
+
+    const modules = Object.keys(faker).filter((mod) => !EXCLUDES.includes(mod));
+
+    const fakerFuncs = modules.reduce((prev, curr) => {
+      const funcs = Object.keys(faker[curr as keyof LazyFaker]).filter((func) => func !== "faker");
+
+      if (funcs.length === 0) return prev;
+
+      return {
+        ...prev,
+        [curr]: funcs.map((func) => {
+          const fn = faker[curr as keyof LazyFaker][func as keyof LazyFaker[keyof LazyFaker]];
+
+          return typeof fn === "function" ? [curr, func].join(".") : "";
+        }),
+      };
+    }, {} as Record<string, string[]>);
+
+    return (_: express.Request, res: express.Response) => {
+      if (!this.isFakelabEnabled) return res.redirect("/");
+
+      res.render("fakerDocs", {
+        cheatsheet: Object.entries(fakerFuncs),
+        fakerVersion: this.pkg.dependencies["@faker-js/faker"],
+      });
     };
   }
 }

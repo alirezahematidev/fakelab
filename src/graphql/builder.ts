@@ -45,7 +45,7 @@ class GraphQLBuilder {
     const schema = this.getSchema();
 
     return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-      if (!this.config.enabled()) {
+      if (!this.config.enabled) {
         return;
       }
 
@@ -91,6 +91,11 @@ class GraphQLBuilder {
     for (const prop of props) {
       const propType = prop.getTypeAtLocation(prop.getValueDeclarationOrThrow());
       const propName = prop.getName();
+
+      if (propType.isTuple()) {
+        fields.push(`${gap}${gap}${propName}`);
+        continue;
+      }
 
       if (propType.isArray()) {
         const elementType = propType.getArrayElementTypeOrThrow();

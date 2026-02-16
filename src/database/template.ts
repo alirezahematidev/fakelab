@@ -3,6 +3,8 @@ const url = "http://localhost:PORT/PREFIX/";
 
 _database.enabled = () => ENABLED;
 
+_database.currentLocale = () => "LOCALE";
+
 _database.get = async function (name, predicate) {
   const response = await fetch(url + "database/" + name);
 
@@ -16,7 +18,7 @@ _database.get = async function (name, predicate) {
 
   return result;
 };
-_database.post = async function (name) {
+_database.set = async function (name) {
   const response = await fetch(url + "database/" + name, { method: "POST", headers: { "Content-Type": "application/json" } });
 
   if (!response.ok) throw new Error("[fakelab] Failed to post data to database.");
@@ -32,13 +34,15 @@ _database.flush = async function (name) {
   if (!response.ok) throw new Error("[fakelab] Failed to flush seeded data from database.");
 };
 
-const database = Object.freeze(_database);
 
-database.enabled.bind(database);
-database.get.bind(database);
-database.post.bind(database);
-database.seed.bind(database);
-database.flush.bind(database);
+_database.enabled = _database.enabled.bind(_database);
+_database.get = _database.get.bind(_database);
+_database.set = _database.set.bind(_database);
+_database.seed = _database.seed.bind(_database);
+_database.flush = _database.flush.bind(_database);
+_database.currentLocale = _database.currentLocale.bind(_database);
+
+const database = Object.freeze(_database);
 
 export { database };
 `;

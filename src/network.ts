@@ -1,6 +1,5 @@
 import type { Config } from "./config/config";
 import type { NetworkOptions } from "./types";
-import { Logger } from "./logger";
 
 export class Network {
   private readonly options: NetworkOptions;
@@ -20,17 +19,11 @@ export class Network {
   }
 
   timeout() {
-    const occured = this.chance(this.options.timeoutRate);
-    if (occured) Logger.debug("Network timeout...");
-
-    return occured;
+    return this.chance(this.options.timeoutRate);
   }
 
   error() {
-    const occured = this.chance(this.options.errorRate);
-    if (occured) Logger.debug("Network error...");
-
-    return occured;
+    return this.chance(this.options.errorRate);
   }
 
   state(state: "error" | "offline") {
@@ -56,7 +49,6 @@ export class Network {
     const delay = this.resolveDelay();
 
     if (delay > 0) {
-      Logger.debug("Network waiting (%d ms)...", delay);
       await this.sleep(delay);
     }
   }

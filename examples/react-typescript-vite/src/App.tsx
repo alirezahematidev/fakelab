@@ -21,6 +21,7 @@ function App() {
 
   return (
     <main id="main">
+      <h1>{fakelab.currentLocale()}</h1>
       <h2>Users List:</h2>
       <table>
         <thead>

@@ -1,14 +1,12 @@
 import express from "express";
 import cors from "cors";
 import path from "node:path";
-import http from "http";
+import http from "node:http";
 import ejsLayouts from "express-ejs-layouts";
 import { RouteRegistry } from "./registry";
 import figlet from "figlet";
 import { Logger } from "./logger";
-import { DIRNAME } from "./file";
 import { Network } from "./network";
-import os from "os";
 import type { Config } from "./config/config";
 import type { ServerCLIOptions, ServerOptions } from "./types";
 import { Webhook } from "./webhook";
@@ -17,6 +15,9 @@ import type { ServerEvent, ServerEventArgs } from "./events/types";
 import { Headless } from "./headless";
 import { Database } from "./database";
 import { HotReloader } from "./hot-reload";
+import { fileURLToPath } from "node:url";
+
+const DIRNAME = path.dirname(fileURLToPath(import.meta.url));
 
 export class Server {
   private webhook: Webhook<ServerEvent, ServerEventArgs> | undefined;
@@ -28,19 +29,11 @@ export class Server {
     this.setupApplication = this.setupApplication.bind(this);
     this.setupTemplateEngine = this.setupTemplateEngine.bind(this);
 
-    this.loadLocalEnv();
-
     this.initWebhook();
 
     process.on("SIGINT", () => {
       const opts = this.config.options.server(this.options.pathPrefix, this.options.port);
       this.subscriber?.shutdown(opts);
-
-      const hostname = os.hostname();
-
-      if (hostname) {
-        console.log("%s Goodbye, %s!", Logger.gray("[FAKELAB]"), os.hostname());
-      }
 
       process.exit(0);
     });
@@ -50,7 +43,7 @@ export class Server {
     const opts = this.config.options.webhook();
 
     if (opts.enabled) {
-      if (!this.config.enabled()) {
+      if (!this.config.enabled) {
         Logger.warn("Fakelab is disabled. Skipped webhook initialization.");
         return;
       }
@@ -73,7 +66,7 @@ export class Server {
   }
 
   private async shouldRunHeadlessMode() {
-    if (this.options.headless || this.config.isHeadless()) {
+    if (this.options.headless || this.config.options.runtime().headless) {
       const headless = new Headless(this.config);
       const canGenerate = await headless.generate(this.options);
 
@@ -109,9 +102,9 @@ export class Server {
     const reloader = HotReloader.register(app, router, this.config, this.options);
 
     await reloader.onReady(async (_router, args) => {
-      await this.config.initializeRuntimeConfig(DIRNAME, this.options);
-
       const config = await HotReloader.prepareConfig(this.config, args);
+
+      await config.initializeRuntimeConfig(DIRNAME, this.options);
 
       const network = Network.initHandlers(config);
 
@@ -128,12 +121,11 @@ export class Server {
 
     const unwatch = reloader.watch();
 
-    process.on("SIGINT", unwatch);
-
     if (reloader.database) {
       this.run(server, reloader.database, this.options);
     }
 
+    process.on("SIGINT", unwatch);
     server.once("close", unwatch);
   }
 
@@ -155,11 +147,11 @@ export class Server {
   private listen(database: Database, opts: Required<ServerOptions>) {
     this.subscriber?.started(opts);
 
-    if (database.enabled() && this.config.enabled()) Logger.info(`Database: %s`, Database.DATABASE_DIR);
+    if (database.enabled() && this.config.enabled) Logger.info(`Database %s`, Database.DATABASE_DIR);
 
-    Logger.info(`Server%s: http://localhost:%d`, !this.config.enabled() ? "(disabled)" : "", opts.port);
+    Logger.info(`Server%s http://localhost:%d`, !this.config.enabled ? "(disabled)" : "", opts.port);
 
-    if (this.config.enabled()) {
+    if (this.config.enabled) {
       console.log(figlet.textSync("FAKELAB"));
     }
   }
@@ -173,17 +165,5 @@ export class Server {
   private xPoweredMiddleware(_: express.Request, res: express.Response, next: express.NextFunction) {
     res.setHeader("x-powered-by", "fakelab");
     next();
-  }
-
-  private loadLocalEnv() {
-    try {
-      if (process.env.NODE_ENV === "development") {
-        process.loadEnvFile("./.env.local");
-      }
-    } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        Logger.warn("Cannot load .env.local file for debugging. error: %s", error);
-      }
-    }
   }
 }

@@ -93,7 +93,7 @@ class Generator {
     for (const part of parts) {
       fn = fn[part];
       if (!fn) {
-        Logger.error("Invalid faker module path: (%s)", data.path);
+        Logger.error("Invalid faker function: (%s). Check %s", Logger.blue(data.path), Logger.yellow("https://fakerjs.dev"));
         process.exit(1);
       }
     }

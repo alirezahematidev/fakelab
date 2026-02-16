@@ -1,6 +1,18 @@
 import { FAKER_LOCALES, type FakerLocale } from "../constants";
-import type { CacheOptions, ConfigOptions, DatabaseOptions, FakerEngineOptions, GraphQLOptions, NetworkOptions, ServerOptions, SnapshotOptions, WebhookOptions } from "../types";
+import type {
+  CacheOptions,
+  ConfigOptions,
+  DatabaseOptions,
+  FakerEngineOptions,
+  GraphQLOptions,
+  NetworkOptions,
+  RuntimeOptions,
+  ServerOptions,
+  SnapshotOptions,
+  WebhookOptions,
+} from "../types";
 
+const RUNTIME = Symbol("ConfigOptHandler.runtime");
 const CACHE = Symbol("ConfigOptHandler.cache");
 const SERVER = Symbol("ConfigOptHandler.server");
 const DATABASE = Symbol("ConfigOptHandler.database");
@@ -27,6 +39,7 @@ export class ConfigOptHandler {
     this[WEBHOOK] = this[WEBHOOK].bind(this);
     this[GRAPHQL] = this[GRAPHQL].bind(this);
     this[CACHE] = this[CACHE].bind(this);
+    this[RUNTIME] = this[RUNTIME].bind(this);
 
     this.NETWORK_DEFAULT_OPTIONS = Object.freeze({
       delay: this.opts.network?.delay || 0,
@@ -46,13 +59,21 @@ export class ConfigOptHandler {
       webhook: this[WEBHOOK],
       graphQL: this[GRAPHQL],
       cache: this[CACHE],
+      runtime: this[RUNTIME],
+    };
+  }
+
+  [RUNTIME](): Required<RuntimeOptions> {
+    return {
+      headless: this.opts.runtime?.headless ?? false,
+      switchable: this.opts.runtime?.switchable ?? true,
     };
   }
 
   [CACHE](): Required<CacheOptions> {
     return {
       enabled: this.opts.cache?.enabled ?? true,
-      ttl: this.opts.cache?.ttl || 15 * 60 * 1000,
+      ttl: this.opts.cache?.ttl || Number.MAX_SAFE_INTEGER,
     };
   }
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.5](https://github.com/alirezahematidev/fakelab/compare/v1.0.4...v1.0.5) (2026-02-16)
+
+### Bug Fixes
+
+* guard for reloading filename ([bddf362](https://github.com/alirezahematidev/fakelab/commit/bddf3629feeb085a092bd8914713727cf746fd4d))
+* hot reload does not watch glob-pattern files ([b1d9a41](https://github.com/alirezahematidev/fakelab/commit/b1d9a41377f15ebf1dc57773d1b1e7cb0f68a974))
+* hot reloading performance ([71c6bf2](https://github.com/alirezahematidev/fakelab/commit/71c6bf29d67d12ce75bcd7e2488ddce50d51ee73))
+* removed testing files ([5d7a73d](https://github.com/alirezahematidev/fakelab/commit/5d7a73d189684c27fc39fe26a3ccd3e863e2843d))
+* revert shouldonly filepath ([d9db230](https://github.com/alirezahematidev/fakelab/commit/d9db2306530c8f572be64e120a1f513b900217ff))
+* support tuples in headless and graphql ([335d34a](https://github.com/alirezahematidev/fakelab/commit/335d34a768b993c02b3d1b340274636fa7a4d22a))
+
 ## [1.0.4](https://github.com/alirezahematidev/fakelab/compare/v1.0.3...v1.0.4) (2026-01-08)
 
 ### Features

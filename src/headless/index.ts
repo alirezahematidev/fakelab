@@ -129,7 +129,55 @@ export class Headless {
       return `${name}: ${fakerCall}`;
     }
 
-    // TODO tuples
+    if (type.isTuple()) {
+      const tupleElements = type.getTupleElements();
+
+      const tupleValues = tupleElements.map((elType) => {
+        const sym = elType.getSymbol();
+        if (sym) {
+          const symName = sym.getName().toLowerCase();
+          if (entityNames.has(symName)) {
+            return `this.${symName}()`;
+          }
+        }
+
+        if (elType.isString()) return `faker.word.noun()`;
+        if (elType.isNumber()) return `faker.number.int()`;
+        if (elType.isBoolean()) return `faker.datatype.boolean()`;
+
+        if (elType.isArray()) {
+          const element = elType.getArrayElementTypeOrThrow();
+          if (element.isString()) return `[faker.word.noun()]`;
+          if (element.isNumber()) return `[faker.number.int()]`;
+          if (element.isBoolean()) return `[faker.datatype.boolean()]`;
+
+          const es = element.getSymbol();
+          if (es) {
+            const en = es.getName().toLowerCase();
+            if (entityNames.has(en)) return `[this.${en}()]`;
+          }
+
+          return `[null]`;
+        }
+        if (elType.isObject()) {
+          const nestedProps = this.extractProperties(elType);
+          if (nestedProps.length === 0) return `{}`;
+
+          const nestedGens = nestedProps.map((p) => this.generateProperty(p, entityNames, indent + 1));
+          const nestedIndent = "  ".repeat(indent + 1);
+
+          return `{\n${nestedIndent}${nestedGens.join(`,\n${nestedIndent}`)}\n${indentStr}}`;
+        }
+
+        return `null`;
+      });
+
+      const tupleLiteral = `[${tupleValues.join(", ")}]`;
+
+      if (array) return `${name}: [${tupleLiteral}]`;
+
+      return `${name}: ${tupleLiteral}`;
+    }
 
     if (type.isArray()) {
       const elementType = type.getArrayElementTypeOrThrow();

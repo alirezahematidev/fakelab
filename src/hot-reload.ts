@@ -8,6 +8,8 @@ import { Logger } from "./logger";
 import { loadConfig } from "./load-config";
 import type { Database } from "./database";
 import { CONFIG_FILE_NAME } from "./constants";
+import glob from "fast-glob";
+import isGlob from "is-glob";
 
 type RefreshCallbackOptions = {
   shouldRefresh: boolean;
@@ -158,8 +160,14 @@ export class HotReloader {
 
   private watcherPaths() {
     const configPath = path.resolve(process.cwd(), CONFIG_FILE_NAME);
+    const fakelabPath = path.resolve(process.cwd(), ".fakelab");
 
-    return [...this.config.getSourceFiles(this.options.source), configPath];
+    const files = this.config.getSourceFiles(this.options.source).flatMap((file) => {
+      if (isGlob(file, { strict: true })) return glob.sync(file, { ignore: ["**/*.d.ts"] });
+      return [file];
+    });
+
+    return [...files, configPath, fakelabPath].filter(Boolean);
   }
 
   private middleware(req: express.Request, res: express.Response, next: express.NextFunction) {
